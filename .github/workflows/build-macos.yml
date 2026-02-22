@@ -20,7 +20,7 @@ jobs:
       - name: Select Xcode version
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '15.0' # Adjust based on your compatibility needs
+          xcode-version: '16.1' # Updated to an available version on macos-latest
 
       - name: Build Xcode Project
         run: |
