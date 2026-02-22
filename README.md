@@ -1,14 +1,3 @@
-# Mae
-
-Bem-vindo ao repositório do **Mae**, uma aplicação de chat com modelos de IA. Este projeto possui duas portabilidades com bases de código distintas para oferecer a experiência mais otimizada e nativa em seus respectivos sistemas operacionais:
-
-- **macOS:** Desenvolvido nativamente utilizando Swift e SwiftUI.
-- **Windows:** Desenvolvido utilizando o framework Tauri (Rust) com um frontend moderno em React e TypeScript.
-
-Abaixo, você encontrará guias detalhados de como configurar o ambiente e rodar o projeto em ambas as plataformas.
-
----
-
 ## 🍏 Guia de Instalação para macOS
 
 A versão para Mac é um aplicativo nativo Swift e requer o ambiente de desenvolvimento da Apple.
