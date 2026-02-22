@@ -18,7 +18,7 @@ A versão para Mac é um aplicativo nativo Swift e requer o ambiente de desenvol
 6. Pronto! Agora você pode abrir o Mae normalmente pelo Launchpad ou clicando duas vezes no aplicativo.
 ---
 
-## 🪟 Guia de Instalação para Windows
+## 🪟 Guia de Instalação para Windows (Instavel e não recomendado)
 
 A versão de Windows utiliza a stack do **Tauri**, que combina os benefícios e a performance de um backend em Rust, com a flexibilidade da construção de telas usando tecnologias web (React/Vite).
 
@@ -62,23 +62,3 @@ Quando quiser construir a versão final da sua aplicação para instalar ou dist
 npm run tauri build
 ```
 Após o processo de build, o instalador e o executável final `.exe` serão encontrados na pasta: `src-tauri/target/release/bundle/`.
-
----
-
-## 🛠 Estrutura do Repositório
-
-Aqui está um resumo condensado da organização dos arquivos:
-
-```text
-├── Mae/                   # Código fonte da versão nativa do macOS
-│   ├── Mae.xcodeproj      # Arquivo de projeto do Xcode
-│   └── ...                # Arquivos fontes em .swift
-│
-├── mae-windows/           # Código fonte da versão do Windows
-│   ├── src/               # Frontend construido em React/TypeScript
-│   ├── src-tauri/         # Backend escrito em Rust (Core da janela e sistema)
-│   ├── package.json       # Configurações do ambiente Node e scripts utilitários
-│   └── ...
-│
-└── README.md              # Documentação principal
-```
