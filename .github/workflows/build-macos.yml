@@ -43,9 +43,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: mac-app-v__VERSION__
-          name: 'Mãe para macOS v__VERSION__'
+          tag_name: mac-app-v${{ github.run_number }}
+          name: 'Mãe para macOS v${{ github.run_number }}'
           body: 'Release automatizado da versão nativa para macOS (Swift).'
-          draft: true
+          draft: false
           prerelease: false
           files: build/Build/Products/Release/Mae-macOS.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mae-macOS-Package
+          path: build/Build/Products/Release/Mae-macOS.zip

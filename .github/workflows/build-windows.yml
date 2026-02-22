@@ -46,9 +46,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: './mae-windows'
-          tagName: win-app-v__VERSION__
-          releaseName: 'Mãe para Windows v__VERSION__'
+          tagName: win-app-v${{ github.run_number }}
+          releaseName: 'Mãe para Windows v${{ github.run_number }}'
           releaseBody: 'Release automatizado da conversão do Mãe para a plataforma Windows.'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
