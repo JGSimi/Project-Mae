@@ -1,0 +1,53 @@
+name: 'Build macOS App'
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'mae-windows/**'
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0' # Adjust based on your compatibility needs
+
+      - name: Build Xcode Project
+        run: |
+          xcodebuild clean build \
+            -project "Mae.xcodeproj" \
+            -scheme "Mae" \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package App to ZIP
+        run: |
+          cd build/Build/Products/Release
+          # Zip the resulting .app bundle so it can be uploaded as an artifact/release
+          zip -r Mae-macOS.zip Mae.app
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: mac-app-v__VERSION__
+          name: 'Mãe para macOS v__VERSION__'
+          body: 'Release automatizado da versão nativa para macOS (Swift).'
+          draft: true
+          prerelease: false
+          files: build/Build/Products/Release/Mae-macOS.zip
