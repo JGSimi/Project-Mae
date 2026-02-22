@@ -4,31 +4,18 @@ A versão para Mac é um aplicativo nativo Swift e requer o ambiente de desenvol
 
 ### Pré-requisitos
 - Um Mac rodando macOS 13 ou superior.
-- **Xcode** instalado (versão mais recente disponível gratuitamente na Mac App Store).
 
-### Passos para rodar localmente
-1. **Clone o repositório:**
+### Passos para instalação
+1. Vá até a página de **[Releases](../../releases/latest)** do repositório no GitHub.
+2. Baixe o arquivo `.zip` ou `.dmg` da versão mais recente para macOS.
+3. Extraia o aplicativo (se for um `.zip`) e mova o aplicativo `Mae` para a pasta **Aplicativos** (Applications).
+4. Como o aplicativo ainda não possui a assinatura de desenvolvedor da Apple (Apple Developer Program), o macOS pode bloquear a execução por medidas de segurança (Gatekeeper).
+5. Para liberar a execução, abra o **Terminal** e rode o seguinte comando:
    ```bash
-   git clone <URL_DO_REPOSITORIO>
-   cd "Mae - WindowsPort"
+   xattr -cr /Applications/Mae.app
    ```
-
-2. **Abra o projeto no Xcode:**
-   Navegue até a pasta `Mae` e abra o arquivo principal do projeto:
-   ```bash
-   open Mae/Mae.xcodeproj
-   ```
-   *(Alternativamente, você pode abrir o Finder, entrar na pasta `Mae` e dar um duplo clique no arquivo `Mae.xcodeproj`).*
-
-3. **Configure a assinatura do aplicativo (Sign & Capabilities):**
-   - Com o Xcode aberto, clique no projeto `Mae` na barra de navegação lateral esquerda (topo).
-   - Vá até a aba **Signing & Capabilities**.
-   - No campo **Team**, selecione a sua conta de desenvolvedor conectada ao Xcode ou configure um perfil pessoal (Personal Team) para conseguir rodar localmente.
-
-4. **Compile e Rode:**
-   - Selecione o seu Mac como dispositivo de destino (Target Device) na parte superior central da janela do Xcode.
-   - Clique no botão de "Play" (Run) no canto superior esquerdo ou simplesmente pressione `Cmd + R` para compilar e iniciar a aplicação.
-
+   *(Atenção: substitua `/Applications/Mae.app` pelo caminho correto caso você tenha extraído o aplicativo em outra pasta).*
+6. Pronto! Agora você pode abrir o Mae normalmente pelo Launchpad ou clicando duas vezes no aplicativo.
 ---
 
 ## 🪟 Guia de Instalação para Windows
