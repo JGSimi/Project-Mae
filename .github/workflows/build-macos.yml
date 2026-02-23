@@ -29,6 +29,7 @@ jobs:
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGN_ENTITLEMENTS="Mae/Mae.entitlements" \
             CODE_SIGNING_ALLOWED=YES
 
       - name: Package App to ZIP
