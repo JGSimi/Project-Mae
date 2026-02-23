@@ -84,9 +84,14 @@ struct AnalysisView: View {
                     } else {
                         ScrollView {
                             Text(.init(viewModel.analysisResult))
+                                .font(.system(size: 15, weight: .regular))
+                                .lineSpacing(6)
+                                .foregroundColor(Color.primary.opacity(0.9))
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 20)
+                                .padding(.top, 8)
+                                .padding(.bottom, 24)
+                                .padding(.trailing, 12)
                         }
                     }
                 }
