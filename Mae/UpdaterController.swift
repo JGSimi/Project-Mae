@@ -1,0 +1,21 @@
+import SwiftUI
+import Sparkle
+
+final class UpdaterController: ObservableObject {
+    private let updaterController: SPUStandardUpdaterController
+    
+    @Published var canCheckForUpdates = false
+    
+    init() {
+        // Inicializa o Sparkle
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        
+        // Mantém a propriedade `canCheckForUpdates` sincronizada
+        updaterController.updater.publisher(for: \.canCheckForUpdates)
+            .assign(to: &$canCheckForUpdates)
+    }
+    
+    func checkForUpdates() {
+        updaterController.checkForUpdates(nil)
+    }
+}

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2785BC7E2F47910D00D7252D /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 2785BC7D2F47910D00D7252D /* AsyncAlgorithms */; };
 		2785BC822F4797A000D7252D /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 2785BC812F4797A000D7252D /* KeyboardShortcuts */; };
+		27FD4B782F4CE26D002BD509 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 27FD4B772F4CE26D002BD509 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27FD4B782F4CE26D002BD509 /* Sparkle in Frameworks */,
 				2785BC7E2F47910D00D7252D /* AsyncAlgorithms in Frameworks */,
 				2785BC822F4797A000D7252D /* KeyboardShortcuts in Frameworks */,
 			);
@@ -74,6 +76,7 @@
 			packageProductDependencies = (
 				2785BC7D2F47910D00D7252D /* AsyncAlgorithms */,
 				2785BC812F4797A000D7252D /* KeyboardShortcuts */,
+				27FD4B772F4CE26D002BD509 /* Sparkle */,
 			);
 			productName = Mae;
 			productReference = 2785BC6C2F478DC400D7252D /* Mae.app */;
@@ -106,6 +109,7 @@
 			packageReferences = (
 				2785BC7C2F47910D00D7252D /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				2785BC802F4797A000D7252D /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				27FD4B762F4CE26D002BD509 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2785BC6D2F478DC400D7252D /* Products */;
@@ -281,7 +285,8 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mae/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -323,7 +328,8 @@
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mae/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -382,6 +388,14 @@
 				minimumVersion = 2.4.0;
 			};
 		};
+		27FD4B762F4CE26D002BD509 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -394,6 +408,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2785BC802F4797A000D7252D /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
 			productName = KeyboardShortcuts;
+		};
+		27FD4B772F4CE26D002BD509 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 27FD4B762F4CE26D002BD509 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

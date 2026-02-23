@@ -37,6 +37,26 @@ jobs:
           cd build/Build/Products/Release
           # Zip the resulting .app bundle so it can be uploaded as an artifact/release
           zip -r Mae-macOS.zip Mae.app
+          
+      - name: Generate Sparkle Appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          # Baixar ferramentas do Sparkle versão 2.6.4 (a mais recente 2.x estável)
+          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.6.4/Sparkle-2.6.4.tar.xz
+          mkdir jq_sparkle && tar -xf Sparkle-2.6.4.tar.xz -C jq_sparkle
+          
+          # Criar o diretório final para o release e mover o zip
+          mkdir -p release_folder
+          mv build/Build/Products/Release/Mae-macOS.zip release_folder/
+          
+          # Fazer a assinatura do zip para o Appcast
+          # Fornecer a chave via variável de ambiente pede que usemos o parâmetro -f (para assinar arquivo puro)
+          # A documentação recomenda usar o `-ed-key-file` com um arquivo de chave privada seguro, 
+          # Porem o standard agora é expor no ENV e rodar:
+          echo "$SPARKLE_PRIVATE_KEY" > eddsa_key
+          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key release_folder/
+          rm eddsa_key
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2
@@ -48,10 +68,14 @@ jobs:
           body: 'Release automatizado da versão nativa para macOS (Swift).'
           draft: false
           prerelease: false
-          files: build/Build/Products/Release/Mae-macOS.zip
+          files: |
+            release_folder/Mae-macOS.zip
+            release_folder/appcast.xml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Mae-macOS-Package
-          path: build/Build/Products/Release/Mae-macOS.zip
+          path: |
+            release_folder/Mae-macOS.zip
+            release_folder/appcast.xml

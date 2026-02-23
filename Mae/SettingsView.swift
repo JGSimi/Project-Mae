@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var fetchedModels: [String] = []
     @State private var isFetchingModels: Bool = false
     @State private var apiKeyTask: Task<Void, Never>? = nil
+    @EnvironmentObject var updater: UpdaterController
 
     var body: some View {
         VStack(spacing: 0) {
@@ -233,6 +234,32 @@ struct SettingsView: View {
                                         .padding(.top, 2)
                                     }
                                 }
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .groupBoxStyle(GlassGroupBoxStyle())
+                    
+                    // MARK: - App Updates Box
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Atualizações")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            
+                            HStack {
+                                Text("Verificar novas versões do aplicativo")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                
+                                Spacer()
+                                
+                                Button("Verificar") {
+                                    updater.checkForUpdates()
+                                }
+                                .disabled(!updater.canCheckForUpdates)
+                                .buttonStyle(.borderedProminent)
                             }
                         }
                         .padding(8)
