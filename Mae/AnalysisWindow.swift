@@ -83,7 +83,7 @@ struct AnalysisView: View {
                         .frame(maxWidth: .infinity)
                     } else {
                         ScrollView {
-                            Text(.init(viewModel.analysisResult))
+                            Text(try! AttributedString(markdown: viewModel.analysisResult, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
                                 .font(.system(size: 15, weight: .regular))
                                 .lineSpacing(6)
                                 .foregroundColor(Color.primary.opacity(0.9))

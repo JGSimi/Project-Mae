@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var fetchedModels: [String] = []
     @State private var isFetchingModels: Bool = false
     @State private var apiKeyTask: Task<Void, Never>? = nil
+    @State private var fetchModelsTask: Task<Void, Never>? = nil
     @EnvironmentObject var updater: UpdaterController
 
     var body: some View {
@@ -152,12 +153,17 @@ struct SettingsView: View {
                                         }
                                         .labelsHidden()
                                         .onChange(of: selectedProvider) { oldValue, newValue in
-                                            apiEndpoint = newValue.defaultEndpoint
-                                            fetchedModels = []
-                                            if let firstModel = newValue.availableModels.first {
-                                                apiModelName = firstModel
+                                            fetchModelsTask?.cancel()
+                                            fetchModelsTask = Task {
+                                                try? await Task.sleep(nanoseconds: 300_000_000) // 300ms debounce
+                                                guard !Task.isCancelled else { return }
+                                                apiEndpoint = newValue.defaultEndpoint
+                                                fetchedModels = []
+                                                if let firstModel = newValue.availableModels.first {
+                                                    apiModelName = firstModel
+                                                }
+                                                await reloadModels()
                                             }
-                                            Task { await reloadModels() }
                                         }
                                     }
                                     

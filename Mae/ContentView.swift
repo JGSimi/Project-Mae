@@ -49,23 +49,25 @@ extension NSPasteboard: PasteboardClient {
 // MARK: - NSImage Extension
 extension NSImage {
     func resizedAndCompressedBase64(maxDimension: CGFloat = 1024) -> String? {
-        var newSize = self.size
-        let maxDim = max(newSize.width, newSize.height)
-        
-        if maxDim > maxDimension {
-            let scale = maxDimension / maxDim
-            newSize.width *= scale
-            newSize.height *= scale
+        guard let tiffData = self.tiffRepresentation,
+              let imageSource = CGImageSourceCreateWithData(tiffData as CFData, nil) else {
+            return nil
         }
         
-        let newImage = NSImage(size: newSize)
-        newImage.lockFocus()
-        self.draw(in: NSRect(origin: .zero, size: newSize))
-        newImage.unlockFocus()
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ]
         
-        guard let tiffRepresentation = newImage.tiffRepresentation,
-              let bitmapImage = NSBitmapImageRep(data: tiffRepresentation),
-              let jpegData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: 0.8]) else {
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options as CFDictionary) else {
+            return nil
+        }
+        
+        let newImage = NSImage(cgImage: cgImage, size: .zero)
+        guard let compressedTiff = newImage.tiffRepresentation,
+              let bitmapImage = NSBitmapImageRep(data: compressedTiff),
+              let jpegData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: 0.7]) else {
             return nil
         }
         
