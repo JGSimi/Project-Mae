@@ -42,9 +42,9 @@ jobs:
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          # Baixar ferramentas do Sparkle versão 2.6.4 (a mais recente 2.x estável)
-          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.6.4/Sparkle-2.6.4.tar.xz
-          mkdir jq_sparkle && tar -xf Sparkle-2.6.4.tar.xz -C jq_sparkle
+          # Baixar ferramentas do Sparkle versão 2.9.0 (a mais recente 2.x estável)
+          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz
+          mkdir jq_sparkle && tar -xf Sparkle-2.9.0.tar.xz -C jq_sparkle
           
           # Criar o diretório final para o release e mover o zip
           mkdir -p release_folder
