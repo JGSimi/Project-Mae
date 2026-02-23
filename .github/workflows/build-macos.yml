@@ -79,3 +79,12 @@ jobs:
           path: |
             release_folder/Mae-macOS.zip
             release_folder/appcast.xml
+
+      - name: Deploy Appcast to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./release_folder
+          publish_branch: gh-pages
+          force_orphan: true # Cria ou sobreescreve a branch `gh-pages` limpando todo o histórico pra ficar leve
+          exclude_assets: "Mae-macOS.zip" # Apenas o XML vai pro site (pra não consumir seu limite do GitHub Pages)
