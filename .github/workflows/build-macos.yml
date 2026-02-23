@@ -53,10 +53,7 @@ jobs:
           # Fazer a assinatura do zip para o Appcast
           # Fornecer a chave via variável de ambiente pede que usemos o parâmetro -f (para assinar arquivo puro)
           # A documentação recomenda usar o `-ed-key-file` com um arquivo de chave privada seguro, 
-          # Porem o standard agora é expor no ENV e rodar:
-          echo -n "$SPARKLE_PRIVATE_KEY" | tr -d '\n\r ' > eddsa_key
-          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key release_folder/
-          rm eddsa_key
+          echo "$SPARKLE_PRIVATE_KEY" | ./jq_sparkle/bin/generate_appcast --ed-key-file - release_folder/
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2
