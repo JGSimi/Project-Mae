@@ -19,7 +19,6 @@ struct APIRequest: Codable {
     let messages: [APIMessage]
     let temperature: Double
     let stream: Bool
-    let max_tokens: Int?
 }
 
 struct APIMessage: Codable {
