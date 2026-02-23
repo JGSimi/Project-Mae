@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import Sparkle
 
 final class UpdaterController: ObservableObject {
