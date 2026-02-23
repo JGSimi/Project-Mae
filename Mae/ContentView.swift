@@ -287,7 +287,8 @@ class AssistantViewModel: ObservableObject {
             model: SettingsManager.apiModelName,
             messages: [userMessage],
             temperature: 0.0,
-            stream: false
+            stream: false,
+            max_tokens: 4096
         )
         
         guard let url = URL(string: SettingsManager.apiEndpoint) else { throw URLError(.badURL) }
