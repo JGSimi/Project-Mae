@@ -43,6 +43,12 @@ struct MaeApp: App {
                 await AssistantViewModel.shared.processarIA()
             }
         }
+        
+        KeyboardShortcuts.onKeyDown(for: .processScreen) {
+            Task {
+                await AssistantViewModel.shared.processarScreen()
+            }
+        }
     }
     
     var body: some Scene {

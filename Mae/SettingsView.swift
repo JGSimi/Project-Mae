@@ -1,4 +1,5 @@
 import SwiftUI
+import KeyboardShortcuts
 
 struct SettingsView: View {
     @AppStorage("inferenceMode") var inferenceMode: InferenceMode = .local
@@ -29,6 +30,32 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(spacing: 24) {
+                    
+                    // MARK: - Shortcuts Box
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Atalhos Globais")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            
+                            HStack {
+                                Text("Área de Transferência")
+                                    .font(.subheadline)
+                                Spacer()
+                                KeyboardShortcuts.Recorder(for: .processClipboard)
+                            }
+                            
+                            HStack {
+                                Text("Análise de Tela")
+                                    .font(.subheadline)
+                                Spacer()
+                                KeyboardShortcuts.Recorder(for: .processScreen)
+                            }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .groupBoxStyle(GlassGroupBoxStyle())
                     
                     // MARK: - Inference Mode Box
                     GroupBox {

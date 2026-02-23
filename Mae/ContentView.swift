@@ -15,6 +15,7 @@ import UniformTypeIdentifiers
 // MARK: - Shortcut Name definition
 extension KeyboardShortcuts.Name {
     static let processClipboard = Self("processClipboard", default: .init(.x, modifiers: [.command, .shift]))
+    static let processScreen = Self("processScreen", default: .init(.z, modifiers: [.command, .shift]))
 }
 
 
@@ -82,6 +83,11 @@ class AssistantViewModel: ObservableObject {
     @Published var inputText: String = ""
     @Published var attachedImages: [NSImage] = []
     
+    // Análise de Tela - Novas Propriedades
+    @Published var isAnalyzingScreen = false
+    @Published var analysisResult: String = ""
+    @Published var analysisImage: NSImage? = nil
+    
     private let pasteboard: PasteboardClient
     private let session: URLSession
     
@@ -115,6 +121,80 @@ class AssistantViewModel: ObservableObject {
         guard !textoClipboard.isEmpty || copiedImage != nil else { return }
 
         await executeRequest(prompt: textoClipboard, rawImages: copiedImage != nil ? [copiedImage!] : nil)
+    }
+
+    /// Chamado pelo atalho global (Intelligent Screen Analysis)
+    func processarScreen() async {
+        guard !isAnalyzingScreen else { return }
+        
+        // Ativar o app e trazer para frente
+        NSApp.activate(ignoringOtherApps: true)
+        
+        guard let screenImage = captureScreen() else {
+            print("Failed to capture screen")
+            return
+        }
+
+        // Abrir a nova janela de análise
+        DispatchQueue.main.async {
+            AnalysisWindowManager.shared.showWindow()
+            self.analysisImage = screenImage
+            self.analysisResult = ""
+            self.isAnalyzingScreen = true
+        }
+
+        let defaultPrompt = "Analise o que está na minha tela e me ajude de forma proativa. Não me pergunte o que fazer, apenas forneça a análise ou ajuda diretamente com base no contexto (por exemplo, se for um currículo, dê dicas; se for código, analise bugs, etc)."
+        
+        await executeSilentRequest(prompt: defaultPrompt, rawImages: [screenImage])
+    }
+    
+    private func executeSilentRequest(prompt: String, rawImages: [NSImage]?) async {
+        defer { 
+            DispatchQueue.main.async {
+                self.isAnalyzingScreen = false
+            }
+        }
+
+        let inferenceMode = SettingsManager.inferenceMode
+        let systemPrompt = SettingsManager.systemPrompt
+        let base64Images = rawImages?.compactMap { $0.resizedAndCompressedBase64() }
+        
+        do {
+            let finalResponse: String
+            if inferenceMode == .local {
+                finalResponse = try await executeLocalRequest(prompt: systemPrompt + prompt, images: base64Images)
+            } else {
+                finalResponse = try await executeAPIRequest(prompt: systemPrompt + prompt, images: base64Images)
+            }
+
+            DispatchQueue.main.async {
+                self.analysisResult = finalResponse
+            }
+            
+            await sendNotification(text: "Análise de tela concluída!")
+            NSSound(named: "Glass")?.play()
+            
+        } catch {
+            DispatchQueue.main.async {
+                self.analysisResult = "Erro: \(error.localizedDescription)"
+            }
+            print("Error processing AI: \(error)")
+        }
+    }
+    
+    private func captureScreen() -> NSImage? {
+        // Obsolete in macOS 15.0: CGDisplayCreateImage(CGMainDisplayID())
+        // Using screencapture CLI as a robust workaround that also triggers the permission prompt
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension("png")
+        let task = Process()
+        task.launchPath = "/usr/sbin/screencapture"
+        task.arguments = ["-x", tempURL.path] // -x = no sound
+        task.launch()
+        task.waitUntilExit()
+        
+        let image = NSImage(contentsOf: tempURL)
+        try? FileManager.default.removeItem(at: tempURL)
+        return image
     }
 
     /// Chamado pela interface via TextField
@@ -371,8 +451,15 @@ struct ContentView: View {
                 Spacer()
                 
                 HStack(spacing: 12) {
-                    KeyboardShortcuts.Recorder(for: .processClipboard)
-                        .scaleEffect(0.9)
+                    Button(action: {
+                        AnalysisWindowManager.shared.showWindow()
+                    }) {
+                        Image(systemName: "macwindow.badge.plus")
+                            .font(.title2)
+                            .foregroundStyle(.white)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Abrir Janela de Análise")
                     
                     Button(action: {
                         withAnimation {
