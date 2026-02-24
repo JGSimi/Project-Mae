@@ -22,9 +22,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
         }
         
-        // Solicita permissão logo ao abrir o app
+        // Solicita permissão de notificação apenas se ainda não foi definida (primeira vez)
         Task {
-            try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+            let center = UNUserNotificationCenter.current()
+            let settings = await center.notificationSettings()
+            if settings.authorizationStatus == .notDetermined {
+                try? await center.requestAuthorization(options: [.alert, .sound])
+            }
         }
         
         // Verifica atualizações silenciosamente
