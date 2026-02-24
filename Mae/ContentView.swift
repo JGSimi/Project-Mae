@@ -173,8 +173,10 @@ class AssistantViewModel: ObservableObject {
                 self.analysisResult = finalResponse
             }
             
-            await sendNotification(text: "Análise de tela concluída!")
-            NSSound(named: "Glass")?.play()
+            if SettingsManager.playNotifications {
+                await sendNotification(text: "Análise de tela concluída!")
+                NSSound(named: "Glass")?.play()
+            }
             
         } catch {
             DispatchQueue.main.async {
@@ -243,8 +245,10 @@ class AssistantViewModel: ObservableObject {
             pasteboard.clearContents()
             pasteboard.copyString(finalResponse, forType: .string)
             
-            await sendNotification(text: finalResponse)
-            NSSound(named: "Glass")?.play()
+            if SettingsManager.playNotifications {
+                await sendNotification(text: finalResponse)
+                NSSound(named: "Glass")?.play()
+            }
             
         } catch {
             let errorMsg = ChatMessage(content: "Erro: \(error.localizedDescription)", images: nil, isUser: false)

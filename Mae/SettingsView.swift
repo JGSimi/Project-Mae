@@ -1,5 +1,6 @@
 import SwiftUI
 import KeyboardShortcuts
+import ServiceManagement
 
 struct SettingsView: View {
     @AppStorage("inferenceMode") var inferenceMode: InferenceMode = .local
@@ -8,6 +9,8 @@ struct SettingsView: View {
     @AppStorage("localModelName") var localModelName: String = "gemma3:4b"
     @AppStorage("apiEndpoint") var apiEndpoint: String = "https://api.openai.com/v1/chat/completions"
     @AppStorage("apiModelName") var apiModelName: String = "gpt-4o-mini"
+    @AppStorage("playNotifications") var playNotifications: Bool = true
+    @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
     @State private var apiKey: String = KeychainManager.shared.loadKey() ?? ""
     @State private var fetchedModels: [String] = []
     @State private var isFetchingModels: Bool = false
@@ -267,6 +270,36 @@ struct SettingsView: View {
                                 .disabled(!updater.canCheckForUpdates)
                                 .buttonStyle(.borderedProminent)
                             }
+                        }
+                        .padding(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .groupBoxStyle(GlassGroupBoxStyle())
+                    
+                    // MARK: - App Behavior Box
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Comportamento do App")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            
+                            Toggle("Tocar som e Notificar ao finalizar", isOn: $playNotifications)
+                                .toggleStyle(.switch)
+                            
+                            Toggle("Iniciar o app ao ligar o Mac", isOn: $launchAtLogin)
+                                .toggleStyle(.switch)
+                                .onChange(of: launchAtLogin) { oldValue, newValue in
+                                    do {
+                                        if newValue {
+                                            try SMAppService.mainApp.register()
+                                        } else {
+                                            try SMAppService.mainApp.unregister()
+                                        }
+                                    } catch {
+                                        print("Failed to change launchAtLogin state: \(error.localizedDescription)")
+                                        launchAtLogin = oldValue
+                                    }
+                                }
                         }
                         .padding(8)
                         .frame(maxWidth: .infinity, alignment: .leading)

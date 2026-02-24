@@ -69,4 +69,5 @@ struct SettingsManager {
     static var apiModelName: String { UserDefaults.standard.string(forKey: "apiModelName") ?? "gpt-4o-mini" }
     static var apiKey: String { KeychainManager.shared.loadKey() ?? "" }
     static var systemPrompt: String { UserDefaults.standard.string(forKey: "systemPrompt") ?? "Resposta direta. Pergunta: " }
+    static var playNotifications: Bool { UserDefaults.standard.object(forKey: "playNotifications") as? Bool ?? true }
 }
