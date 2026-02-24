@@ -62,7 +62,7 @@ struct SettingsView: View {
                     // MARK: - Inference Mode Box
                     GroupBox {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Modo de uso")
+                            Text("Processamento da IA")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
@@ -82,7 +82,7 @@ struct SettingsView: View {
                     // MARK: - System Prompt Box
                     GroupBox {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Comportamento Base (System Prompt)")
+                            Text("Personalidade da IA (System Prompt)")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
@@ -142,7 +142,7 @@ struct SettingsView: View {
                                     
                                     // Provedor Picker
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Provedor")
+                                        Text("Provedor de Nuvem")
                                             .font(.caption)
                                             .foregroundStyle(.primary)
                                         
@@ -171,7 +171,7 @@ struct SettingsView: View {
                                     
                                     if selectedProvider == .custom {
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text("URL do Endpoint Nativo")
+                                            Text("URL do Endpoint Customizado")
                                                 .font(.caption)
                                                 .foregroundStyle(.primary)
                                             TextField("URL (ex: https://api.openai.com/...)", text: $apiEndpoint)
@@ -180,7 +180,7 @@ struct SettingsView: View {
                                         .padding(.bottom, 4)
                                         
                                         VStack(alignment: .leading, spacing: 4) {
-                                            Text("Nome do Modelo exato")
+                                            Text("Nome exato do Modelo (Customizado)")
                                                 .font(.caption)
                                                 .foregroundStyle(.primary)
                                             TextField("Ex: Custom-Modelo-X", text: $apiModelName)
@@ -189,7 +189,7 @@ struct SettingsView: View {
                                     } else {
                                         VStack(alignment: .leading, spacing: 4) {
                                             HStack {
-                                                Text("Modelo de Inteligência")
+                                                Text("Modelo de IA")
                                                     .font(.caption)
                                                     .foregroundStyle(.primary)
                                                 
@@ -214,7 +214,7 @@ struct SettingsView: View {
                                     Divider().padding(.vertical, 4)
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("API Key")
+                                        Text("Chave de API (Autenticação)")
                                             .font(.caption)
                                             .foregroundStyle(.primary)
                                         SecureField("Cole sua API Key", text: $apiKey)
