@@ -411,7 +411,7 @@ struct ChatBubble: View {
                 
                 if !message.content.isEmpty {
                     Text(.init(message.content))
-                        .font(.custom("Avenir Next", size: 14))
+                        .font(.cormorantGaramond(size: 14))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .foregroundStyle(.white)
@@ -467,7 +467,7 @@ struct ContentView: View {
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.title3)
+                                .font(.cormorantGaramond(size: 20))
                                 .foregroundStyle(.white.opacity(0.9))
                                 .padding(6)
                                 .background(Color.black.opacity(0.3).clipShape(Circle()))
@@ -496,7 +496,7 @@ struct ContentView: View {
             // Header
             HStack {
                 Label("Chat", systemImage: "sparkles")
-                    .font(.custom("Avenir Next", size: 16).weight(.medium))
+                    .font(.cormorantGaramond(size: 16, weight: .medium))
                     .foregroundStyle(.white)
                 
                 Spacer()
@@ -506,7 +506,7 @@ struct ContentView: View {
                         AnalysisWindowManager.shared.showWindow()
                     }) {
                         Image(systemName: "macwindow.badge.plus")
-                            .font(.system(size: 16, weight: .regular))
+                            .font(.cormorantGaramond(size: 16, weight: .regular))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -518,7 +518,7 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .regular))
+                            .font(.cormorantGaramond(size: 16, weight: .regular))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -530,7 +530,7 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "gearshape")
-                            .font(.system(size: 16, weight: .regular))
+                            .font(.cormorantGaramond(size: 16, weight: .regular))
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -550,7 +550,7 @@ struct ContentView: View {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: 16) {
                                 Text("Sem Mensagens.")
-                                    .font(.custom("Avenir Next", size: 16).weight(.medium))
+                                    .font(.cormorantGaramond(size: 16, weight: .medium))
                                     .foregroundStyle(Color.white.opacity(0.3))
                             }
                             .padding(.top, 120)
@@ -627,7 +627,7 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "photo.badge.plus")
-                            .font(.system(size: 18))
+                            .font(.cormorantGaramond(size: 18))
                             .foregroundStyle(Color.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
@@ -635,7 +635,7 @@ struct ContentView: View {
 
                     TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(.custom("Avenir Next", size: 14))
+                        .font(.cormorantGaramond(size: 14))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
@@ -660,7 +660,7 @@ struct ContentView: View {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
                             Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.cormorantGaramond(size: 28))
                                 .foregroundStyle(
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
                                     ? Color.white.opacity(0.2) : .white

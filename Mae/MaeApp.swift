@@ -118,11 +118,11 @@ struct WelcomeView: View {
             // Header Image / Icon
             VStack(spacing: 16) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 48, weight: .light))
+                    .font(.cormorantGaramond(size: 48, weight: .light))
                     .foregroundColor(.primary)
                 
                 Text("Bem-vindo à Mãe")
-                    .font(.system(size: 32, weight: .semibold))
+                    .font(.cormorantGaramond(size: 32, weight: .semibold))
                     .foregroundColor(.primary)
             }
             .padding(.top, 50)
@@ -131,7 +131,7 @@ struct WelcomeView: View {
             // Content
             VStack(spacing: 24) {
                 Text("Sua assistente inteligente sempre disponível na barra de menus.")
-                    .font(.title3)
+                    .font(.cormorantGaramond(size: 20))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
@@ -166,7 +166,7 @@ struct WelcomeView: View {
                     WelcomeWindowManager.shared.closeWindow()
                 }) {
                     Text("Começar a Usar")
-                        .font(.headline)
+                        .font(.cormorantGaramond(size: 16, weight: .semibold))
                         .padding(.vertical, 6)
                         .padding(.horizontal, 30)
                 }
@@ -192,16 +192,16 @@ struct FeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
-                .font(.system(size: 24, weight: .medium))
+                .font(.cormorantGaramond(size: 24, weight: .medium))
                 .foregroundColor(iconColor)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.headline)
+                    .font(.cormorantGaramond(size: 16, weight: .semibold))
                 
                 Text(description)
-                    .font(.subheadline)
+                    .font(.cormorantGaramond(size: 14))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

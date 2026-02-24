@@ -54,7 +54,7 @@ struct AnalysisView: View {
                 // Left Panel: Analysis
                 VStack(alignment: .leading) {
                     Text("Análise de Tela")
-                        .font(.custom("Avenir Next", size: 20).weight(.bold))
+                        .font(.cormorantGaramond(size: 20, weight: .bold))
                         .padding(.top, 30) // Offset for titlebar
                         .padding(.bottom, 10)
                         
@@ -64,7 +64,7 @@ struct AnalysisView: View {
                             ProgressView()
                                 .controlSize(.regular)
                             Text("Analisando...")
-                                .font(.custom("Avenir Next", size: 16).weight(.semibold))
+                                .font(.cormorantGaramond(size: 16, weight: .semibold))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -73,11 +73,11 @@ struct AnalysisView: View {
                         VStack {
                             Spacer()
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 40))
+                                .font(.cormorantGaramond(size: 40))
                                 .foregroundColor(.secondary.opacity(0.5))
                                 .padding(.bottom, 8)
                             Text("Nenhuma análise disponível.")
-                                .font(.custom("Avenir Next", size: 14))
+                                .font(.cormorantGaramond(size: 14))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -85,7 +85,7 @@ struct AnalysisView: View {
                     } else {
                         ScrollView {
                             Text(try! AttributedString(markdown: viewModel.analysisResult, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-                                .font(.custom("Avenir Next", size: 15))
+                                .font(.cormorantGaramond(size: 15))
                                 .lineSpacing(6)
                                 .foregroundColor(Color.primary.opacity(0.9))
                                 .textSelection(.enabled)
@@ -113,10 +113,10 @@ struct AnalysisView: View {
                     } else {
                         VStack(spacing: 16) {
                             Image(systemName: "photo.on.rectangle.angled")
-                                .font(.system(size: 60))
+                                .font(.cormorantGaramond(size: 60))
                                 .foregroundColor(.secondary.opacity(0.3))
                             Text("Nenhuma captura de tela no momento.")
-                                .font(.custom("Avenir Next", size: 16).weight(.semibold))
+                                .font(.cormorantGaramond(size: 16, weight: .semibold))
                                 .foregroundColor(.secondary.opacity(0.8))
                         }
                     }

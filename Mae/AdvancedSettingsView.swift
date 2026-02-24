@@ -8,7 +8,7 @@ struct PremiumSectionHeader: View {
     let title: String
     var body: some View {
         Text(title.uppercased())
-            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .font(.cormorantGaramond(size: 11, weight: .bold))
             .foregroundStyle(Color.white.opacity(0.5))
             .padding(.bottom, 4)
             .padding(.top, 16)
@@ -47,7 +47,7 @@ struct PremiumRow: View {
         HStack(spacing: 12) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.cormorantGaramond(size: 16, weight: .medium))
                     .foregroundStyle(iconColor)
                     .frame(width: 24, height: 24)
                     .background(iconColor.opacity(0.15))
@@ -56,12 +56,12 @@ struct PremiumRow: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .font(.cormorantGaramond(size: 14, weight: .medium))
                     .foregroundStyle(.white)
                 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .regular))
+                        .font(.cormorantGaramond(size: 12, weight: .regular))
                         .foregroundStyle(Color.white.opacity(0.5))
                 }
             }
@@ -157,7 +157,7 @@ struct AdvancedSettingsView: View {
                     NavigationLink(value: tab) {
                         Label {
                             Text(tab.rawValue)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.cormorantGaramond(size: 14, weight: .medium))
                         } icon: {
                             Image(systemName: tab.icon)
                         }
@@ -180,7 +180,7 @@ struct AdvancedSettingsView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         
                         Text(selectedTab?.rawValue ?? "")
-                            .font(.system(size: 28, weight: .semibold, design: .rounded))
+                            .font(.cormorantGaramond(size: 28, weight: .semibold))
                             .foregroundStyle(.white)
                             .padding(.top, 40) // padding for transparent titlebar
                             .padding(.bottom, 8)
@@ -254,7 +254,7 @@ struct AdvancedSettingsView: View {
                         HStack {
                             PremiumRow(title: "Tela de Boas Vindas", subtitle: "Rever apresentação do aplicativo", icon: "hand.wave.fill", iconColor: .yellow)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.cormorantGaramond(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.white.opacity(0.3))
                         }
                         .contentShape(Rectangle())
@@ -270,7 +270,7 @@ struct AdvancedSettingsView: View {
                         HStack {
                             PremiumRow(title: "Atualizações", subtitle: "Buscar nova versão da Mãe", icon: "arrow.triangle.2.circlepath", iconColor: .cyan)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.cormorantGaramond(size: 14, weight: .semibold))
                                 .foregroundStyle(Color.white.opacity(0.3))
                         }
                         .contentShape(Rectangle())
@@ -361,13 +361,13 @@ struct AdvancedSettingsView: View {
                             if selectedProvider == .custom {
                                 VStack(spacing: 12) {
                                     HStack {
-                                        Text("URL Custom:").foregroundStyle(.white).font(.system(size: 13, weight: .medium))
+                                        Text("URL Custom:").foregroundStyle(.white).font(.cormorantGaramond(size: 13, weight: .medium))
                                         TextField("URL", text: $apiEndpoint)
                                             .textFieldStyle(.plain)
                                             .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
                                     }
                                     HStack {
-                                        Text("Modelo:").foregroundStyle(.white).font(.system(size: 13, weight: .medium))
+                                        Text("Modelo:").foregroundStyle(.white).font(.cormorantGaramond(size: 13, weight: .medium))
                                         TextField("Nome do Modelo", text: $apiModelName)
                                             .textFieldStyle(.plain)
                                             .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
@@ -429,12 +429,12 @@ struct AdvancedSettingsView: View {
             PremiumSectionHeader(title: "System Prompt")
             
             Text("Defina a personalidade e regras de resposta da IA.")
-                .font(.system(size: 13))
+                .font(.cormorantGaramond(size: 13))
                 .foregroundStyle(Color.white.opacity(0.5))
                 .padding(.bottom, 12)
             
             TextEditor(text: $systemPrompt)
-                .font(.system(size: 14, weight: .regular))
+                .font(.cormorantGaramond(size: 14, weight: .regular))
                 .foregroundStyle(.white)
                 .padding(12)
                 .frame(minHeight: 180)

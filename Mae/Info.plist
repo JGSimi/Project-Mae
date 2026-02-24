@@ -30,5 +30,7 @@
 	<string>https://jgsimi.github.io/Project-Mae/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<key>ATSApplicationFontsPath</key>
+	<string>.</string>
 </dict>
 </plist>

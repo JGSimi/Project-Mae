@@ -11,10 +11,8 @@ struct SettingsView: View {
             // Header Minimalista
             HStack {
                 Text("M.A.E")
-                    .font(.custom("Avenir Next", size: 18).weight(.bold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.white, Color(NSColor.lightGray)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
+                    .font(.cormorantGaramond(size: 18, weight: .bold))
+                    .foregroundStyle(.white)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -27,7 +25,7 @@ struct SettingsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Processamento")
-                                .font(.custom("Avenir Next", size: 12).weight(.medium))
+                                .font(.cormorantGaramond(size: 12, weight: .medium))
                                 .foregroundStyle(Color.white.opacity(0.5))
                             
                             Picker("", selection: $inferenceMode) {
@@ -48,7 +46,7 @@ struct SettingsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Modelo Ativo")
-                                .font(.custom("Avenir Next", size: 12).weight(.medium))
+                                .font(.cormorantGaramond(size: 12, weight: .medium))
                                 .foregroundStyle(Color.white.opacity(0.5))
                             
                             HStack(spacing: 6) {
@@ -58,7 +56,7 @@ struct SettingsView: View {
                                     .shadow(color: (inferenceMode == .local ? Color.green : Color.blue).opacity(0.5), radius: 3)
                                 
                                 Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
-                                    .font(.custom("Avenir Next", size: 14).weight(.semibold))
+                                    .font(.cormorantGaramond(size: 14, weight: .semibold))
                                     .foregroundStyle(.white)
                             }
                         }
@@ -81,10 +79,10 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 14))
+                            .font(.cormorantGaramond(size: 14))
                             .foregroundStyle(.cyan.opacity(0.8))
                         Text("Verificar Atualizações")
-                            .font(.custom("Avenir Next", size: 14).weight(.medium))
+                            .font(.cormorantGaramond(size: 14, weight: .medium))
                         Spacer()
                     }
                     .padding(.horizontal, 16)
@@ -105,12 +103,12 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "gearshape.fill")
-                            .font(.system(size: 14))
+                            .font(.cormorantGaramond(size: 14))
                         Text("Configurações Avançadas")
-                            .font(.custom("Avenir Next", size: 14).weight(.medium))
+                            .font(.cormorantGaramond(size: 14, weight: .medium))
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.cormorantGaramond(size: 12, weight: .bold))
                             .foregroundStyle(Color.white.opacity(0.4))
                     }
                     .padding(.horizontal, 16)
