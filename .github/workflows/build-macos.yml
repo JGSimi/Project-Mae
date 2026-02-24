@@ -54,7 +54,7 @@ jobs:
           # Fornecer a chave via variável de ambiente pede que usemos o parâmetro -f (para assinar arquivo puro)
           # Porem o standard agora é usar o `-ed-key-file` com um arquivo gerado de forma extremamente segura sem quebras de linha:
           printf "%s" "$SPARKLE_PRIVATE_KEY" > eddsa_key
-          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key release_folder/
+          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Mae-Windows/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
           rm eddsa_key
 
       - name: Create or Update Release
@@ -79,11 +79,15 @@ jobs:
             release_folder/Mae-macOS.zip
             release_folder/appcast.xml
 
+      - name: Prepare Pages Deploy
+        run: |
+          mkdir -p pages_dir
+          cp release_folder/appcast.xml pages_dir/
+
       - name: Deploy Appcast to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./release_folder
+          publish_dir: ./pages_dir
           publish_branch: gh-pages
-          force_orphan: true # Cria ou sobreescreve a branch `gh-pages` limpando todo o histórico pra ficar leve
-          exclude_assets: "Mae-macOS.zip" # Apenas o XML vai pro site (pra não consumir seu limite do GitHub Pages)
+          force_orphan: true
