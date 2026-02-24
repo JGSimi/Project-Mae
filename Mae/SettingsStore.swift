@@ -35,7 +35,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         case .openai:
             return "https://api.openai.com/v1/models"
         case .anthropic:
-            return nil // Anthropic usually doesn't expose a standard /models endpoint in the same way, we rely on static fallbacks.
+            return "https://api.anthropic.com/v1/models"
         case .custom:
             return nil
         }
@@ -48,7 +48,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         case .openai:
             return ["gpt-4o", "gpt-4o-mini", "o1-mini", "o3-mini"]
         case .anthropic:
-            return ["claude-3-5-sonnet-20241022", "claude-3-7-sonnet-latest", "claude-3-5-haiku-latest", "claude-3-opus-latest"]
+            return ["claude-sonnet-4-6", "claude-opus-4-6"]
         case .custom:
             return []
         }
