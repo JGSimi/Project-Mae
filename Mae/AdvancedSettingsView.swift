@@ -2,6 +2,74 @@ import SwiftUI
 import KeyboardShortcuts
 import ServiceManagement
 
+// Estilos customizados para o design Premium Dark
+
+struct PremiumSectionHeader: View {
+    let title: String
+    var body: some View {
+        Text(title.uppercased())
+            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .foregroundStyle(Color.white.opacity(0.5))
+            .padding(.bottom, 4)
+            .padding(.top, 16)
+            .padding(.horizontal, 4)
+    }
+}
+
+struct PremiumGroupBoxStyle: GroupBoxStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            configuration.content
+        }
+        .background(Color(NSColor.windowBackgroundColor).opacity(0.8)) // Darker grouped background
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
+
+struct PremiumRow: View {
+    let title: String
+    let subtitle: String?
+    let icon: String?
+    let iconColor: Color
+    
+    init(title: String, subtitle: String? = nil, icon: String? = nil, iconColor: Color = .white) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = icon
+        self.iconColor = iconColor
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            if let icon = icon {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(iconColor)
+                    .frame(width: 24, height: 24)
+                    .background(iconColor.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .foregroundStyle(.white)
+                
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(Color.white.opacity(0.5))
+                }
+            }
+            Spacer()
+        }
+    }
+}
+
 class AdvancedSettingsWindowManager {
     static let shared = AdvancedSettingsWindowManager()
     private var window: NSWindow?
@@ -14,17 +82,25 @@ class AdvancedSettingsWindowManager {
         }
 
         let contentView = AdvancedSettingsView()
+            .preferredColorScheme(.dark)
         
-        // Window dimensions based on typical macOS preferences windows
-        let windowRect = NSRect(x: 0, y: 0, width: 500, height: 400)
+        let windowRect = NSRect(x: 0, y: 0, width: 700, height: 500)
         let newWindow = NSWindow(
             contentRect: windowRect,
-            styleMask: [.titled, .closable, .miniaturizable],
+            styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
         
-        newWindow.title = "Configurações"
+        // Premium transparent titlebar look
+        newWindow.titlebarAppearsTransparent = true
+        newWindow.titleVisibility = .hidden
+        newWindow.isMovableByWindowBackground = true
+        
+        // Window general dark appearance
+        newWindow.appearance = NSAppearance(named: .darkAqua)
+        newWindow.backgroundColor = NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0) // Solid dark gray/black
+        
         newWindow.isReleasedWhenClosed = false
         newWindow.center()
         
@@ -35,7 +111,27 @@ class AdvancedSettingsWindowManager {
     }
 }
 
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case general = "Geral"
+    case models = "Modelos & IA"
+    case prompt = "Comportamento"
+    case shortcuts = "Atalhos"
+    
+    var id: String { self.rawValue }
+    
+    var icon: String {
+        switch self {
+        case .general: return "slider.horizontal.3"
+        case .models: return "cpu"
+        case .prompt: return "text.bubble"
+        case .shortcuts: return "command"
+        }
+    }
+}
+
 struct AdvancedSettingsView: View {
+    @State private var selectedTab: SettingsTab? = .general
+    
     @AppStorage("inferenceMode") var inferenceMode: InferenceMode = .local
     @AppStorage("selectedProvider") var selectedProvider: CloudProvider = .google
     @AppStorage("systemPrompt") var systemPrompt: String = "Responda APENAS com a letra e o texto da alternativa. Sem introduções. Pergunta: "
@@ -43,6 +139,7 @@ struct AdvancedSettingsView: View {
     @AppStorage("apiEndpoint") var apiEndpoint: String = "https://api.openai.com/v1/chat/completions"
     @AppStorage("apiModelName") var apiModelName: String = "gpt-4o-mini"
     @AppStorage("playNotifications") var playNotifications: Bool = true
+    
     @State private var launchAtLogin: Bool = SMAppService.mainApp.status == .enabled
     @State private var apiKey: String = KeychainManager.shared.loadKey() ?? ""
     @State private var fetchedModels: [String] = []
@@ -51,169 +148,297 @@ struct AdvancedSettingsView: View {
     @State private var fetchModelsTask: Task<Void, Never>? = nil
 
     var body: some View {
-        TabView {
-            // MARK: - General Tab
-            Form {
-                Section(header: Text("Comportamento do App").font(.headline)) {
-                    Toggle("Tocar som e Notificar ao finalizar", isOn: $playNotifications)
-                    
-                    Toggle("Iniciar Mãe ao ligar o Mac", isOn: $launchAtLogin)
-                        .onChange(of: launchAtLogin) { _, newValue in
-                            do {
-                                if newValue {
-                                    try SMAppService.mainApp.register()
-                                } else {
-                                    try SMAppService.mainApp.unregister()
-                                }
-                            } catch {
-                                print("Failed to change launchAtLogin state: \(error.localizedDescription)")
-                                launchAtLogin = !newValue // Revert
-                            }
+        NavigationSplitView {
+            // MARK: - Sidebar Setup
+            List(selection: $selectedTab) {
+                Spacer().frame(height: 20)
+                
+                ForEach(SettingsTab.allCases) { tab in
+                    NavigationLink(value: tab) {
+                        Label {
+                            Text(tab.rawValue)
+                                .font(.system(size: 14, weight: .medium))
+                        } icon: {
+                            Image(systemName: tab.icon)
                         }
+                        .padding(.vertical, 6)
+                    }
                 }
             }
-            .padding()
-            .tabItem {
-                Label("Geral", systemImage: "gearshape")
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 250)
+            // Override sidebar background for that solid dark look
+            .scrollContentBackground(.hidden)
+            .background(Color(NSColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)))
+            
+        } detail: {
+            // MARK: - Detail Setup
+            ZStack {
+                Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)) // Even darker content bg
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        
+                        Text(selectedTab?.rawValue ?? "")
+                            .font(.system(size: 28, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.top, 40) // padding for transparent titlebar
+                            .padding(.bottom, 8)
+                        
+                        switch selectedTab {
+                        case .general:
+                            generalSettings
+                        case .models:
+                            modelSettings
+                        case .prompt:
+                            promptSettings
+                        case .shortcuts:
+                            shortcutSettings
+                        case .none:
+                            Text("Selecione uma categoria")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+                    .frame(maxWidth: 600, alignment: .leading)
+                }
             }
-
-            // MARK: - Models Tab
-            Form {
-                Section(header: Text("Processamento da IA").font(.headline)) {
-                    Picker("Modo:", selection: $inferenceMode) {
+            .task {
+                await reloadModels()
+            }
+        }
+    }
+    
+    // MARK: - Views for Tabs
+    
+    private var generalSettings: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PremiumSectionHeader(title: "Sistema & Notificações")
+            
+            GroupBox {
+                VStack(spacing: 0) {
+                    HStack {
+                        PremiumRow(title: "Início Automático", subtitle: "Abrir a Mãe junto com o Mac", icon: "macwindow", iconColor: .blue)
+                        Toggle("", isOn: $launchAtLogin)
+                            .toggleStyle(.switch)
+                    }
+                    .padding(16)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        do {
+                            if newValue {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            print("Failed to change launchAtLogin state: \(error.localizedDescription)")
+                            launchAtLogin = !newValue
+                        }
+                    }
+                    
+                    Divider().background(Color.white.opacity(0.1))
+                    
+                    HStack {
+                        PremiumRow(title: "Sons e Alertas", subtitle: "Tocar som quando a resposta terminar", icon: "bell.fill", iconColor: .orange)
+                        Toggle("", isOn: $playNotifications)
+                            .toggleStyle(.switch)
+                    }
+                    .padding(16)
+                }
+            }
+            .groupBoxStyle(PremiumGroupBoxStyle())
+        }
+    }
+    
+    private var modelSettings: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            
+            VStack(alignment: .leading, spacing: 0) {
+                PremiumSectionHeader(title: "Modo de Inferência")
+                
+                GroupBox {
+                    Picker("", selection: $inferenceMode) {
                         ForEach(InferenceMode.allCases) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
                     }
                     .pickerStyle(.radioGroup)
+                    .labelsHidden()
+                    .padding(16)
                 }
-
-                Divider()
-
-                if inferenceMode == .local {
-                    Section(header: Text("Configurações Locais").font(.headline)) {
-                        TextField("Nome do Modelo (Ollama):", text: $localModelName)
-                            .textFieldStyle(.roundedBorder)
-                        
-                        Text("Certifique-se de que o aplicativo Ollama está rodando na porta padrão (11434).")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    Section(header: Text("Configuração Cloud").font(.headline)) {
-                        Picker("Provedor:", selection: $selectedProvider) {
-                            ForEach(CloudProvider.allCases) { provider in
-                                Text(provider.rawValue).tag(provider)
-                            }
-                        }
-                        .onChange(of: selectedProvider) { _, newValue in
-                            fetchModelsTask?.cancel()
-                            fetchModelsTask = Task {
-                                try? await Task.sleep(nanoseconds: 300_000_000)
-                                guard !Task.isCancelled else { return }
-                                apiEndpoint = newValue.defaultEndpoint
-                                fetchedModels = []
-                                if let firstModel = newValue.availableModels.first {
-                                    apiModelName = firstModel
-                                }
-                                await reloadModels()
-                            }
-                        }
-                        
-                        if selectedProvider == .custom {
-                            TextField("URL do Endpoint:", text: $apiEndpoint)
-                                .textFieldStyle(.roundedBorder)
-                            
-                            TextField("Nome Extato do Modelo:", text: $apiModelName)
-                                .textFieldStyle(.roundedBorder)
-                        } else {
+                .groupBoxStyle(PremiumGroupBoxStyle())
+            }
+            
+            if inferenceMode == .local {
+                VStack(alignment: .leading, spacing: 0) {
+                    PremiumSectionHeader(title: "Ollama (Local)")
+                    
+                    GroupBox {
+                        VStack(spacing: 0) {
                             HStack {
-                                Picker("Modelo:", selection: $apiModelName) {
-                                    let displayModels = !fetchedModels.isEmpty ? fetchedModels : selectedProvider.availableModels
-                                    ForEach(displayModels, id: \.self) { model in
-                                        Text(model).tag(model)
+                                PremiumRow(title: "Nome do Modelo", subtitle: "Deve estar baixado no Ollama", icon: "desktopcomputer", iconColor: .green)
+                                Spacer()
+                                TextField("ex: gemma3:4b", text: $localModelName)
+                                    .textFieldStyle(.plain)
+                                    .padding(8)
+                                    .background(Color.white.opacity(0.05))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .frame(width: 150)
+                            }
+                            .padding(16)
+                        }
+                    }
+                    .groupBoxStyle(PremiumGroupBoxStyle())
+                }
+                
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    PremiumSectionHeader(title: "Cloud API")
+                    
+                    GroupBox {
+                        VStack(spacing: 0) {
+                            HStack {
+                                PremiumRow(title: "Provedor", icon: "cloud.fill", iconColor: .cyan)
+                                Spacer()
+                                Picker("", selection: $selectedProvider) {
+                                    ForEach(CloudProvider.allCases) { provider in
+                                        Text(provider.rawValue).tag(provider)
                                     }
                                 }
-                                
-                                if isFetchingModels {
-                                    ProgressView().controlSize(.small).padding(.leading, 4)
-                                }
+                                .labelsHidden()
+                                .frame(width: 160)
                             }
-                        }
-                        
-                        SecureField("Chave de API:", text: $apiKey)
-                            .textFieldStyle(.roundedBorder)
-                            .onChange(of: apiKey) { _, newValue in
-                                apiKeyTask?.cancel()
-                                apiKeyTask = Task {
-                                    try? await Task.sleep(nanoseconds: 500_000_000)
+                            .padding(16)
+                            .onChange(of: selectedProvider) { _, newValue in
+                                fetchModelsTask?.cancel()
+                                fetchModelsTask = Task {
+                                    try? await Task.sleep(nanoseconds: 300_000_000)
                                     guard !Task.isCancelled else { return }
-                                    KeychainManager.shared.saveKey(newValue)
+                                    apiEndpoint = newValue.defaultEndpoint
+                                    fetchedModels = []
+                                    if let firstModel = newValue.availableModels.first {
+                                        apiModelName = firstModel
+                                    }
                                     await reloadModels()
                                 }
                             }
-                        Text("Sua chave está protegida na Keychain do macOS.")
-                            .font(.caption2)
-                            .foregroundStyle(.green)
+                            
+                            Divider().background(Color.white.opacity(0.1))
+                            
+                            if selectedProvider == .custom {
+                                VStack(spacing: 12) {
+                                    HStack {
+                                        Text("URL Custom:").foregroundStyle(.white).font(.system(size: 13, weight: .medium))
+                                        TextField("URL", text: $apiEndpoint)
+                                            .textFieldStyle(.plain)
+                                            .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
+                                    }
+                                    HStack {
+                                        Text("Modelo:").foregroundStyle(.white).font(.system(size: 13, weight: .medium))
+                                        TextField("Nome do Modelo", text: $apiModelName)
+                                            .textFieldStyle(.plain)
+                                            .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
+                                    }
+                                }.padding(16)
+                                
+                            } else {
+                                HStack {
+                                    PremiumRow(title: "Modelo", icon: "server.rack", iconColor: .purple)
+                                    
+                                    if isFetchingModels {
+                                        ProgressView().controlSize(.small).padding(.trailing, 8)
+                                    }
+                                    
+                                    Picker("", selection: $apiModelName) {
+                                        let displayModels = !fetchedModels.isEmpty ? fetchedModels : selectedProvider.availableModels
+                                        ForEach(displayModels, id: \.self) { model in
+                                            Text(model).tag(model)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .frame(width: 160)
+                                }
+                                .padding(16)
+                            }
+                            
+                            Divider().background(Color.white.opacity(0.1))
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                PremiumRow(title: "Chave de API (Autenticação)", icon: "key.fill", iconColor: .yellow)
+                                
+                                SecureField("Cole sua API Key...", text: $apiKey)
+                                    .textFieldStyle(.plain)
+                                    .padding(10)
+                                    .background(Color.white.opacity(0.05))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                                    .onChange(of: apiKey) { _, newValue in
+                                        apiKeyTask?.cancel()
+                                        apiKeyTask = Task {
+                                            try? await Task.sleep(nanoseconds: 500_000_000)
+                                            guard !Task.isCancelled else { return }
+                                            KeychainManager.shared.saveKey(newValue)
+                                            await reloadModels()
+                                        }
+                                    }
+                            }
+                            .padding(16)
+                        }
                     }
+                    .groupBoxStyle(PremiumGroupBoxStyle())
                 }
             }
-            .padding()
-            .tabItem {
-                Label("Modelos", systemImage: "cpu")
-            }
-            .task {
-                await reloadModels()
-            }
-
-            // MARK: - AI/Prompt Tab
-            Form {
-                Section(header: Text("Personalidade da IA (System Prompt)").font(.headline)) {
-                    Text("Instruções que ditam como a IA vai agir e responder às suas perguntas.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    
-                    TextEditor(text: $systemPrompt)
-                        .font(.body)
-                        .frame(minHeight: 120)
-                        .padding(4)
-                        .background(Color(NSColor.controlBackgroundColor))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                        )
-                }
-            }
-            .padding()
-            .tabItem {
-                Label("IA", systemImage: "sparkles")
-            }
-
-            // MARK: - Shortcuts Tab
-            Form {
-                Section(header: Text("Atalhos Globais").font(.headline)) {
+        }
+    }
+    
+    private var promptSettings: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PremiumSectionHeader(title: "System Prompt")
+            
+            Text("Defina a personalidade e regras de resposta da IA.")
+                .font(.system(size: 13))
+                .foregroundStyle(Color.white.opacity(0.5))
+                .padding(.bottom, 12)
+            
+            TextEditor(text: $systemPrompt)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(.white)
+                .padding(12)
+                .frame(minHeight: 180)
+                // Use a standard custom background mimicking premium inputs
+                .scrollContentBackground(.hidden)
+                .background(Color(NSColor.windowBackgroundColor).opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.1), lineWidth: 1))
+        }
+    }
+    
+    private var shortcutSettings: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PremiumSectionHeader(title: "Ações Globais")
+            
+            GroupBox {
+                VStack(spacing: 0) {
                     HStack {
-                        Text("Analisar Área de Transferência:")
+                        PremiumRow(title: "Analisar Clipboard", subtitle: "Manda o texto copiado para a IA", icon: "doc.on.clipboard", iconColor: .pink)
                         Spacer()
                         KeyboardShortcuts.Recorder(for: .processClipboard)
                     }
-                    .padding(.vertical, 4)
+                    .padding(16)
+                    
+                    Divider().background(Color.white.opacity(0.1))
                     
                     HStack {
-                        Text("Analisar Tela Automaticamente:")
+                        PremiumRow(title: "Analisar Tela", subtitle: "Tira print contínuo e analisa a tela", icon: "viewfinder", iconColor: .teal)
                         Spacer()
                         KeyboardShortcuts.Recorder(for: .processScreen)
                     }
-                    .padding(.vertical, 4)
+                    .padding(16)
                 }
             }
-            .padding()
-            .tabItem {
-                Label("Atalhos", systemImage: "keyboard")
-            }
+            .groupBoxStyle(PremiumGroupBoxStyle())
         }
-        .frame(width: 500, height: 400) // Fixed size for standard Mac settings feel
     }
     
     private func reloadModels() async {
@@ -230,7 +455,7 @@ struct AdvancedSettingsView: View {
                 }
             }
         } catch {
-            print("Failed to fetch models dynamically: \(error)")
+            print("Failed to fetch dynamically: \(error)")
         }
     }
 }

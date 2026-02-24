@@ -405,23 +405,27 @@ struct ChatBubble: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: 250)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .shadow(radius: 2)
+                            .shadow(color: .black.opacity(0.3), radius: 4)
                     }
                 }
                 
                 if !message.content.isEmpty {
                     Text(.init(message.content))
-                        .font(.body)
+                        .font(.system(size: 14, weight: .regular, design: .default))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .foregroundStyle(message.isUser ? .white : .primary)
+                        .foregroundStyle(.white)
                         .background(
                             message.isUser
-                                ? AnyShapeStyle(LinearGradient(colors: [Color.blue, Color(red: 0.1, green: 0.4, blue: 0.9)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                : AnyShapeStyle(Color(NSColor.windowBackgroundColor))
+                                ? AnyShapeStyle(Color.white.opacity(0.15))
+                                : AnyShapeStyle(Color(NSColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 1.0)))
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: Color.black.opacity(message.isUser ? 0.15 : 0.05), radius: message.isUser ? 5 : 3, x: 0, y: 2)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                        )
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                         .textSelection(.enabled)
                 }
             }
@@ -492,7 +496,7 @@ struct ContentView: View {
             // Header
             HStack {
                 Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
-                    .font(.headline.weight(.semibold))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white)
                 
                 Spacer()
@@ -502,8 +506,11 @@ struct ContentView: View {
                         AnalysisWindowManager.shared.showWindow()
                     }) {
                         Image(systemName: "macwindow.badge.plus")
-                            .font(.title2)
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
                     .help("Abrir Janela de Análise")
@@ -513,9 +520,12 @@ struct ContentView: View {
                             viewModel.clearHistory()
                         }
                     }) {
-                        Image(systemName: "trash.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.secondary.opacity(0.6), .secondary.opacity(0.1))
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Color.red.opacity(0.3))
+                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
                     .help("Limpar histórico")
@@ -526,8 +536,11 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "gearshape.fill")
-                            .font(.title2)
+                            .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
                     .help("Configurações")
@@ -535,8 +548,8 @@ struct ContentView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(.regularMaterial)
-            .overlay(Divider(), alignment: .bottom)
+            .background(Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0)))
+            .overlay(Divider().background(Color.white.opacity(0.1)), alignment: .bottom)
             .zIndex(1)
 
             // Chat List
@@ -546,8 +559,8 @@ struct ContentView: View {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: 16) {
                                 Text("Sem Mensagens.")
-                                    .font(.title3.weight(.medium))
-                                    .foregroundStyle(.gray)
+                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .foregroundStyle(Color.white.opacity(0.3))
                             }
                             .padding(.top, 120)
                             .frame(maxWidth: .infinity)
@@ -567,6 +580,8 @@ struct ContentView: View {
                     }
                     .padding(.vertical, 12)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)))
                 .onChange(of: viewModel.messages.count) {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         proxy.scrollTo(bottomID, anchor: .bottom)
@@ -606,8 +621,8 @@ struct ContentView: View {
                     }
                 }
 
-                Divider()
-                HStack(alignment: .bottom, spacing: 12) {
+                Divider().background(Color.white.opacity(0.1))
+                HStack(alignment: .center, spacing: 12) {
                     Button {
                         let panel = NSOpenPanel()
                         panel.allowedContentTypes = [UTType.image]
@@ -622,21 +637,22 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "photo.badge.plus")
                             .font(.system(size: 18))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.white.opacity(0.6))
                     }
                     .buttonStyle(.plain)
                     .help("Anexar imagem")
-                    .padding(.bottom, 8)
 
-                    TextField("Envie uma mensagem...", text: $viewModel.inputText, axis: .vertical)
+                    TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
                         .textFieldStyle(.plain)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .background(Color(NSColor.controlBackgroundColor))
+                        .background(Color.white.opacity(0.05))
                         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
                         )
                         .lineLimit(1...6)
                         .onSubmit {
@@ -648,31 +664,35 @@ struct ContentView: View {
                         ProgressView()
                             .controlSize(.small)
                             .frame(width: 32, height: 32)
-                            .padding(.bottom, 4)
                     } else {
                         Button {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
                             Image(systemName: "arrow.up")
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(
+                                    (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
+                                    ? Color.white.opacity(0.3) : .black
+                                )
                                 .frame(width: 32, height: 32)
-                                .background((viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty) ? Color.gray.opacity(0.5) : Color.blue)
+                                .background(
+                                    (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
+                                    ? Color.white.opacity(0.05) : Color.white
+                                )
                                 .clipShape(Circle())
-                                .shadow(color: (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty) ? .clear : .blue.opacity(0.3), radius: 4, x: 0, y: 2)
                         }
                         .buttonStyle(.plain)
                         .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
                         .keyboardShortcut(.defaultAction)
-                        .padding(.bottom, 2)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(.regularMaterial)
+                .background(Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0)))
             }
             .zIndex(1)
         }
+        .preferredColorScheme(.dark)
         .onDrop(of: [.image, .fileURL], isTargeted: nil) { providers in
             for provider in providers {
                 if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
