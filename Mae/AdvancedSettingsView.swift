@@ -245,6 +245,22 @@ struct AdvancedSettingsView: View {
                             .toggleStyle(.switch)
                     }
                     .padding(16)
+                    
+                    Divider().background(Color.white.opacity(0.1))
+                    
+                    Button {
+                        UpdaterController.shared.checkForUpdates()
+                    } label: {
+                        HStack {
+                            PremiumRow(title: "Atualizações", subtitle: "Buscar nova versão da Mãe", icon: "arrow.triangle.2.circlepath", iconColor: .cyan)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(16)
                 }
             }
             .groupBoxStyle(PremiumGroupBoxStyle())

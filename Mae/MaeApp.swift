@@ -42,7 +42,6 @@ struct MaeApp: App {
     // Adaptador para usar o AppDelegate em SwiftUI
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @ObservedObject private var viewModel = AssistantViewModel.shared
-    @StateObject private var updaterController = UpdaterController()
     
     init() {
         // Registramos o listener global para o atalho quando o app inicia
@@ -62,7 +61,6 @@ struct MaeApp: App {
     var body: some Scene {
         MenuBarExtra("Mãe", systemImage: viewModel.isProcessing ? "message.fill" : "message") {
             ContentView()
-                .environmentObject(updaterController)
         }
         .menuBarExtraStyle(.window)
     }

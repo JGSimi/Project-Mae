@@ -8,106 +8,121 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Header Minimalista
             HStack {
-                Label("Configurações Rápidas", systemImage: "gearshape.fill")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                Text("Mãe AI")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(colors: [.white, Color(NSColor.lightGray)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
                 Spacer()
+                Image(systemName: "sparkles")
+                    .foregroundStyle(.yellow)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0)))
-            .overlay(Divider().background(Color.white.opacity(0.1)), alignment: .bottom)
-            .zIndex(1)
-
-            VStack(spacing: 20) {
-                // Inference Mode Box
-                GroupBox {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Modo de Processamento")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        Picker("", selection: $inferenceMode) {
-                            ForEach(InferenceMode.allCases) { mode in
-                                Text(mode.rawValue).tag(mode)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+            
+            VStack(spacing: 12) {
+                // Cartão Único Integrado
+                VStack(spacing: 0) {
+                    // Row de Seleção de Modo
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Processamento")
+                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.5))
+                            
+                            Picker("", selection: $inferenceMode) {
+                                ForEach(InferenceMode.allCases) { mode in
+                                    Text(mode.rawValue).tag(mode)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                            .colorScheme(.dark) // Forçar tint dark para o picker
+                        }
+                    }
+                    .padding(16)
+                    
+                    Divider().background(Color.white.opacity(0.08))
+                    
+                    // Row do Modelo Ativo
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Modelo Ativo")
+                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .foregroundStyle(Color.white.opacity(0.5))
+                            
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(inferenceMode == .local ? Color.green : Color.blue)
+                                    .frame(width: 8, height: 8)
+                                    .shadow(color: (inferenceMode == .local ? Color.green : Color.blue).opacity(0.5), radius: 3)
+                                
+                                Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(.white)
                             }
                         }
-                        .pickerStyle(.radioGroup)
-                        .labelsHidden()
+                        Spacer()
                     }
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
                 }
-                .groupBoxStyle(PremiumQuickGroupBoxStyle())
-                
-                // Active Model Summary Box
-                GroupBox {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Modelo Atual")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        if inferenceMode == .local {
-                            Text("Ollama: \(localModelName)")
-                                .font(.system(size: 13, weight: .regular))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                        } else {
-                            Text("\(selectedProvider.rawValue): \(apiModelName)")
-                                .font(.system(size: 13, weight: .regular))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                        }
-                    }
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .groupBoxStyle(PremiumQuickGroupBoxStyle())
+                .background(Color.white.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
                 
                 Spacer()
                 
-                // Advanced Settings Button
+                // Botão Avançado Sleek
                 Button {
                     AdvancedSettingsWindowManager.shared.showWindow()
                 } label: {
                     HStack {
-                        Image(systemName: "slider.horizontal.3")
-                        Text("Configurações Avançadas...")
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 14))
+                        Text("Configurações Avançadas")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(Color.white.opacity(0.4))
                     }
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color.white.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(Color.white.opacity(0.03))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                    )
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, 10)
+                .padding(.bottom, 12)
             }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)))
+            .padding(.horizontal, 20)
         }
+        // Fundo super escuro (estilo material glass) com gradiente radial sutil para não ficar chapado
+        .background(
+            ZStack {
+                Color(NSColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1.0)).ignoresSafeArea()
+                RadialGradient(
+                    gradient: Gradient(colors: [Color.white.opacity(0.03), .clear]),
+                    center: .topLeading,
+                    startRadius: 0,
+                    endRadius: 400
+                )
+            }
+        )
         .preferredColorScheme(.dark)
-    }
-}
-
-// MARK: - Custom Premium GroupBox Style
-struct PremiumQuickGroupBoxStyle: GroupBoxStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        VStack(alignment: .leading) {
-            configuration.label
-            configuration.content
-        }
-        .padding(16)
-        .background(Color(NSColor.windowBackgroundColor).opacity(0.4))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.08), lineWidth: 1))
     }
 }
 
 #Preview {
     SettingsView()
-        .frame(width: 350, height: 450)
+        .frame(width: 320, height: 350)
 }

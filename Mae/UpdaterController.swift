@@ -3,11 +3,13 @@ import Combine
 import Sparkle
 
 final class UpdaterController: ObservableObject {
+    static let shared = UpdaterController()
+    
     private let updaterController: SPUStandardUpdaterController
     
     @Published var canCheckForUpdates = false
     
-    init() {
+    private init() {
         // Inicializa o Sparkle
         updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
         
