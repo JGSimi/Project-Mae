@@ -1,0 +1,72 @@
+{
+  "source": "/Users/simi/Documents/Mae - Beta/Mae/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Fechar Configurações",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 429
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chat",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 449
+        }
+      },
+      {
+        "comment": "",
+        "key": "Abrir Janela de Análise",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 464
+        }
+      },
+      {
+        "comment": "",
+        "key": "Limpar histórico",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 476
+        }
+      },
+      {
+        "comment": "",
+        "key": "Configurações",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 488
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sem Mensagens.",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 503
+        }
+      },
+      {
+        "comment": "",
+        "key": "Anexar imagem",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 583
+        }
+      },
+      {
+        "comment": "",
+        "key": "Envie uma mensagem...",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 586
+        }
+      }
+    ]
+  },
+  "version": 1
+}

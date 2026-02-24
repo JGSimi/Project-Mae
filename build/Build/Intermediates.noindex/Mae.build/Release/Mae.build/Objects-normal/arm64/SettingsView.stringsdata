@@ -1,0 +1,224 @@
+{
+  "source": "/Users/simi/Documents/Mae - Beta/Mae/SettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Configurações",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Atalhos Globais",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 39
+        }
+      },
+      {
+        "comment": "",
+        "key": "Área de Transferência",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "Análise de Tela",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Modo de uso",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "Comportamento Base (System Prompt)",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Instruções que ditam como a IA vai agir e responder às suas perguntas.",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 89
+        }
+      },
+      {
+        "comment": "",
+        "key": "Configurações Locais",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 114
+        }
+      },
+      {
+        "comment": "",
+        "key": "Configuração Cloud",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nome do Modelo",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ex: gemma3:4b",
+        "location": {
+          "startingColumn": 47,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Certifique-se de que o aplicativo Ollama está rodando no seu Mac (porta 11434).",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 129
+        }
+      },
+      {
+        "comment": "",
+        "key": "Provedor",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 145
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "URL do Endpoint Nativo",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 174
+        }
+      },
+      {
+        "comment": "",
+        "key": "URL (ex: https://api.openai.com/...)",
+        "location": {
+          "startingColumn": 55,
+          "startingLine": 177
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nome do Modelo exato",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 183
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ex: Custom-Modelo-X",
+        "location": {
+          "startingColumn": 55,
+          "startingLine": 186
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 52,
+          "startingLine": 204
+        }
+      },
+      {
+        "comment": "",
+        "key": "Modelo de Inteligência",
+        "location": {
+          "startingColumn": 54,
+          "startingLine": 192
+        }
+      },
+      {
+        "comment": "",
+        "key": "API Key",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 217
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cole sua API Key",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 220
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sua chave esta protegida na Keychain.",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 235
+        }
+      },
+      {
+        "comment": "",
+        "key": "Atualizações",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 253
+        }
+      },
+      {
+        "comment": "",
+        "key": "Verificar novas versões do aplicativo",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 258
+        }
+      },
+      {
+        "comment": "",
+        "key": "Verificar",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 264
+        }
+      }
+    ]
+  },
+  "version": 1
+}

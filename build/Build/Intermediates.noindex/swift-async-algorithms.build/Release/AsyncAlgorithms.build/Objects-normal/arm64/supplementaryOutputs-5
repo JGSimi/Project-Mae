@@ -1,0 +1,12 @@
+{
+  "/Users/simi/Documents/Mae - Beta/build/SourcePackages/checkouts/swift-async-algorithms/Sources/AsyncAlgorithms/AsyncAdjacentPairsSequence.swift" : {
+    "abi-baseline-json" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms.abi.json",
+    "const-values" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms-primary.swiftconstvalues",
+    "dependencies" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms-primary.d",
+    "diagnostics" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms-primary.dia",
+    "objc-header" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms-Swift.h",
+    "swiftdoc" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms.swiftdoc",
+    "swiftmodule" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms.swiftmodule",
+    "swiftsourceinfo" : "/Users/simi/Documents/Mae - Beta/build/Build/Intermediates.noindex/swift-async-algorithms.build/Release/AsyncAlgorithms.build/Objects-normal/arm64/AsyncAlgorithms.swiftsourceinfo"
+  }
+}
