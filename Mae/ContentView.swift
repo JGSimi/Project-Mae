@@ -411,19 +411,19 @@ struct ChatBubble: View {
                 
                 if !message.content.isEmpty {
                     Text(.init(message.content))
-                        .font(.system(size: 14, weight: .regular, design: .default))
+                        .font(.custom("Avenir Next", size: 14))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .foregroundStyle(.white)
                         .background(
                             message.isUser
-                                ? AnyShapeStyle(Color.white.opacity(0.15))
-                                : AnyShapeStyle(Color(NSColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 1.0)))
+                                ? AnyShapeStyle(.ultraThinMaterial)
+                                : AnyShapeStyle(Color(NSColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 0.8)))
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
                         )
                         .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                         .textSelection(.enabled)
@@ -495,22 +495,19 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                Label("Chat", systemImage: "sparkles")
+                    .font(.custom("Avenir Next", size: 16).weight(.medium))
                     .foregroundStyle(.white)
                 
                 Spacer()
                 
-                HStack(spacing: 12) {
+                HStack(spacing: 16) {
                     Button(action: {
                         AnalysisWindowManager.shared.showWindow()
                     }) {
                         Image(systemName: "macwindow.badge.plus")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(width: 32, height: 32)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .help("Abrir Janela de Análise")
@@ -520,12 +517,9 @@ struct ContentView: View {
                             viewModel.clearHistory()
                         }
                     }) {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(width: 32, height: 32)
-                            .background(Color.red.opacity(0.3))
-                            .clipShape(Circle())
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .help("Limpar histórico")
@@ -535,12 +529,9 @@ struct ContentView: View {
                             showSettings = true
                         }
                     }) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(width: 32, height: 32)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .help("Configurações")
@@ -559,7 +550,7 @@ struct ContentView: View {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: 16) {
                                 Text("Sem Mensagens.")
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .font(.custom("Avenir Next", size: 16).weight(.medium))
                                     .foregroundStyle(Color.white.opacity(0.3))
                             }
                             .padding(.top, 120)
@@ -581,7 +572,7 @@ struct ContentView: View {
                     .padding(.vertical, 12)
                 }
                 .scrollContentBackground(.hidden)
-                .background(Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)))
+                .background(.ultraThinMaterial)
                 .onChange(of: viewModel.messages.count) {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         proxy.scrollTo(bottomID, anchor: .bottom)
@@ -644,7 +635,7 @@ struct ContentView: View {
 
                     TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 14, weight: .regular))
+                        .font(.custom("Avenir Next", size: 14))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
@@ -668,18 +659,13 @@ struct ContentView: View {
                         Button {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 15, weight: .bold))
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 28))
                                 .foregroundStyle(
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
-                                    ? Color.white.opacity(0.3) : .black
+                                    ? Color.white.opacity(0.2) : .white
                                 )
-                                .frame(width: 32, height: 32)
-                                .background(
-                                    (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
-                                    ? Color.white.opacity(0.05) : Color.white
-                                )
-                                .clipShape(Circle())
+                                .background(Color.black.clipShape(Circle()))
                         }
                         .buttonStyle(.plain)
                         .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)

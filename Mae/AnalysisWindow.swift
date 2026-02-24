@@ -54,7 +54,7 @@ struct AnalysisView: View {
                 // Left Panel: Analysis
                 VStack(alignment: .leading) {
                     Text("Análise de Tela")
-                        .font(.title2.bold())
+                        .font(.custom("Avenir Next", size: 20).weight(.bold))
                         .padding(.top, 30) // Offset for titlebar
                         .padding(.bottom, 10)
                         
@@ -64,7 +64,7 @@ struct AnalysisView: View {
                             ProgressView()
                                 .controlSize(.regular)
                             Text("Analisando...")
-                                .font(.headline)
+                                .font(.custom("Avenir Next", size: 16).weight(.semibold))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -77,6 +77,7 @@ struct AnalysisView: View {
                                 .foregroundColor(.secondary.opacity(0.5))
                                 .padding(.bottom, 8)
                             Text("Nenhuma análise disponível.")
+                                .font(.custom("Avenir Next", size: 14))
                                 .foregroundColor(.secondary)
                             Spacer()
                         }
@@ -84,7 +85,7 @@ struct AnalysisView: View {
                     } else {
                         ScrollView {
                             Text(try! AttributedString(markdown: viewModel.analysisResult, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-                                .font(.system(size: 15, weight: .regular))
+                                .font(.custom("Avenir Next", size: 15))
                                 .lineSpacing(6)
                                 .foregroundColor(Color.primary.opacity(0.9))
                                 .textSelection(.enabled)
@@ -115,7 +116,7 @@ struct AnalysisView: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(.secondary.opacity(0.3))
                             Text("Nenhuma captura de tela no momento.")
-                                .font(.headline)
+                                .font(.custom("Avenir Next", size: 16).weight(.semibold))
                                 .foregroundColor(.secondary.opacity(0.8))
                         }
                     }

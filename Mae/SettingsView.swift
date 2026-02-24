@@ -11,7 +11,7 @@ struct SettingsView: View {
             // Header Minimalista
             HStack {
                 Text("Mãe AI")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.custom("Avenir Next", size: 18).weight(.bold))
                     .foregroundStyle(
                         LinearGradient(colors: [.white, Color(NSColor.lightGray)], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
@@ -30,7 +30,7 @@ struct SettingsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Processamento")
-                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .font(.custom("Avenir Next", size: 12).weight(.medium))
                                 .foregroundStyle(Color.white.opacity(0.5))
                             
                             Picker("", selection: $inferenceMode) {
@@ -51,7 +51,7 @@ struct SettingsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Modelo Ativo")
-                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .font(.custom("Avenir Next", size: 12).weight(.medium))
                                 .foregroundStyle(Color.white.opacity(0.5))
                             
                             HStack(spacing: 6) {
@@ -61,7 +61,7 @@ struct SettingsView: View {
                                     .shadow(color: (inferenceMode == .local ? Color.green : Color.blue).opacity(0.5), radius: 3)
                                 
                                 Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .font(.custom("Avenir Next", size: 14).weight(.semibold))
                                     .foregroundStyle(.white)
                             }
                         }
@@ -87,7 +87,7 @@ struct SettingsView: View {
                             .font(.system(size: 14))
                             .foregroundStyle(.cyan.opacity(0.8))
                         Text("Verificar Atualizações")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.custom("Avenir Next", size: 14).weight(.medium))
                         Spacer()
                     }
                     .padding(.horizontal, 16)
@@ -110,7 +110,7 @@ struct SettingsView: View {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 14))
                         Text("Configurações Avançadas")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.custom("Avenir Next", size: 14).weight(.medium))
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .bold))
