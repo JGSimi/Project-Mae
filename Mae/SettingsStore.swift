@@ -44,13 +44,13 @@ enum CloudProvider: String, CaseIterable, Identifiable {
     var availableModels: [String] {
         switch self {
         case .google:
-            return ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
+            return ["API não disponível"]
         case .openai:
-            return ["gpt-4o", "gpt-4o-mini", "o1-mini", "o3-mini"]
+            return ["API não disponível"]
         case .anthropic:
-            return ["claude-sonnet-4-6", "claude-opus-4-6"]
+            return ["API não disponível"]
         case .custom:
-            return []
+            return ["API não disponível"]
         }
     }
 }
@@ -68,5 +68,5 @@ struct SettingsManager {
     static var apiEndpoint: String { UserDefaults.standard.string(forKey: "apiEndpoint") ?? "https://api.openai.com/v1/chat/completions" }
     static var apiModelName: String { UserDefaults.standard.string(forKey: "apiModelName") ?? "gpt-4o-mini" }
     static var apiKey: String { KeychainManager.shared.loadKey() ?? "" }
-    static var systemPrompt: String { UserDefaults.standard.string(forKey: "systemPrompt") ?? "Responda APENAS com a letra e o texto da alternativa. Sem introduções. Pergunta: " }
+    static var systemPrompt: String { UserDefaults.standard.string(forKey: "systemPrompt") ?? "Resposta direta. Pergunta: " }
 }
