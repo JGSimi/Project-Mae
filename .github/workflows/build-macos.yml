@@ -35,6 +35,8 @@ jobs:
       - name: Package App to ZIP
         run: |
           cd build/Build/Products/Release
+          # Remove assinaturas antigas de frameworks embutidos e re-assina tudo (Deep Sign)
+          codesign --force --deep --sign - Mae.app
           # Zip the resulting .app bundle so it can be uploaded as an artifact/release
           zip -r Mae-macOS.zip Mae.app
           
