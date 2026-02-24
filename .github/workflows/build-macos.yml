@@ -22,16 +22,11 @@ jobs:
 
       - name: Build Xcode Project
         run: |
-          # Ensure project directory is entered to run agvtool
-          cd "Mae" || true
-          
           # Set the build number (CURRENT_PROJECT_VERSION) to the GitHub Run Number
           agvtool new-version -all ${{ github.run_number }}
           
           # Optionally append run number to the MARKETING_VERSION so it shows in UI (ex: 1.1.1.45)
           agvtool new-marketing-version "$(agvtool what-marketing-version -terse1 | head -n 1).${{ github.run_number }}"
-          
-          cd ..
           
           xcodebuild clean build \
             -project "Mae.xcodeproj" \
