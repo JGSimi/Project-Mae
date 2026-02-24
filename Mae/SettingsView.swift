@@ -10,14 +10,11 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             // Header Minimalista
             HStack {
-                Text("Mãe AI")
+                Text("M.A.E")
                     .font(.custom("Avenir Next", size: 18).weight(.bold))
                     .foregroundStyle(
                         LinearGradient(colors: [.white, Color(NSColor.lightGray)], startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
-                Spacer()
-                Image(systemName: "sparkles")
-                    .foregroundStyle(.yellow)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
