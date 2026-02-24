@@ -56,7 +56,7 @@ jobs:
           # Fornecer a chave via variável de ambiente pede que usemos o parâmetro -f (para assinar arquivo puro)
           # Porem o standard agora é usar o `-ed-key-file` com um arquivo gerado de forma extremamente segura sem quebras de linha:
           printf "%s" "$SPARKLE_PRIVATE_KEY" > eddsa_key
-          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Mae-Windows/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
+          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Project-Mae/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
           rm eddsa_key
 
       - name: Create or Update Release

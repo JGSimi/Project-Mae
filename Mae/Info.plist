@@ -27,7 +27,7 @@
 	<key>SUPublicEDKey</key>
 	<string>GgU26zXBQFR7vz791XL/RuiRO2uoskX9+5fN/rk2Wy4=</string>
 	<key>SUFeedURL</key>
-	<string>https://jgsimi.github.io/Mae-Windows/appcast.xml</string>
+	<string>https://jgsimi.github.io/Project-Mae/appcast.xml</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 </dict>
