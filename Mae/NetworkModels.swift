@@ -17,7 +17,8 @@ struct OllamaResponse: Decodable {
 struct APIRequest: Codable {
     let model: String
     let messages: [APIMessage]
-    let temperature: Double
+    let temperature: Double?
+    let max_tokens: Int?
     let stream: Bool
 }
 
@@ -95,6 +96,41 @@ struct APIResponse: Decodable {
     
     struct ResponseMessage: Decodable {
         let content: String
+    }
+}
+
+// MARK: - Anthropic Models
+struct AnthropicRequest: Codable {
+    let model: String
+    let max_tokens: Int
+    let system: String?
+    let messages: [AnthropicMessage]
+    let temperature: Double
+}
+
+struct AnthropicMessage: Codable {
+    let role: String
+    let content: [AnthropicContent]
+}
+
+struct AnthropicContent: Codable {
+    let type: String
+    let text: String?
+    let source: AnthropicImageSource?
+}
+
+struct AnthropicImageSource: Codable {
+    let type: String
+    let media_type: String
+    let data: String
+}
+
+struct AnthropicResponse: Decodable {
+    let content: [AnthropicResponseContent]
+    
+    struct AnthropicResponseContent: Decodable {
+        let type: String
+        let text: String
     }
 }
 

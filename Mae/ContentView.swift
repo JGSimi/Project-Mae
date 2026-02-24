@@ -274,53 +274,94 @@ class AssistantViewModel: ObservableObject {
     }
     
     private func executeAPIRequest(prompt: String, images: [String]?) async throws -> String {
-        var content: [MessageContent] = [.text(prompt)]
-        if let images = images {
-            for img in images {
-                content.append(.image(base64: img))
-            }
-        }
-        
-        let userMessage = APIMessage(role: "user", content: content)
-        
-        let payload = APIRequest(
-            model: SettingsManager.apiModelName,
-            messages: [userMessage],
-            temperature: 0.0,
-            stream: false
-        )
-        
         guard let url = URL(string: SettingsManager.apiEndpoint) else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let apiKey = SettingsManager.apiKey
+        let isAnthropic = SettingsManager.selectedProvider == .anthropic
+        
         if !apiKey.isEmpty {
             switch SettingsManager.selectedProvider {
             case .google, .openai, .custom:
                 request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
             case .anthropic:
-                // Fallback structure in case it's native Anthropic proxy, usually proxy adapters handle Beaer or x-api-key
                 request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
                 request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
             }
         }
         
-        request.httpBody = try JSONEncoder().encode(payload)
-        
-        let (data, response) = try await session.data(for: request)
-        if let httpRes = response as? HTTPURLResponse, !(200...299).contains(httpRes.statusCode) {
-            let errorStr = String(data: data, encoding: .utf8) ?? "Unknown HTTP ERROR"
-            throw NSError(domain: "AssistantAPIError", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: "API Error: \(errorStr)"])
-        }
-        
-        let result = try JSONDecoder().decode(APIResponse.self, from: data)
-        
-        if let firstChoice = result.choices.first {
-            return firstChoice.message.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        if isAnthropic {
+            var content: [AnthropicContent] = [AnthropicContent(type: "text", text: prompt, source: nil)]
+            if let images = images {
+                for img in images {
+                    content.append(AnthropicContent(
+                        type: "image",
+                        text: nil,
+                        source: AnthropicImageSource(type: "base64", media_type: "image/jpeg", data: img)
+                    ))
+                }
+            }
+            
+            let payload = AnthropicRequest(
+                model: SettingsManager.apiModelName,
+                max_tokens: 4096,
+                system: nil,
+                messages: [AnthropicMessage(role: "user", content: content)],
+                temperature: 0.0
+            )
+            
+            request.httpBody = try JSONEncoder().encode(payload)
+            
+            let (data, response) = try await session.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, !(200...299).contains(httpRes.statusCode) {
+                let errorStr = String(data: data, encoding: .utf8) ?? "Unknown HTTP ERROR"
+                throw NSError(domain: "AssistantAPIError", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: "API Error: \(errorStr)"])
+            }
+            
+            let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+            if let firstText = result.content.first(where: { $0.type == "text" }) {
+                return firstText.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            } else {
+                throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
+            }
         } else {
-            throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
+            var content: [MessageContent] = [.text(prompt)]
+            if let images = images {
+                for img in images {
+                    content.append(.image(base64: img))
+                }
+            }
+            
+            let userMessage = APIMessage(role: "user", content: content)
+            
+            let modelName = SettingsManager.apiModelName
+            let isOModel = modelName.hasPrefix("o1") || modelName.hasPrefix("o3")
+            
+            let payload = APIRequest(
+                model: modelName,
+                messages: [userMessage],
+                temperature: isOModel ? nil : 0.0,
+                max_tokens: 4096,
+                stream: false
+            )
+            
+            request.httpBody = try JSONEncoder().encode(payload)
+            
+            let (data, response) = try await session.data(for: request)
+            if let httpRes = response as? HTTPURLResponse, !(200...299).contains(httpRes.statusCode) {
+                let errorStr = String(data: data, encoding: .utf8) ?? "Unknown HTTP ERROR"
+                throw NSError(domain: "AssistantAPIError", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: "API Error: \(errorStr)"])
+            }
+            
+            let result = try JSONDecoder().decode(APIResponse.self, from: data)
+            
+            if let firstChoice = result.choices.first {
+                return firstChoice.message.content.trimmingCharacters(in: .whitespacesAndNewlines)
+            } else {
+                throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
+            }
         }
     }
 
