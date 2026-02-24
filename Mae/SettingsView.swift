@@ -78,6 +78,30 @@ struct SettingsView: View {
                 
                 Spacer()
                 
+                // Botão de Atualização Sleek
+                Button {
+                    UpdaterController.shared.checkForUpdates()
+                } label: {
+                    HStack {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.cyan.opacity(0.8))
+                        Text("Verificar Atualizações")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(Color.white.opacity(0.03))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 4)
+                
                 // Botão Avançado Sleek
                 Button {
                     AdvancedSettingsWindowManager.shared.showWindow()

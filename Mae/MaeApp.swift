@@ -26,6 +26,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         Task {
             try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
         }
+        
+        // Verifica atualizações silenciosamente
+        UpdaterController.shared.checkForUpdatesInBackground()
     }
     
     // Esta função permite que a notificação apareça mesmo que o app esteja focado

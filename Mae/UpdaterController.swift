@@ -21,4 +21,9 @@ final class UpdaterController: ObservableObject {
     func checkForUpdates() {
         updaterController.checkForUpdates(nil)
     }
+    
+    // Verifica por atualizações sem exibir a janela visual, a menos que haja uma atualização
+    func checkForUpdatesInBackground() {
+        updaterController.updater.checkForUpdatesInBackground()
+    }
 }

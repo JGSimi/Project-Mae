@@ -249,6 +249,22 @@ struct AdvancedSettingsView: View {
                     Divider().background(Color.white.opacity(0.1))
                     
                     Button {
+                        WelcomeWindowManager.shared.showWindow()
+                    } label: {
+                        HStack {
+                            PremiumRow(title: "Tela de Boas Vindas", subtitle: "Rever apresentação do aplicativo", icon: "hand.wave.fill", iconColor: .yellow)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(16)
+                    
+                    Divider().background(Color.white.opacity(0.1))
+                    
+                    Button {
                         UpdaterController.shared.checkForUpdates()
                     } label: {
                         HStack {
