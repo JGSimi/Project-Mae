@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Binding var isPresented: Bool
+    
     @AppStorage("inferenceMode") var inferenceMode: InferenceMode = .local
     @AppStorage("selectedProvider") var selectedProvider: CloudProvider = .google
     @AppStorage("apiModelName") var apiModelName: String = "gpt-4o-mini"
@@ -126,11 +128,20 @@ struct SettingsView: View {
             .padding(.horizontal, 20)
         }
         .background(MaePageBackground())
+        .overlay(alignment: .topTrailing) {
+            MaeIconButton(icon: "xmark.circle.fill", size: 18, color: Theme.Colors.textSecondary, bgColor: Theme.Colors.surfaceSecondary, helpText: "Fechar Configurações") {
+                withAnimation(Theme.Animation.smooth) {
+                    isPresented = false
+                }
+            }
+            .padding(.top, 12)
+            .padding(.trailing, Theme.Metrics.spacingLarge)
+        }
         .preferredColorScheme(.dark)
     }
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(isPresented: .constant(true))
         .frame(width: 320, height: 350)
 }

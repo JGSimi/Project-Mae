@@ -511,16 +511,7 @@ struct ContentView: View {
                 .zIndex(1)
 
             if showSettings {
-                SettingsView()
-                    .overlay(alignment: .topTrailing) {
-                        MaeIconButton(icon: "xmark.circle.fill", size: 18, color: Theme.Colors.textSecondary, bgColor: Theme.Colors.surfaceSecondary, helpText: "Fechar Configurações") {
-                            withAnimation(Theme.Animation.smooth) {
-                                showSettings = false
-                            }
-                        }
-                        .padding(.top, 12)
-                        .padding(.trailing, Theme.Metrics.spacingLarge)
-                    }
+                SettingsView(isPresented: $showSettings)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                     .zIndex(2)
             }
@@ -540,10 +531,10 @@ struct ContentView: View {
             // Header
             HStack {
                 HStack(spacing: 6) {
-                    Image(systemName: "sparkles")
+                    Image(systemName: "moon.stars.fill")
                         .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.accent)
-                    Text("Mãe")
+                    Text("M.a.e")
                         .font(Theme.Typography.heading)
                         .foregroundStyle(Theme.Colors.textPrimary)
                 }
