@@ -37,8 +37,6 @@ struct MarkdownWebView: NSViewRepresentable {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
-        
             * {
                 margin: 0;
                 padding: 0;
@@ -46,28 +44,31 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         
             body {
-                font-family: 'Cormorant Garamond', 'Georgia', serif;
-                font-size: 16px;
-                line-height: 1.7;
-                color: rgba(255, 255, 255, 0.95);
+                font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+                font-size: 14px;
+                line-height: 1.65;
+                color: rgba(255, 255, 255, 0.92);
                 background: transparent;
                 padding: 8px 0;
                 -webkit-font-smoothing: antialiased;
+                font-weight: 400;
+                letter-spacing: -0.01em;
             }
         
             h1, h2, h3, h4, h5, h6 {
-                font-family: 'Cormorant Garamond', 'Georgia', serif;
-                font-weight: 700;
+                font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', sans-serif;
+                font-weight: 600;
                 color: #ffffff;
                 margin-top: 20px;
-                margin-bottom: 10px;
-                line-height: 1.3;
+                margin-bottom: 8px;
+                line-height: 1.35;
+                letter-spacing: -0.02em;
             }
         
-            h1 { font-size: 28px; }
-            h2 { font-size: 22px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px; }
-            h3 { font-size: 18px; font-weight: 600; }
-            h4 { font-size: 16px; font-weight: 600; }
+            h1 { font-size: 24px; font-weight: 700; }
+            h2 { font-size: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+            h3 { font-size: 16px; font-weight: 600; }
+            h4 { font-size: 14px; font-weight: 600; }
         
             p {
                 margin-bottom: 12px;
