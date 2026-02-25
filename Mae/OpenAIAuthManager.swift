@@ -108,14 +108,16 @@ actor OpenAIAuthManager {
         
         var urlComponents = URLComponents(string: authURL)!
         urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "redirect_uri", value: redirectURI),
-            URLQueryItem(name: "scope", value: "openid profile email offline_access model.read model.request"),
-            URLQueryItem(name: "state", value: state),
+            URLQueryItem(name: "scope", value: "openid profile email offline_access"),
             URLQueryItem(name: "code_challenge", value: codeChallenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
-            URLQueryItem(name: "prompt", value: "login")
+            URLQueryItem(name: "id_token_add_organizations", value: "true"),
+            URLQueryItem(name: "codex_cli_simplified_flow", value: "true"),
+            URLQueryItem(name: "state", value: state),
+            URLQueryItem(name: "originator", value: "codex_cli_rs")
         ]
         
         guard let finalURL = urlComponents.url else {
@@ -129,7 +131,16 @@ actor OpenAIAuthManager {
         
         // Aguarda pelo callback via NWListener
         let code = try await waitForCallback()
-        return try await exchangeCodeForToken(code: code, codeVerifier: codeVerifier)
+        
+        // Step 1: Exchange code for tokens (id_token + access_token + refresh_token)
+        let tokens = try await exchangeCodeForTokens(code: code, codeVerifier: codeVerifier)
+        
+        // Salva refresh token para renovações futuras
+        self.currentRefreshToken = tokens.refresh_token
+        
+        // Step 2: Exchange id_token for actual API Key
+        let apiKey = try await obtainApiKey(idToken: tokens.id_token)
+        return apiKey
     }
     
     // MARK: - Local Server Callback
@@ -232,43 +243,161 @@ actor OpenAIAuthManager {
     
     // MARK: - Token Fetching
     
-    private func exchangeCodeForToken(code: String, codeVerifier: String) async throws -> String {
+    // Step 1: Exchange authorization code for id_token + access_token + refresh_token
+    private struct ExchangedTokens {
+        let id_token: String
+        let access_token: String
+        let refresh_token: String
+    }
+    
+    private func exchangeCodeForTokens(code: String, codeVerifier: String) async throws -> ExchangedTokens {
         var request = URLRequest(url: URL(string: tokenURL)!)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 30
         
-        let bodyParts = [
-            "client_id=\(clientId)",
-            "code=\(code)",
-            "code_verifier=\(codeVerifier)",
+        let body = [
             "grant_type=authorization_code",
-            "redirect_uri=\(redirectURI)"
-        ]
+            "code=\(code.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? code)",
+            "redirect_uri=\(redirectURI.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? redirectURI)",
+            "client_id=\(clientId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? clientId)",
+            "code_verifier=\(codeVerifier.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? codeVerifier)"
+        ].joined(separator: "&")
         
-        request.httpBody = bodyParts.joined(separator: "&").data(using: .utf8)
+        request.httpBody = body.data(using: .utf8)
         
-        return try await fetchAndParseToken(request: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            self.lastErrorMessage = "Resposta de servidor inválida (token exchange)"
+            throw URLError(.badServerResponse)
+        }
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Corpo de erro vazio"
+            self.lastErrorMessage = "Token exchange HTTP \(httpResponse.statusCode): \(errorStr)"
+            throw URLError(.badServerResponse)
+        }
+        
+        struct InitialTokenResponse: Codable {
+            let id_token: String
+            let access_token: String
+            let refresh_token: String
+        }
+        
+        let tokens = try JSONDecoder().decode(InitialTokenResponse.self, from: data)
+        return ExchangedTokens(
+            id_token: tokens.id_token,
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token
+        )
     }
     
+    // Step 2: Exchange id_token for an actual OpenAI API Key
+    private func obtainApiKey(idToken: String) async throws -> String {
+        var request = URLRequest(url: URL(string: tokenURL)!)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
+        
+        let body = [
+            "grant_type=\("urn:ietf:params:oauth:grant-type:token-exchange".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)",
+            "client_id=\(clientId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)",
+            "requested_token=openai-api-key",
+            "subject_token=\(idToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)",
+            "subject_token_type=\("urn:ietf:params:oauth:token-type:id_token".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)"
+        ].joined(separator: "&")
+        
+        request.httpBody = body.data(using: .utf8)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            self.lastErrorMessage = "Resposta inválida (API key exchange)"
+            throw URLError(.badServerResponse)
+        }
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Corpo de erro vazio"
+            self.lastErrorMessage = "API key exchange HTTP \(httpResponse.statusCode): \(errorStr)"
+            throw URLError(.badServerResponse)
+        }
+        
+        struct ApiKeyResponse: Codable {
+            let access_token: String
+        }
+        
+        let apiKeyResp = try JSONDecoder().decode(ApiKeyResponse.self, from: data)
+        
+        // Salva o API key e marca como válido
+        self.currentAccessToken = apiKeyResp.access_token
+        self.hasValidToken = true
+        self.lastErrorMessage = nil
+        
+        // JWT expiration se aplicável
+        if let expDate = JWTDecoder.decodeExpiration(jwtToken: apiKeyResp.access_token) {
+            self.tokenExpirationDate = expDate.addingTimeInterval(-300)
+        } else {
+            self.tokenExpirationDate = Date().addingTimeInterval(3300) // ~1h fallback
+        }
+        
+        return apiKeyResp.access_token
+    }
+    
+    // Refresh: re-get tokens via refresh_token then exchange for new API key
     private func performRefreshToken(_ refreshToken: String) async throws -> String {
         var request = URLRequest(url: URL(string: tokenURL)!)
         request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 30
         
-        let bodyParts = [
-            "client_id=\(clientId)",
-            "refresh_token=\(refreshToken)",
-            "grant_type=refresh_token",
-            "redirect_uri=\(redirectURI)"
+        let refreshBody: [String: String] = [
+            "client_id": clientId,
+            "grant_type": "refresh_token",
+            "refresh_token": refreshToken,
+            "scope": "openid profile email"
         ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: refreshBody)
         
-        request.httpBody = bodyParts.joined(separator: "&").data(using: .utf8)
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            self.lastErrorMessage = "Resposta inválida (refresh)"
+            throw URLError(.badServerResponse)
+        }
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Corpo de erro vazio"
+            self.lastErrorMessage = "Refresh HTTP \(httpResponse.statusCode): \(errorStr)"
+            self.currentRefreshToken = nil // invalida o refresh token
+            throw URLError(.badServerResponse)
+        }
         
-        return try await fetchAndParseToken(request: request)
+        struct RefreshResponse: Codable {
+            let id_token: String?
+            let access_token: String?
+            let refresh_token: String?
+        }
+        
+        let refreshResp = try JSONDecoder().decode(RefreshResponse.self, from: data)
+        
+        // Atualiza o refresh token se veio um novo
+        if let newRefresh = refreshResp.refresh_token {
+            self.currentRefreshToken = newRefresh
+        }
+        
+        // Se veio id_token, troca por API key
+        if let idToken = refreshResp.id_token {
+            return try await obtainApiKey(idToken: idToken)
+        }
+        
+        // Fallback: usa access_token direto
+        if let accessToken = refreshResp.access_token {
+            self.currentAccessToken = accessToken
+            self.hasValidToken = true
+            self.lastErrorMessage = nil
+            return accessToken
+        }
+        
+        self.lastErrorMessage = "Refresh não retornou tokens válidos"
+        throw URLError(.badServerResponse)
     }
     
+    // MARK: - Legacy fetchAndParseToken (unused, kept for reference)
     private func fetchAndParseToken(request: URLRequest) async throws -> String {
         let (data, response) = try await URLSession.shared.data(for: request)
         
@@ -300,7 +429,7 @@ actor OpenAIAuthManager {
                 self.tokenExpirationDate = expDate.addingTimeInterval(-300)
             } else {
                 // Fallback
-                self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval(tokenResponse.expires_in - 300))
+                self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval((tokenResponse.expires_in ?? 3600) - 300))
             }
             
             return tokenResponse.access_token
@@ -329,7 +458,8 @@ actor OpenAIAuthManager {
     private struct TokenResponse: Codable {
         let access_token: String
         let refresh_token: String?
-        let expires_in: Int
+        let id_token: String?
+        let expires_in: Int?
         let token_type: String?
     }
 
