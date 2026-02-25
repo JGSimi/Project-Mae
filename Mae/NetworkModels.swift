@@ -142,3 +142,110 @@ struct APIModelListResponse: Decodable {
 struct APIModelItem: Decodable, Identifiable {
     let id: String
 }
+
+// MARK: - ChatGPT Backend-API Models (chatgpt.com/backend-api/conversation)
+
+struct ChatGPTConversationRequest: Encodable {
+    let action: String
+    let messages: [ChatGPTMessage]
+    let model: String
+    let parent_message_id: String
+    
+    struct ChatGPTMessage: Encodable {
+        let id: String
+        let author: Author
+        let content: Content
+        
+        struct Author: Encodable {
+            let role: String
+        }
+        
+        struct Content: Encodable {
+            let content_type: String
+            let parts: [ChatGPTPart]
+        }
+    }
+    
+    /// Helper to create a simple user text request
+    static func userMessage(prompt: String, model: String, images: [String]? = nil) -> ChatGPTConversationRequest {
+        var parts: [ChatGPTPart] = []
+        
+        // Add images first if present
+        if let images = images {
+            for base64 in images {
+                parts.append(.imageAssetPointer(base64))
+            }
+        }
+        
+        // Add text prompt
+        parts.append(.text(prompt))
+        
+        let contentType = (images != nil && !images!.isEmpty) ? "multimodal_text" : "text"
+        
+        let message = ChatGPTMessage(
+            id: UUID().uuidString,
+            author: ChatGPTMessage.Author(role: "user"),
+            content: ChatGPTMessage.Content(
+                content_type: contentType,
+                parts: parts
+            )
+        )
+        
+        return ChatGPTConversationRequest(
+            action: "next",
+            messages: [message],
+            model: model,
+            parent_message_id: UUID().uuidString
+        )
+    }
+}
+
+/// A part in a ChatGPT message — can be text or an image
+enum ChatGPTPart: Encodable {
+    case text(String)
+    case imageAssetPointer(String) // base64
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let str):
+            try container.encode(str)
+        case .imageAssetPointer(let base64):
+            // ChatGPT backend-api expects inline image data in conversation
+            try container.encode("data:image/jpeg;base64,\(base64)")
+        }
+    }
+}
+
+/// Response from chatgpt.com/backend-api/conversation (streamed SSE)
+/// Each line is `data: {...}` with a message object
+struct ChatGPTConversationResponse: Decodable {
+    let message: ChatGPTResponseMessage?
+    let is_completion: Bool?
+    
+    struct ChatGPTResponseMessage: Decodable {
+        let id: String?
+        let author: Author?
+        let content: Content?
+        let status: String?
+        
+        struct Author: Decodable {
+            let role: String
+        }
+        
+        struct Content: Decodable {
+            let content_type: String?
+            let parts: [String]?
+        }
+    }
+}
+
+/// Models response from chatgpt.com/backend-api/models
+struct ChatGPTModelsResponse: Decodable {
+    let models: [ChatGPTModel]
+    
+    struct ChatGPTModel: Decodable {
+        let slug: String
+        let title: String?
+    }
+}

@@ -315,17 +315,16 @@ class AssistantViewModel: ObservableObject {
     }
     
     private func executeAPIRequest(prompt: String, images: [String]?) async throws -> String {
-        var baseEndpoint = SettingsManager.apiEndpoint
-        let isAnthropic = SettingsManager.selectedProvider == .anthropic
-        let isChatGPTPlus = SettingsManager.selectedProvider == .chatgptPlus
+        let provider = SettingsManager.selectedProvider
+        let isAnthropic = provider == .anthropic
+        let isChatGPTPlus = provider == .chatgptPlus
         
-        // Enforce a rota para a provedora ChatGPT Plus (mesma usada pela Codex CLI com JWT)
+        // ChatGPT Plus uses a completely different endpoint and request format
         if isChatGPTPlus {
-            if !baseEndpoint.contains("chat/completions") {
-                baseEndpoint = "https://api.openai.com/v1/chat/completions"
-            }
+            return try await executeChatGPTPlusRequest(prompt: prompt, images: images)
         }
         
+        let baseEndpoint = SettingsManager.apiEndpoint
         guard let url = URL(string: baseEndpoint) else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -333,15 +332,9 @@ class AssistantViewModel: ObservableObject {
         
         let apiKey = SettingsManager.apiKey
         
-        switch SettingsManager.selectedProvider {
+        switch provider {
         case .chatgptPlus:
-            // Codex CLI auth: obtém o Token via PKCE (OAuth) + ChatGPT-Account-ID header
-            let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
-            request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
-            // Critical: The ChatGPT-Account-ID header tells OpenAI which subscription to bill
-            if let accountId = await OpenAIAuthManager.shared.getAccountId() {
-                request.setValue(accountId, forHTTPHeaderField: "ChatGPT-Account-ID")
-            }
+            break // Handled above
             
         case .openai, .google, .custom:
             if !apiKey.isEmpty {
@@ -426,6 +419,86 @@ class AssistantViewModel: ObservableObject {
                 throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
             }
         }
+    }
+    
+    /// Executes a request via chatgpt.com/backend-api/conversation
+    /// This is the endpoint used by ChatGPT Plus/Pro subscriptions (same as Codex CLI / OpenClaw)
+    private func executeChatGPTPlusRequest(prompt: String, images: [String]?) async throws -> String {
+        let endpoint = "https://chatgpt.com/backend-api/conversation"
+        guard let url = URL(string: endpoint) else { throw URLError(.badURL) }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+        
+        // Auth: OAuth token + ChatGPT-Account-ID
+        let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
+        request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+        if let accountId = await OpenAIAuthManager.shared.getAccountId() {
+            request.setValue(accountId, forHTTPHeaderField: "ChatGPT-Account-ID")
+        }
+        
+        // Build the ChatGPT conversation request format
+        let modelName = SettingsManager.apiModelName
+        let payload = ChatGPTConversationRequest.userMessage(
+            prompt: prompt,
+            model: modelName,
+            images: images
+        )
+        
+        request.httpBody = try JSONEncoder().encode(payload)
+        
+        let (data, response) = try await session.data(for: request)
+        
+        if let httpRes = response as? HTTPURLResponse, !(200...299).contains(httpRes.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Unknown HTTP ERROR"
+            throw NSError(domain: "AssistantAPIError", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: "API Error: \(errorStr)"])
+        }
+        
+        // Parse SSE response: each line is "data: {...}" 
+        // We need the last complete assistant message
+        return parseChatGPTSSEResponse(data: data)
+    }
+    
+    /// Parses the SSE stream from chatgpt.com/backend-api/conversation
+    /// Extracts the final assistant message text from the streamed events
+    private func parseChatGPTSSEResponse(data: Data) -> String {
+        guard let responseString = String(data: data, encoding: .utf8) else {
+            return "Erro: resposta vazia"
+        }
+        
+        var lastAssistantText = ""
+        
+        let lines = responseString.components(separatedBy: "\n")
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            
+            // Skip non-data lines
+            guard trimmed.hasPrefix("data: ") else { continue }
+            
+            let jsonString = String(trimmed.dropFirst(6))
+            
+            // Skip the [DONE] marker
+            if jsonString == "[DONE]" { continue }
+            
+            guard let jsonData = jsonString.data(using: .utf8) else { continue }
+            
+            // Try to parse as ChatGPT conversation response
+            if let parsed = try? JSONDecoder().decode(ChatGPTConversationResponse.self, from: jsonData),
+               let message = parsed.message,
+               let author = message.author,
+               author.role == "assistant",
+               let content = message.content,
+               let parts = content.parts {
+                let text = parts.joined(separator: "")
+                if !text.isEmpty {
+                    lastAssistantText = text
+                }
+            }
+        }
+        
+        return lastAssistantText.isEmpty ? "Sem resposta do modelo" : lastAssistantText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func sendNotification(text: String) async {

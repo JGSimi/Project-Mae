@@ -20,8 +20,10 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google:
             return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-        case .openai, .chatgptPlus:
+        case .openai:
             return "https://api.openai.com/v1/chat/completions"
+        case .chatgptPlus:
+            return "https://chatgpt.com/backend-api/conversation"
         case .anthropic:
             return "https://api.anthropic.com/v1/messages" // Note: Anthropics format is different natively, but proxy endpoints exist. The user requested Anthropic so we add it conceptually.
         case .custom:
@@ -33,8 +35,10 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google:
             return "https://generativelanguage.googleapis.com/v1beta/openai/models"
-        case .openai, .chatgptPlus:
+        case .openai:
             return "https://api.openai.com/v1/models"
+        case .chatgptPlus:
+            return "https://chatgpt.com/backend-api/models"
         case .anthropic:
             return "https://api.anthropic.com/v1/models"
         case .custom:
@@ -64,15 +68,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
                 "chatgpt-4o-latest"
             ]
         case .chatgptPlus:
-            return [
-                "gpt-4o",
-                "gpt-4o-mini",
-                "gpt-4.1",
-                "gpt-4.1-mini",
-                "gpt-4.1-nano",
-                "o3-mini",
-                "chatgpt-4o-latest"
-            ]
+            return []  // Fetched dynamically from backend-api/models
         case .anthropic:
             return [
                 "claude-sonnet-4-20250514",
@@ -89,7 +85,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google: return "gemini-2.0-flash"
         case .openai: return "gpt-4o-mini"
-        case .chatgptPlus: return "gpt-4o"
+        case .chatgptPlus: return "auto"
         case .anthropic: return "claude-sonnet-4-20250514"
         case .custom: return ""
         }
