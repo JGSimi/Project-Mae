@@ -53,11 +53,32 @@ struct AnalysisView: View {
             HStack(spacing: 0) {
                 // Left Panel: Analysis
                 VStack(alignment: .leading) {
-                    Text("Análise de Tela")
-                        .font(Theme.Typography.title)
-                        .foregroundStyle(Theme.Colors.textPrimary)
-                        .padding(.top, 30) // Offset for titlebar
-                        .padding(.bottom, 10)
+                    HStack {
+                        Text("Análise de Tela")
+                            .font(Theme.Typography.title)
+                            .foregroundStyle(Theme.Colors.textPrimary)
+                        
+                        Spacer()
+                        
+                        if !viewModel.analysisResult.isEmpty && !viewModel.isAnalyzingScreen {
+                            Button(action: {
+                                viewModel.continueWithAnalysis()
+                                AnalysisWindowManager.shared.closeWindow()
+                            }) {
+                                Image(systemName: "message.and.waveform.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(Theme.Colors.accent)
+                                    .padding(8)
+                                    .background(Theme.Colors.surfaceSecondary)
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .help("Continuar conversa no chat")
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .padding(.top, 30) // Offset for titlebar
+                    .padding(.bottom, 10)
                         
                     if viewModel.isAnalyzingScreen {
                         VStack(spacing: 16) {

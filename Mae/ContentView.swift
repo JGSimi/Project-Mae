@@ -185,6 +185,23 @@ class AssistantViewModel: ObservableObject {
             print("Error processing AI: \(error)")
         }
     }
+
+    /// Transfere a análise atual para o chat principal
+    func continueWithAnalysis() {
+        guard !analysisResult.isEmpty else { return }
+        
+        let prompt = "Analise o que está na minha tela e me ajude de forma proativa. Não me pergunte o que fazer, apenas forneça a análise ou ajuda diretamente com base no contexto (por exemplo, se for um currículo, dê dicas; se for código, analise bugs, etc)."
+        
+        let userMsg = ChatMessage(content: prompt, images: analysisImage != nil ? [analysisImage!] : nil, isUser: true)
+        let assistantMsg = ChatMessage(content: analysisResult, images: nil, isUser: false)
+        
+        messages.append(userMsg)
+        messages.append(assistantMsg)
+        
+        // Limpa a análise atual após transferir
+        analysisResult = ""
+        analysisImage = nil
+    }
     
     private func captureScreen() -> NSImage? {
         // Obsolete in macOS 15.0: CGDisplayCreateImage(CGMainDisplayID())
