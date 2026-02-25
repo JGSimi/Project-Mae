@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - codex-login
     paths-ignore:
       - 'README.md'
       - '.gitignore'
