@@ -134,36 +134,7 @@ struct SettingsView: View {
             .padding(.horizontal, 20)
         }
         .background(MaePageBackground())
-        .overlay(alignment: .bottom) {
-            if selectedProvider == .chatgptPlus {
-                Button {
-                    Task {
-                        do {
-                            let token = try await OpenAIAuthManager.shared.getValidToken()
-                            print("Token obtained: \(token.prefix(15))...")
-                        } catch {
-                            print("Auth error: \(error)")
-                        }
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "link.badge.plus")
-                            .font(Theme.Typography.bodySmall)
-                        Text("Conectar Conta OpenAI / Plus")
-                            .font(Theme.Typography.bodyBold)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Theme.Colors.accent.opacity(0.1))
-                    .foregroundStyle(Theme.Colors.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .padding(.bottom, 24)
-                .maePressEffect()
-                .transition(.opacity)
-            }
-        }
+        .background(MaePageBackground())
         .overlay(alignment: .topTrailing) {
             MaeIconButton(icon: "xmark.circle.fill", size: 18, color: Theme.Colors.textSecondary, bgColor: .clear, helpText: "Fechar Configurações") {
                 withAnimation(Theme.Animation.smooth) {

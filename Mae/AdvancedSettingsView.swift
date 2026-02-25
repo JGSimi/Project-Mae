@@ -343,14 +343,43 @@ struct AdvancedSettingsView: View {
                             } else {
                                 MaeDivider()
                                 
-                                VStack(alignment: .leading, spacing: 8) {
+                                VStack(alignment: .leading, spacing: 12) {
                                     HStack {
                                         Image(systemName: "info.circle.fill")
-                                        Text("O ChatGPT Plus não usa chave de API. Volte à tela principal e clique em 'Conectar Conta'.")
+                                        Text("O ChatGPT Plus autentica direto pelo navegador, sem necessidade de chaves.")
                                             .font(Theme.Typography.bodySmall)
                                     }
                                     .foregroundStyle(Theme.Colors.textSecondary)
                                     .padding(.top, 4)
+                                    
+                                    Button {
+                                        Task {
+                                            do {
+                                                let token = try await OpenAIAuthManager.shared.getValidToken()
+                                                print("Token obtained: \(token.prefix(15))...")
+                                            } catch {
+                                                print("Auth error: \(error)")
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Image(systemName: "link.badge.plus")
+                                            Text("Conectar Conta OpenAI / Plus")
+                                                .font(Theme.Typography.bodyBold)
+                                            Spacer()
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 14)
+                                        .background(Theme.Colors.accent.opacity(0.15))
+                                        .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
+                                                .stroke(Theme.Colors.accent.opacity(0.3), lineWidth: 1)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .foregroundStyle(Theme.Colors.accent)
+                                    .maePressEffect()
                                 }
                                 .padding(Theme.Metrics.spacingLarge)
                             }

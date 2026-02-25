@@ -7,7 +7,7 @@ actor OpenAIAuthManager {
     static let shared = OpenAIAuthManager()
     
     private let clientId = "app_EMoamEEZ73f0CkXaXp7hrann"
-    private let redirectURI = "http://localhost:1455"
+    private let redirectURI = "http://localhost:1455/auth/callback"
     private let authURL = "https://auth.openai.com/oauth/authorize"
     private let tokenURL = "https://auth.openai.com/oauth/token"
     
@@ -21,6 +21,7 @@ actor OpenAIAuthManager {
     private var listener: NWListener?
     private var connection: NWConnection?
     private var authContinuation: CheckedContinuation<String, Error>?
+    private var timeoutTask: Task<Void, Never>?
     
     private init() {}
     
@@ -146,14 +147,18 @@ actor OpenAIAuthManager {
                 
                 listener?.start(queue: .global())
                 
-                // Timeout de 5 minutos
-                Task {
-                    try? await Task.sleep(nanoseconds: 300_000_000_000)
+                // Timeout de 2 minutos
+                timeoutTask?.cancel()
+                timeoutTask = Task {
+                    try? await Task.sleep(nanoseconds: 120_000_000_000)
+                    guard !Task.isCancelled else { return }
                     await self.failAuth(with: URLError(.timedOut))
                 }
             } catch {
                 continuation.resume(throwing: error)
                 self.authContinuation = nil
+                self.timeoutTask?.cancel()
+                self.timeoutTask = nil
             }
         }
     }
@@ -185,13 +190,14 @@ actor OpenAIAuthManager {
     }
     
     private func processHttpRequest(_ request: String) {
-        // Ex: GET /?code=ABC...&state=... HTTP/1.1
+        // Ex: GET /auth/callback?code=ABC...&state=... HTTP/1.1
         guard let firstLine = request.components(separatedBy: "\n").first else { return }
         let components = firstLine.components(separatedBy: " ")
         guard components.count >= 2, components[0] == "GET" else { return }
         
         let path = components[1]
         guard let urlComponents = URLComponents(string: path),
+              urlComponents.path == "/auth/callback",
               let queryItems = urlComponents.queryItems else { return }
         
         if let code = queryItems.first(where: { $0.name == "code" })?.value {
