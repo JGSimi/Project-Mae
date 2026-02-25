@@ -408,7 +408,7 @@ class AssistantViewModel: ObservableObject {
 
     private func sendNotification(text: String) async {
         let content = UNMutableNotificationContent()
-        content.title = "Mãe"
+        content.title = ">_"
         content.body = text
         content.sound = .default
 

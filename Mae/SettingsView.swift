@@ -12,7 +12,7 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             // Header Minimalista
             HStack {
-                Text("M.A.E")
+                Text(">_")
                     .font(Theme.Typography.heading)
                     .foregroundStyle(Theme.Colors.textPrimary)
             }
