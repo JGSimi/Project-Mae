@@ -232,6 +232,10 @@ struct MarkdownWebView: NSViewRepresentable {
             /* Remove margin from first/last elements */
             :first-child { margin-top: 0; }
             :last-child { margin-bottom: 0; }
+            
+            #content {
+                display: flow-root;
+            }
         </style>
         <!-- marked.js CDN - lightweight markdown parser -->
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -245,7 +249,13 @@ struct MarkdownWebView: NSViewRepresentable {
             function notifyHeight() {
                 const el = document.getElementById('content');
                 if (!el) return;
-                const h = el.offsetHeight;
+                
+                const bodyStyle = window.getComputedStyle(document.body);
+                const pt = parseFloat(bodyStyle.paddingTop) || 0;
+                const pb = parseFloat(bodyStyle.paddingBottom) || 0;
+                
+                const h = el.offsetHeight + pt + pb + 12; // +12px safety margin
+                
                 if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
                 }
@@ -478,6 +488,10 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
         
             :first-child { margin-top: 0; }
             :last-child { margin-bottom: 0; }
+            
+            #content {
+                display: flow-root;
+            }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         </head>
@@ -490,7 +504,13 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             function notifyHeight() {
                 const el = document.getElementById('content');
                 if (!el) return;
-                const h = el.offsetHeight;
+                
+                const bodyStyle = window.getComputedStyle(document.body);
+                const pt = parseFloat(bodyStyle.paddingTop) || 0;
+                const pb = parseFloat(bodyStyle.paddingBottom) || 0;
+                
+                const h = el.offsetHeight + pt + pb + 12; // +12px safety margin
+                
                 if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
                 }
