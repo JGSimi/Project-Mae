@@ -147,9 +147,11 @@ struct AnalysisView: View {
                             }
                             .frame(maxWidth: .infinity)
                         } else {
-                            MarkdownWebView(markdown: viewModel.analysisResult)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(.horizontal, 24)
+                            ScrollView {
+                                MarkdownWebView(markdown: viewModel.analysisResult)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 24)
+                            }
                         }
                         
                         // Follow-up input area

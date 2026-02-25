@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html><body>
+<div id="content" style="background:red;">Hello</div>
+<script>
+const ro = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        console.log(entry.contentRect.height);
+    }
+});
+ro.observe(document.getElementById('content'));
+</script>
+</body></html>

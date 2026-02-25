@@ -27,7 +27,12 @@ struct MarkdownWebView: NSViewRepresentable {
     }
     
     func makeNSView(context: Context) -> WKWebView {
+        let userContentController = WKUserContentController()
+        userContentController.add(context.coordinator, name: "heightChanged")
+        
         let config = WKWebViewConfiguration()
+        config.userContentController = userContentController
+        
         let webView = NonScrollingWKWebView(frame: .zero, configuration: config)
         webView.setValue(false, forKey: "drawsBackground")
         webView.navigationDelegate = context.coordinator
@@ -49,7 +54,7 @@ struct MarkdownWebView: NSViewRepresentable {
         }
     }
     
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: MarkdownWebView
         var lastMarkdown: String = ""
         weak var webView: WKWebView?
@@ -71,10 +76,18 @@ struct MarkdownWebView: NSViewRepresentable {
                 }
             }
         }
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if message.name == "heightChanged", let height = message.body as? CGFloat, height > 0 {
+                DispatchQueue.main.async {
+                    self.parent.contentHeight = height
+                }
+            }
+        }
     }
     
     // Expose the measured height to parent via a preference or frame
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: WKWebView, context: Context) -> CGSize? {
+        // Return intrinsic content height, but respect proposed width
         return CGSize(width: proposal.width ?? 300, height: contentHeight)
     }
     
@@ -229,25 +242,25 @@ struct MarkdownWebView: NSViewRepresentable {
             const md = `\(escapedMarkdown)`;
             document.getElementById('content').innerHTML = marked.parse(md);
         
-            // Notify the host about content height
             function notifyHeight() {
-                const h = document.body.scrollHeight;
-                window.webkit.messageHandlers.heightChanged && window.webkit.messageHandlers.heightChanged.postMessage(h);
+                const el = document.getElementById('content');
+                if (!el) return;
+                const h = el.offsetHeight;
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged) {
+                    window.webkit.messageHandlers.heightChanged.postMessage(h);
+                }
             }
         
-            // Use MutationObserver to detect when marked.js finishes rendering
-            const observer = new MutationObserver(() => {
-                notifyHeight();
-            });
-            observer.observe(document.getElementById('content'), { childList: true, subtree: true });
-        
-            // Also notify after images load
+            const ro = new ResizeObserver(() => notifyHeight());
+            ro.observe(document.getElementById('content'));
+            
             document.querySelectorAll('img').forEach(img => {
                 img.addEventListener('load', notifyHeight);
             });
-        
-            // Initial height notification
+            
             window.addEventListener('load', notifyHeight);
+            setTimeout(notifyHeight, 100);
+            setTimeout(notifyHeight, 500);
         </script>
         </body>
         </html>
@@ -475,21 +488,22 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             document.getElementById('content').innerHTML = marked.parse(md);
         
             function notifyHeight() {
-                const h = document.body.scrollHeight;
-                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged) {
+                const el = document.getElementById('content');
+                if (!el) return;
+                const h = el.offsetHeight;
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
                 }
             }
         
-            const observer = new MutationObserver(() => { notifyHeight(); });
-            observer.observe(document.getElementById('content'), { childList: true, subtree: true });
+            const ro = new ResizeObserver(() => notifyHeight());
+            ro.observe(document.getElementById('content'));
         
             document.querySelectorAll('img').forEach(img => {
                 img.addEventListener('load', notifyHeight);
             });
         
             window.addEventListener('load', notifyHeight);
-            // Fallback: measure after a short delay
             setTimeout(notifyHeight, 100);
             setTimeout(notifyHeight, 500);
         </script>
