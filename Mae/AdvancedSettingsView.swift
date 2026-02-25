@@ -487,12 +487,23 @@ struct AdvancedSettingsView: View {
     // MARK: - Helpers
     
     private func reloadModels() async {
-        guard selectedProvider.modelsEndpoint != nil, !apiKey.isEmpty else { return }
+        // For ChatGPT Plus, use the OAuth token; for others, use API key
+        let authToken: String
+        if selectedProvider == .chatgptPlus {
+            let status = OpenAIAuthManager.shared.getStatus()
+            guard status.hasToken else { return }
+            authToken = (try? await OpenAIAuthManager.shared.getValidToken()) ?? ""
+            guard !authToken.isEmpty else { return }
+        } else {
+            guard selectedProvider.modelsEndpoint != nil, !apiKey.isEmpty else { return }
+            authToken = apiKey
+        }
+        
         isFetchingModels = true
         defer { isFetchingModels = false }
         
         do {
-            let models = try await ModelFetcher.shared.fetchModels(for: selectedProvider, apiKey: apiKey)
+            let models = try await ModelFetcher.shared.fetchModels(for: selectedProvider, apiKey: authToken)
             if !models.isEmpty {
                 fetchedModels = models
                 if !models.contains(apiModelName), let first = models.first {

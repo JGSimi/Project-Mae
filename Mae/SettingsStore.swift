@@ -45,13 +45,55 @@ enum CloudProvider: String, CaseIterable, Identifiable {
     var availableModels: [String] {
         switch self {
         case .google:
-            return ["API não disponível"]
-        case .openai, .chatgptPlus:
-            return ["API não disponível"]
+            return [
+                "gemini-2.0-flash",
+                "gemini-2.0-flash-lite",
+                "gemini-1.5-flash",
+                "gemini-1.5-pro"
+            ]
+        case .openai:
+            return [
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-4.1",
+                "gpt-4.1-mini",
+                "gpt-4.1-nano",
+                "o3",
+                "o3-mini",
+                "o4-mini",
+                "chatgpt-4o-latest"
+            ]
+        case .chatgptPlus:
+            return [
+                "gpt-4o",
+                "gpt-4o-mini",
+                "gpt-4.1",
+                "gpt-4.1-mini",
+                "gpt-4.1-nano",
+                "o3",
+                "o3-mini",
+                "o4-mini",
+                "chatgpt-4o-latest"
+            ]
         case .anthropic:
-            return ["API não disponível"]
+            return [
+                "claude-sonnet-4-20250514",
+                "claude-3-7-sonnet-20250219",
+                "claude-3-5-haiku-20241022",
+                "claude-3-opus-20240229"
+            ]
         case .custom:
-            return ["API não disponível"]
+            return []
+        }
+    }
+    
+    var defaultModel: String {
+        switch self {
+        case .google: return "gemini-2.0-flash"
+        case .openai: return "gpt-4o-mini"
+        case .chatgptPlus: return "gpt-4o"
+        case .anthropic: return "claude-sonnet-4-20250514"
+        case .custom: return ""
         }
     }
 }
