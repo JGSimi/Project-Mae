@@ -21,12 +21,25 @@ extension KeyboardShortcuts.Name {
 
 
 // MARK: - Models
+enum MessageSource {
+    case chat
+    case screenAnalysis
+}
+
 struct ChatMessage: Identifiable {
     let id = UUID()
     let content: String
     var images: [NSImage]? = nil
     let isUser: Bool
+    let source: MessageSource
     let timestamp = Date()
+    
+    init(content: String, images: [NSImage]? = nil, isUser: Bool, source: MessageSource = .chat) {
+        self.content = content
+        self.images = images
+        self.isUser = isUser
+        self.source = source
+    }
 }
 
 // MARK: - Protocols for Testing
@@ -187,16 +200,23 @@ class AssistantViewModel: ObservableObject {
     }
 
     /// Transfere a análise atual para o chat principal
-    func continueWithAnalysis() {
+    func continueWithAnalysis(followUp: String? = nil) {
         guard !analysisResult.isEmpty else { return }
         
-        let prompt = "Analise o que está na minha tela e me ajude de forma proativa. Não me pergunte o que fazer, apenas forneça a análise ou ajuda diretamente com base no contexto (por exemplo, se for um currículo, dê dicas; se for código, analise bugs, etc)."
+        let prompt = "📸 Análise de Tela"
         
-        let userMsg = ChatMessage(content: prompt, images: analysisImage != nil ? [analysisImage!] : nil, isUser: true)
-        let assistantMsg = ChatMessage(content: analysisResult, images: nil, isUser: false)
+        let userMsg = ChatMessage(content: prompt, images: analysisImage != nil ? [analysisImage!] : nil, isUser: true, source: .screenAnalysis)
+        let assistantMsg = ChatMessage(content: analysisResult, images: nil, isUser: false, source: .screenAnalysis)
         
         messages.append(userMsg)
         messages.append(assistantMsg)
+        
+        // Se houver follow-up, enviar como nova mensagem
+        if let followUp = followUp, !followUp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            Task {
+                await executeRequest(prompt: followUp, rawImages: nil)
+            }
+        }
         
         // Limpa a análise atual após transferir
         analysisResult = ""
@@ -409,12 +429,28 @@ class AssistantViewModel: ObservableObject {
 struct ChatBubble: View {
     let message: ChatMessage
     @State private var isHovered = false
+    @State private var markdownHeight: CGFloat = 40
 
     var body: some View {
         HStack {
             if message.isUser { Spacer(minLength: 40) }
             
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 8) {
+            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
+                // Context label for screen analysis messages
+                if message.source == .screenAnalysis && message.isUser {
+                    HStack(spacing: 4) {
+                        Image(systemName: "camera.viewfinder")
+                            .font(.system(size: 10))
+                        Text("Análise de Tela")
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundStyle(Theme.Colors.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Theme.Colors.accent.opacity(0.15))
+                    .clipShape(Capsule())
+                }
+                
                 if let images = message.images {
                     ForEach(images.indices, id: \.self) { index in
                         Image(nsImage: images[index])
@@ -427,22 +463,24 @@ struct ChatBubble: View {
                 }
                 
                 if !message.content.isEmpty {
-                    let textBubble = Text(.init(message.content))
-                        .font(Theme.Typography.bodySmall)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .foregroundStyle(Theme.Colors.textPrimary)
-                    
                     if message.isUser {
-                        textBubble
+                        // User messages: plain text
+                        Text(.init(message.content))
+                            .font(Theme.Typography.bodySmall)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .foregroundStyle(Theme.Colors.textPrimary)
                             .maeGlassBackground(cornerRadius: Theme.Metrics.radiusMedium)
                             .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                             .textSelection(.enabled)
                     } else {
-                        textBubble
+                        // Assistant messages: rich markdown
+                        AutoSizingMarkdownWebView(markdown: message.content, measuredHeight: $markdownHeight)
+                            .frame(height: markdownHeight)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 4)
                             .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
                             .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
-                            .textSelection(.enabled)
                     }
                 }
             }
