@@ -522,7 +522,7 @@ struct ContentView: View {
             // Header
             HStack {
                 HStack(spacing: 6) {
-                    Text("M.a.e")
+                    Text(">_")
                         .font(Theme.Typography.heading)
                         .foregroundStyle(Theme.Colors.textPrimary)
                 }
