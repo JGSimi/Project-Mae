@@ -423,7 +423,45 @@ class AssistantViewModel: ObservableObject {
     
     /// Executes a request via chatgpt.com/backend-api/conversation
     /// This is the endpoint used by ChatGPT Plus/Pro subscriptions (same as Codex CLI / OpenClaw)
+    /// Includes automatic retry with exponential backoff for rate-limit and "unusual activity" errors.
     private func executeChatGPTPlusRequest(prompt: String, images: [String]?) async throws -> String {
+        let maxRetries = 3
+        var lastError: Error?
+        
+        for attempt in 0..<maxRetries {
+            do {
+                return try await performChatGPTPlusRequest(prompt: prompt, images: images)
+            } catch let error as NSError where error.domain == "AssistantAPIError" &&
+                (error.code == 429 || error.localizedDescription.contains("Unusual activity")) {
+                lastError = error
+                let delay = pow(2.0, Double(attempt)) // 1s, 2s, 4s
+                print("[ChatGPT+] Tentativa \(attempt + 1)/\(maxRetries) falhou (rate-limit/unusual activity). Aguardando \(delay)s...")
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+        }
+        
+        // All retries exhausted — throw a user-friendly Portuguese error
+        let underlying = (lastError as? NSError)?.localizedDescription ?? "Erro desconhecido"
+        throw NSError(
+            domain: "AssistantAPIError",
+            code: 429,
+            userInfo: [NSLocalizedDescriptionKey: "O ChatGPT detectou atividade incomum e bloqueou temporariamente. Aguarde alguns minutos e tente novamente. (Detalhe: \(underlying))"]
+        )
+    }
+    
+    /// Returns or creates a persistent device UUID for oai-device-id header.
+    private func getOrCreateDeviceId() -> String {
+        let key = "mae_oai_device_id"
+        if let existing = UserDefaults.standard.string(forKey: key) {
+            return existing
+        }
+        let newId = UUID().uuidString
+        UserDefaults.standard.set(newId, forKey: key)
+        return newId
+    }
+    
+    /// Single-attempt request to chatgpt.com/backend-api/conversation
+    private func performChatGPTPlusRequest(prompt: String, images: [String]?) async throws -> String {
         let endpoint = "https://chatgpt.com/backend-api/conversation"
         guard let url = URL(string: endpoint) else { throw URLError(.badURL) }
         
@@ -432,7 +470,10 @@ class AssistantViewModel: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         
-        // Auth: OAuth token + ChatGPT-Account-ID
+        // Persistent device ID (matches ChatGPT web client behavior)
+        request.setValue(getOrCreateDeviceId(), forHTTPHeaderField: "oai-device-id")
+        
+        // Auth: OAuth token + ChatGPT-Account-ID (same as Codex CLI)
         let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
         request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
         if let accountId = await OpenAIAuthManager.shared.getAccountId() {
