@@ -518,9 +518,6 @@ struct ContentView: View {
             // Header
             HStack {
                 HStack(spacing: 6) {
-                    Image(systemName: "moon.stars.fill")
-                        .font(Theme.Typography.bodySmall)
-                        .foregroundStyle(Theme.Colors.accent)
                     Text("M.a.e")
                         .font(Theme.Typography.heading)
                         .foregroundStyle(Theme.Colors.textPrimary)
