@@ -51,9 +51,9 @@ struct SettingsView: View {
                             
                             HStack(spacing: 6) {
                                 Circle()
-                                    .fill(inferenceMode == .local ? Color.green : Color.blue)
+                                    .fill(Theme.Colors.accent)
                                     .frame(width: 8, height: 8)
-                                    .shadow(color: (inferenceMode == .local ? Color.green : Color.blue).opacity(0.5), radius: 3)
+                                    .shadow(color: Theme.Colors.accent.opacity(0.4), radius: 3)
                                 
                                 Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
                                     .font(Theme.Typography.bodyBold)
@@ -80,7 +80,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(Theme.Typography.bodySmall)
-                            .foregroundStyle(.cyan.opacity(0.8))
+                            .foregroundStyle(Theme.Colors.accent.opacity(0.8))
                         Text("Verificar Atualizações")
                             .font(Theme.Typography.bodyBold)
                         Spacer()

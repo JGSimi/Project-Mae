@@ -18,45 +18,47 @@ extension Font {
 // MARK: - Core Theme
 enum Theme {
     enum Colors {
-        /// Base background for the main window and chat Area
-        static let background = Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0))
-        /// Base background for secondary windows (like Settings)
-        static let backgroundSecondary = Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0))
+        /// Base background — near-black
+        static let background = Color(NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0))
+        /// Secondary background — even deeper
+        static let backgroundSecondary = Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0))
         
-        /// Surface elements like assistant bubbles, header
-        static let surface = Color(NSColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 0.8))
-        /// Text field backgrounds and secondary elements
-        static let surfaceSecondary = Color.white.opacity(0.05)
+        /// Surface elements like assistant bubbles, cards
+        static let surface = Color.white.opacity(0.04)
+        /// Text fields, secondary cards
+        static let surfaceSecondary = Color.white.opacity(0.03)
         
-        /// Borders and dividers
-        static let border = Color.white.opacity(0.1)
-        /// Thicker borders for highlights
-        static let borderHighlight = Color.white.opacity(0.15)
+        /// Borders and dividers — very subtle
+        static let border = Color.white.opacity(0.06)
+        /// Slightly stronger borders for focused elements
+        static let borderHighlight = Color.white.opacity(0.10)
         
         /// Primary text
-        static let textPrimary = Color.white
-        /// Secondary text and placeholders
-        static let textSecondary = Color.white.opacity(0.6)
-        /// Subtle/Muted text
-        static let textMuted = Color.white.opacity(0.3)
+        static let textPrimary = Color.white.opacity(0.95)
+        /// Secondary/placeholder text
+        static let textSecondary = Color.white.opacity(0.50)
+        /// Muted/disabled text
+        static let textMuted = Color.white.opacity(0.25)
         
-        /// Accent color (active states)
-        static let accent = Color.white
+        /// Warm gold accent — elegant & sophisticated
+        static let accent = Color(red: 0.788, green: 0.663, blue: 0.431) // #C9A96E
+        /// Subtle accent for backgrounds
+        static let accentSubtle = Color(red: 0.788, green: 0.663, blue: 0.431).opacity(0.15)
     }
     
     enum Typography {
-        static let title = Font.cormorantGaramond(size: 24, weight: .bold)
-        static let heading = Font.cormorantGaramond(size: 18, weight: .semibold)
-        static let bodyBold = Font.cormorantGaramond(size: 16, weight: .medium)
-        static let body = Font.cormorantGaramond(size: 16, weight: .regular)
-        static let bodySmall = Font.cormorantGaramond(size: 14, weight: .regular)
-        static let caption = Font.cormorantGaramond(size: 12, weight: .light)
+        static let title = Font.cormorantGaramond(size: 26, weight: .bold)
+        static let heading = Font.cormorantGaramond(size: 20, weight: .semibold)
+        static let bodyBold = Font.cormorantGaramond(size: 15, weight: .medium)
+        static let body = Font.cormorantGaramond(size: 15, weight: .regular)
+        static let bodySmall = Font.cormorantGaramond(size: 13, weight: .regular)
+        static let caption = Font.cormorantGaramond(size: 11, weight: .light)
     }
     
     enum Metrics {
         static let radiusSmall: CGFloat = 8
-        static let radiusMedium: CGFloat = 14
-        static let radiusLarge: CGFloat = 18
+        static let radiusMedium: CGFloat = 16
+        static let radiusLarge: CGFloat = 22
         
         static let spacingSmall: CGFloat = 8
         static let spacingDefault: CGFloat = 12
@@ -67,14 +69,15 @@ enum Theme {
 
 // MARK: - Reusable UI Components
 extension View {
-    /// Glassmorphism style for user bubbles and floating areas
+    /// Glassmorphism style for user bubbles — subtle gold tint
     func maeGlassBackground(cornerRadius: CGFloat = Theme.Metrics.radiusMedium) -> some View {
         self
-            .background(AnyShapeStyle(.ultraThinMaterial))
+            .background(.ultraThinMaterial)
+            .background(Theme.Colors.accent.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Theme.Colors.border, lineWidth: 1)
+                    .stroke(Theme.Colors.accent.opacity(0.12), lineWidth: 1)
             )
     }
     

@@ -118,12 +118,12 @@ struct WelcomeView: View {
             // Header Image / Icon
             VStack(spacing: 16) {
                 Image(systemName: "sparkles")
-                    .font(.cormorantGaramond(size: 48, weight: .light))
-                    .foregroundColor(.primary)
+                    .font(.system(size: 40, weight: .ultraLight))
+                    .foregroundColor(Color(red: 0.788, green: 0.663, blue: 0.431))
                 
                 Text("Bem-vindo à Mãe")
                     .font(.cormorantGaramond(size: 32, weight: .semibold))
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white.opacity(0.95))
             }
             .padding(.top, 50)
             .padding(.bottom, 20)
@@ -133,27 +133,27 @@ struct WelcomeView: View {
                 Text("Sua assistente inteligente sempre disponível na barra de menus.")
                     .font(.cormorantGaramond(size: 20))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.5))
                     .padding(.horizontal)
                 
                 VStack(spacing: 20) {
                     FeatureRow(
                         icon: "arrow.up.to.line.compact",
-                        iconColor: .primary,
+                        iconColor: Color(red: 0.788, green: 0.663, blue: 0.431),
                         title: "Sempre Pronta",
                         description: "Clique no ícone na barra de menus no topo da tela (perto do relógio) para abrir o chat a qualquer momento."
                     )
                     
                     FeatureRow(
                         icon: "macwindow.badge.plus",
-                        iconColor: .primary,
+                        iconColor: Color(red: 0.788, green: 0.663, blue: 0.431),
                         title: "Análise de Tela Inteligente",
                         description: "Pressione ⌘ + ⇧ + Z para capturar sua tela e receber ajuda contextual automática."
                     )
                     
                     FeatureRow(
                         icon: "doc.on.clipboard",
-                        iconColor: .primary,
+                        iconColor: Color(red: 0.788, green: 0.663, blue: 0.431),
                         title: "Análise de Área de Transferência",
                         description: "Pressione ⌘ + ⇧ + X para que a IA analise imediatamente o que você copiou."
                     )
@@ -167,19 +167,34 @@ struct WelcomeView: View {
                 }) {
                     Text("Começar a Usar")
                         .font(.cormorantGaramond(size: 16, weight: .semibold))
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 30)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 32)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color(red: 0.788, green: 0.663, blue: 0.431).opacity(0.85))
+                )
                 .padding(.bottom, 30)
             }
             .padding(.top, 10)
             .frame(maxHeight: .infinity)
-            .background(Color(NSColor.windowBackgroundColor))
         }
+        .background(
+            ZStack {
+                Color(NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0))
+                RadialGradient(
+                    gradient: Gradient(colors: [Color(red: 0.788, green: 0.663, blue: 0.431).opacity(0.04), .clear]),
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: 400
+                )
+            }
+        )
         .edgesIgnoringSafeArea(.all)
         .frame(width: 600, height: 500)
+        .preferredColorScheme(.dark)
     }
 }
 
@@ -192,17 +207,18 @@ struct FeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
-                .font(.cormorantGaramond(size: 24, weight: .medium))
+                .font(.system(size: 20, weight: .light))
                 .foregroundColor(iconColor)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.cormorantGaramond(size: 16, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.9))
                 
                 Text(description)
                     .font(.cormorantGaramond(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.white.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()

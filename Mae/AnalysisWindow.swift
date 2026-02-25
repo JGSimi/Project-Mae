@@ -75,9 +75,9 @@ struct AnalysisView: View {
                                 }) {
                                     Image(systemName: "arrow.trianglehead.2.counterclockwise.rotate.90")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                        .foregroundStyle(Theme.Colors.accent)
                                         .padding(8)
-                                        .background(Theme.Colors.surfaceSecondary)
+                                        .background(Theme.Colors.accentSubtle)
                                         .clipShape(Circle())
                                 }
                                 .buttonStyle(.plain)
@@ -100,9 +100,9 @@ struct AnalysisView: View {
                                 }) {
                                     Image(systemName: "bubble.left.and.bubble.right.fill")
                                         .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                        .foregroundStyle(Theme.Colors.accent)
                                         .padding(8)
-                                        .background(Theme.Colors.surfaceSecondary)
+                                        .background(Theme.Colors.accentSubtle)
                                         .clipShape(Circle())
                                 }
                                 .buttonStyle(.plain)
@@ -133,8 +133,8 @@ struct AnalysisView: View {
                             VStack {
                                 Spacer()
                                 Image(systemName: "magnifyingglass")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(Theme.Colors.textMuted)
+                                    .font(.system(size: 40, weight: .ultraLight))
+                                    .foregroundColor(Theme.Colors.accent.opacity(0.3))
                                     .padding(.bottom, 8)
                                 Text("Nenhuma análise disponível.")
                                     .font(Theme.Typography.bodySmall)

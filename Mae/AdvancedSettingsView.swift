@@ -99,7 +99,7 @@ class AdvancedSettingsWindowManager {
         
         // Window general dark appearance
         newWindow.appearance = NSAppearance(named: .darkAqua)
-        newWindow.backgroundColor = NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0) // Solid dark gray/black
+        newWindow.backgroundColor = NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0)
         
         newWindow.isReleasedWhenClosed = false
         newWindow.center()
@@ -168,12 +168,12 @@ struct AdvancedSettingsView: View {
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 250)
             // Override sidebar background for that solid dark look
             .scrollContentBackground(.hidden)
-            .background(Color(NSColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)))
+            .background(Color(NSColor(red: 0.04, green: 0.04, blue: 0.05, alpha: 1.0)))
             
         } detail: {
             // MARK: - Detail Setup
             ZStack {
-                Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)) // Even darker content bg
+                Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0)) // Deep content bg
                     .ignoresSafeArea()
                 
                 ScrollView {

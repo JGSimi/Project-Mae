@@ -134,7 +134,7 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         
             h1 { font-size: 24px; font-weight: 700; }
-            h2 { font-size: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+            h2 { font-size: 20px; border-bottom: 1px solid rgba(201,169,110,0.2); padding-bottom: 6px; }
             h3 { font-size: 16px; font-weight: 600; }
             h4 { font-size: 14px; font-weight: 600; }
         
@@ -152,11 +152,12 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         
             a {
-                color: #6cb4ee;
+                color: #C9A96E;
                 text-decoration: none;
             }
             a:hover {
                 text-decoration: underline;
+                color: #d4b97e;
             }
         
             ul, ol {
@@ -182,17 +183,17 @@ struct MarkdownWebView: NSViewRepresentable {
             code {
                 font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
                 font-size: 13px;
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.05);
                 padding: 2px 6px;
                 border-radius: 4px;
-                color: #e8e8e8;
+                color: #e0e0e0;
             }
         
             pre {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                padding: 12px 16px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 10px;
+                padding: 14px 18px;
                 margin-bottom: 12px;
                 overflow-x: auto;
             }
@@ -205,10 +206,10 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         
             blockquote {
-                border-left: 3px solid rgba(255, 255, 255, 0.25);
+                border-left: 3px solid rgba(201, 169, 110, 0.4);
                 padding-left: 14px;
                 margin-bottom: 12px;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 0.65);
                 font-style: italic;
             }
         
@@ -225,7 +226,7 @@ struct MarkdownWebView: NSViewRepresentable {
             }
         
             th {
-                background: rgba(255, 255, 255, 0.06);
+                background: rgba(201, 169, 110, 0.04);
                 font-weight: 600;
             }
         
@@ -394,7 +395,7 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             }
         
             h1 { font-size: 20px; font-weight: 700; }
-            h2 { font-size: 17px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+            h2 { font-size: 17px; border-bottom: 1px solid rgba(201,169,110,0.2); padding-bottom: 4px; }
             h3 { font-size: 15px; font-weight: 600; }
             h4 { font-size: 13px; font-weight: 600; }
         
@@ -412,11 +413,12 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             }
         
             a {
-                color: #6cb4ee;
+                color: #C9A96E;
                 text-decoration: none;
             }
             a:hover {
                 text-decoration: underline;
+                color: #d4b97e;
             }
         
             ul, ol {
@@ -442,17 +444,17 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             code {
                 font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
                 font-size: 12px;
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.05);
                 padding: 2px 5px;
                 border-radius: 4px;
-                color: #e8e8e8;
+                color: #e0e0e0;
             }
         
             pre {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                padding: 10px 14px;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 10px;
+                padding: 12px 16px;
                 margin-bottom: 10px;
                 overflow-x: auto;
             }
@@ -465,10 +467,10 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             }
         
             blockquote {
-                border-left: 3px solid rgba(255, 255, 255, 0.25);
+                border-left: 3px solid rgba(201, 169, 110, 0.4);
                 padding-left: 12px;
                 margin-bottom: 10px;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 0.65);
                 font-style: italic;
             }
         
@@ -486,7 +488,7 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             }
         
             th {
-                background: rgba(255, 255, 255, 0.06);
+                background: rgba(201, 169, 110, 0.04);
                 font-weight: 600;
             }
         

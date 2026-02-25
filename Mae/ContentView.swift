@@ -447,7 +447,7 @@ struct ChatBubble: View {
                     .foregroundStyle(Theme.Colors.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Theme.Colors.accent.opacity(0.15))
+                    .background(Theme.Colors.accentSubtle)
                     .clipShape(Capsule())
                 }
                 
@@ -457,36 +457,34 @@ struct ChatBubble: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(maxHeight: 250)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .shadow(color: .black.opacity(0.3), radius: 4)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .shadow(color: .black.opacity(0.15), radius: 6)
                     }
                 }
                 
                 if !message.content.isEmpty {
                     if message.isUser {
-                        // User messages: plain text
                         Text(.init(message.content))
                             .font(Theme.Typography.bodySmall)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
                             .foregroundStyle(Theme.Colors.textPrimary)
                             .maeGlassBackground(cornerRadius: Theme.Metrics.radiusMedium)
-                            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                            .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
                             .textSelection(.enabled)
                     } else {
-                        // Assistant messages: rich markdown
                         AutoSizingMarkdownWebView(markdown: message.content, measuredHeight: $markdownHeight)
                             .frame(height: markdownHeight)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 4)
                             .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
-                            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                            .shadow(color: Color.black.opacity(0.10), radius: 4, x: 0, y: 2)
                     }
                 }
             }
-            .scaleEffect(isHovered ? 1.01 : 1.0)
+            .scaleEffect(isHovered ? 1.005 : 1.0)
             .onHover { hovering in
-                withAnimation(.easeInOut(duration: 0.2)) {
+                withAnimation(.easeInOut(duration: 0.25)) {
                     isHovered = hovering
                 }
             }
@@ -548,54 +546,45 @@ struct ContentView: View {
 
     private var chatView: some View {
         VStack(spacing: 0) {
-            // Header
+            // Header — minimal with gradient fade
             HStack {
-                Label("Chat", systemImage: "sparkles")
-                    .font(Theme.Typography.bodyBold)
-                    .foregroundStyle(Theme.Colors.textPrimary)
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.Colors.accent)
+                    Text("Mãe")
+                        .font(Theme.Typography.heading)
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                }
                 
                 Spacer()
                 
-                HStack(spacing: 16) {
-                    Button(action: {
+                HStack(spacing: 14) {
+                    headerButton(icon: "macwindow.badge.plus", help: "Abrir Janela de Análise") {
                         AnalysisWindowManager.shared.showWindow()
-                    }) {
-                        Image(systemName: "macwindow.badge.plus")
-                            .font(Theme.Typography.body)
-                            .foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .help("Abrir Janela de Análise")
-                    
-                    Button(action: {
-                        withAnimation {
-                            viewModel.clearHistory()
-                        }
-                    }) {
-                        Image(systemName: "trash")
-                            .font(Theme.Typography.body)
-                            .foregroundStyle(.secondary)
+                    headerButton(icon: "trash", help: "Limpar histórico") {
+                        withAnimation { viewModel.clearHistory() }
                     }
-                    .buttonStyle(.plain)
-                    .help("Limpar histórico")
-                    
-                    Button(action: {
+                    headerButton(icon: "gearshape", help: "Configurações") {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             showSettings = true
                         }
-                    }) {
-                        Image(systemName: "gearshape")
-                            .font(Theme.Typography.body)
-                            .foregroundStyle(.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .help("Configurações")
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
             .background(Theme.Colors.background)
-            .overlay(Divider().background(Theme.Colors.border), alignment: .bottom)
+            .overlay(
+                LinearGradient(
+                    colors: [Theme.Colors.border, .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(height: 1),
+                alignment: .bottom
+            )
             .zIndex(1)
 
             // Chat List
@@ -603,10 +592,16 @@ struct ContentView: View {
                 ScrollView {
                     LazyVStack(spacing: 0) {
                         if viewModel.messages.isEmpty {
-                            VStack(spacing: 16) {
-                                Text("Sem Mensagens.")
+                            VStack(spacing: 12) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 32, weight: .light))
+                                    .foregroundStyle(Theme.Colors.accent.opacity(0.4))
+                                Text("Comece uma conversa")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundStyle(Theme.Colors.textMuted)
+                                Text("Pergunte qualquer coisa à Mãe.")
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(Theme.Colors.textMuted.opacity(0.6))
                             }
                             .padding(.top, 120)
                             .frame(maxWidth: .infinity)
@@ -627,7 +622,7 @@ struct ContentView: View {
                     .padding(.vertical, 12)
                 }
                 .scrollContentBackground(.hidden)
-                .background(.ultraThinMaterial)
+                .background(Theme.Colors.background)
                 .onChange(of: viewModel.messages.count) {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         proxy.scrollTo(bottomID, anchor: .bottom)
@@ -667,7 +662,14 @@ struct ContentView: View {
                     }
                 }
 
-                Divider().background(Theme.Colors.border)
+                // Gradient divider instead of hard line
+                LinearGradient(
+                    colors: [.clear, Theme.Colors.border, .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(height: 1)
+                
                 HStack(alignment: .center, spacing: 12) {
                     Button {
                         let panel = NSOpenPanel()
@@ -682,7 +684,7 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "photo.badge.plus")
-                            .font(Theme.Typography.heading)
+                            .font(.system(size: 18, weight: .light))
                             .foregroundStyle(Theme.Colors.textSecondary)
                     }
                     .buttonStyle(.plain)
@@ -693,12 +695,12 @@ struct ContentView: View {
                         .font(Theme.Typography.bodySmall)
                         .foregroundStyle(Theme.Colors.textPrimary)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 11)
                         .background(Theme.Colors.surfaceSecondary)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous)
-                                .stroke(Theme.Colors.borderHighlight, lineWidth: 1)
+                                .stroke(Theme.Colors.border, lineWidth: 1)
                         )
                         .lineLimit(1...6)
                         .onSubmit {
@@ -715,20 +717,20 @@ struct ContentView: View {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
                             Image(systemName: "arrow.up.circle.fill")
-                                .font(Font.system(size: 28)) // Use system font for SFSymbols size consistency if needed, but Theme.Typography.title might be better.
+                                .font(Font.system(size: 28))
                                 .foregroundStyle(
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
-                                    ? Theme.Colors.textSecondary : Theme.Colors.accent
+                                    ? Theme.Colors.textMuted : Theme.Colors.accent
                                 )
-                                .background(Color.black.clipShape(Circle()))
+                                .background(Theme.Colors.background.clipShape(Circle()))
                         }
                         .buttonStyle(.plain)
                         .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
                         .keyboardShortcut(.defaultAction)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 14)
                 .background(Theme.Colors.background)
             }
             .zIndex(1)
@@ -752,6 +754,18 @@ struct ContentView: View {
             }
             return true
         }
+    }
+    
+    /// Reusable header icon button with hover gold tint
+    @ViewBuilder
+    private func headerButton(icon: String, help: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(Theme.Colors.textSecondary)
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 }
 
