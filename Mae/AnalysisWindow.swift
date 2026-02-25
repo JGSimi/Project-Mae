@@ -54,7 +54,8 @@ struct AnalysisView: View {
                 // Left Panel: Analysis
                 VStack(alignment: .leading) {
                     Text("Análise de Tela")
-                        .font(.cormorantGaramond(size: 20, weight: .bold))
+                        .font(Theme.Typography.title)
+                        .foregroundStyle(Theme.Colors.textPrimary)
                         .padding(.top, 30) // Offset for titlebar
                         .padding(.bottom, 10)
                         
@@ -64,8 +65,8 @@ struct AnalysisView: View {
                             ProgressView()
                                 .controlSize(.regular)
                             Text("Analisando...")
-                                .font(.cormorantGaramond(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary)
+                                .font(Theme.Typography.bodyBold)
+                                .foregroundColor(Theme.Colors.textSecondary)
                             Spacer()
                         }
                         .frame(maxWidth: .infinity)
@@ -73,21 +74,21 @@ struct AnalysisView: View {
                         VStack {
                             Spacer()
                             Image(systemName: "magnifyingglass")
-                                .font(.cormorantGaramond(size: 40))
-                                .foregroundColor(.secondary.opacity(0.5))
+                                .font(.system(size: 40))
+                                .foregroundColor(Theme.Colors.textMuted)
                                 .padding(.bottom, 8)
                             Text("Nenhuma análise disponível.")
-                                .font(.cormorantGaramond(size: 14))
-                                .foregroundColor(.secondary)
+                                .font(Theme.Typography.bodySmall)
+                                .foregroundColor(Theme.Colors.textSecondary)
                             Spacer()
                         }
                         .frame(maxWidth: .infinity)
                     } else {
                         ScrollView {
                             Text(try! AttributedString(markdown: viewModel.analysisResult, options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-                                .font(.cormorantGaramond(size: 15))
+                                .font(Theme.Typography.body)
                                 .lineSpacing(6)
-                                .foregroundColor(Color.primary.opacity(0.9))
+                                .foregroundColor(Theme.Colors.textPrimary)
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.top, 8)
@@ -113,16 +114,16 @@ struct AnalysisView: View {
                     } else {
                         VStack(spacing: 16) {
                             Image(systemName: "photo.on.rectangle.angled")
-                                .font(.cormorantGaramond(size: 60))
-                                .foregroundColor(.secondary.opacity(0.3))
+                                .font(.system(size: 60))
+                                .foregroundColor(Theme.Colors.textMuted)
                             Text("Nenhuma captura de tela no momento.")
-                                .font(.cormorantGaramond(size: 16, weight: .semibold))
-                                .foregroundColor(.secondary.opacity(0.8))
+                                .font(Theme.Typography.bodyBold)
+                                .foregroundColor(Theme.Colors.textSecondary)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(NSColor.windowBackgroundColor))
+                .background(Theme.Colors.background)
             }
         }
         .edgesIgnoringSafeArea(.top)

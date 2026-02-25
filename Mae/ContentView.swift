@@ -410,23 +410,23 @@ struct ChatBubble: View {
                 }
                 
                 if !message.content.isEmpty {
-                    Text(.init(message.content))
-                        .font(.cormorantGaramond(size: 14))
+                    let textBubble = Text(.init(message.content))
+                        .font(Theme.Typography.bodySmall)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .foregroundStyle(.white)
-                        .background(
-                            message.isUser
-                                ? AnyShapeStyle(.ultraThinMaterial)
-                                : AnyShapeStyle(Color(NSColor(red: 0.12, green: 0.12, blue: 0.13, alpha: 0.8)))
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
-                        .textSelection(.enabled)
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                    
+                    if message.isUser {
+                        textBubble
+                            .maeGlassBackground(cornerRadius: Theme.Metrics.radiusMedium)
+                            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                            .textSelection(.enabled)
+                    } else {
+                        textBubble
+                            .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
+                            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                            .textSelection(.enabled)
+                    }
                 }
             }
             .scaleEffect(isHovered ? 1.01 : 1.0)
@@ -496,8 +496,8 @@ struct ContentView: View {
             // Header
             HStack {
                 Label("Chat", systemImage: "sparkles")
-                    .font(.cormorantGaramond(size: 16, weight: .medium))
-                    .foregroundStyle(.white)
+                    .font(Theme.Typography.bodyBold)
+                    .foregroundStyle(Theme.Colors.textPrimary)
                 
                 Spacer()
                 
@@ -506,7 +506,7 @@ struct ContentView: View {
                         AnalysisWindowManager.shared.showWindow()
                     }) {
                         Image(systemName: "macwindow.badge.plus")
-                            .font(.cormorantGaramond(size: 16, weight: .regular))
+                            .font(Theme.Typography.body)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -518,7 +518,7 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "trash")
-                            .font(.cormorantGaramond(size: 16, weight: .regular))
+                            .font(Theme.Typography.body)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -530,7 +530,7 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "gearshape")
-                            .font(.cormorantGaramond(size: 16, weight: .regular))
+                            .font(Theme.Typography.body)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -539,8 +539,8 @@ struct ContentView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0)))
-            .overlay(Divider().background(Color.white.opacity(0.1)), alignment: .bottom)
+            .background(Theme.Colors.background)
+            .overlay(Divider().background(Theme.Colors.border), alignment: .bottom)
             .zIndex(1)
 
             // Chat List
@@ -550,8 +550,8 @@ struct ContentView: View {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: 16) {
                                 Text("Sem Mensagens.")
-                                    .font(.cormorantGaramond(size: 16, weight: .medium))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(Theme.Typography.bodyBold)
+                                    .foregroundStyle(Theme.Colors.textMuted)
                             }
                             .padding(.top, 120)
                             .frame(maxWidth: .infinity)
@@ -612,7 +612,7 @@ struct ContentView: View {
                     }
                 }
 
-                Divider().background(Color.white.opacity(0.1))
+                Divider().background(Theme.Colors.border)
                 HStack(alignment: .center, spacing: 12) {
                     Button {
                         let panel = NSOpenPanel()
@@ -627,23 +627,23 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "photo.badge.plus")
-                            .font(.cormorantGaramond(size: 18))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .font(Theme.Typography.heading)
+                            .foregroundStyle(Theme.Colors.textSecondary)
                     }
                     .buttonStyle(.plain)
                     .help("Anexar imagem")
 
                     TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(.cormorantGaramond(size: 14))
-                        .foregroundStyle(.white)
+                        .font(Theme.Typography.bodySmall)
+                        .foregroundStyle(Theme.Colors.textPrimary)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.05))
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(Theme.Colors.surfaceSecondary)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous)
+                                .stroke(Theme.Colors.borderHighlight, lineWidth: 1)
                         )
                         .lineLimit(1...6)
                         .onSubmit {
@@ -660,10 +660,10 @@ struct ContentView: View {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
                             Image(systemName: "arrow.up.circle.fill")
-                                .font(.cormorantGaramond(size: 28))
+                                .font(Font.system(size: 28)) // Use system font for SFSymbols size consistency if needed, but Theme.Typography.title might be better.
                                 .foregroundStyle(
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
-                                    ? Color.white.opacity(0.2) : .white
+                                    ? Theme.Colors.textSecondary : Theme.Colors.accent
                                 )
                                 .background(Color.black.clipShape(Circle()))
                         }
@@ -674,7 +674,7 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color(NSColor(red: 0.1, green: 0.1, blue: 0.11, alpha: 1.0)))
+                .background(Theme.Colors.background)
             }
             .zIndex(1)
         }

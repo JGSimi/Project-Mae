@@ -11,8 +11,8 @@ struct SettingsView: View {
             // Header Minimalista
             HStack {
                 Text("M.A.E")
-                    .font(.cormorantGaramond(size: 18, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(Theme.Typography.heading)
+                    .foregroundStyle(Theme.Colors.textPrimary)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -25,8 +25,8 @@ struct SettingsView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Processamento")
-                                .font(.cormorantGaramond(size: 12, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.5))
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(Theme.Colors.textSecondary)
                             
                             Picker("", selection: $inferenceMode) {
                                 ForEach(InferenceMode.allCases) { mode in
@@ -40,14 +40,14 @@ struct SettingsView: View {
                     }
                     .padding(16)
                     
-                    Divider().background(Color.white.opacity(0.08))
+                    Divider().background(Theme.Colors.border)
                     
                     // Row do Modelo Ativo
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Modelo Ativo")
-                                .font(.cormorantGaramond(size: 12, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.5))
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(Theme.Colors.textSecondary)
                             
                             HStack(spacing: 6) {
                                 Circle()
@@ -56,19 +56,19 @@ struct SettingsView: View {
                                     .shadow(color: (inferenceMode == .local ? Color.green : Color.blue).opacity(0.5), radius: 3)
                                 
                                 Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
-                                    .font(.cormorantGaramond(size: 14, weight: .semibold))
-                                    .foregroundStyle(.white)
+                                    .font(Theme.Typography.bodyBold)
+                                    .foregroundStyle(Theme.Colors.textPrimary)
                             }
                         }
                         Spacer()
                     }
                     .padding(16)
                 }
-                .background(Color.white.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(Theme.Colors.surfaceSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous)
+                        .stroke(Theme.Colors.border, lineWidth: 1)
                 )
                 
                 Spacer()
@@ -79,19 +79,19 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.cormorantGaramond(size: 14))
+                            .font(Theme.Typography.bodySmall)
                             .foregroundStyle(.cyan.opacity(0.8))
                         Text("Verificar Atualizações")
-                            .font(.cormorantGaramond(size: 14, weight: .medium))
+                            .font(Theme.Typography.bodyBold)
                         Spacer()
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
-                    .background(Color.white.opacity(0.03))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.Colors.surfaceSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -103,21 +103,21 @@ struct SettingsView: View {
                 } label: {
                     HStack {
                         Image(systemName: "gearshape.fill")
-                            .font(.cormorantGaramond(size: 14))
+                            .font(Theme.Typography.bodySmall)
                         Text("Configurações Avançadas")
-                            .font(.cormorantGaramond(size: 14, weight: .medium))
+                            .font(Theme.Typography.bodyBold)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.cormorantGaramond(size: 12, weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.4))
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(Theme.Colors.textSecondary)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
-                    .background(Color.white.opacity(0.03))
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .background(Theme.Colors.surfaceSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -128,7 +128,7 @@ struct SettingsView: View {
         // Fundo super escuro (estilo material glass) com gradiente radial sutil para não ficar chapado
         .background(
             ZStack {
-                Color(NSColor(red: 0.05, green: 0.05, blue: 0.06, alpha: 1.0)).ignoresSafeArea()
+                Theme.Colors.backgroundSecondary.ignoresSafeArea()
                 RadialGradient(
                     gradient: Gradient(colors: [Color.white.opacity(0.03), .clear]),
                     center: .topLeading,
