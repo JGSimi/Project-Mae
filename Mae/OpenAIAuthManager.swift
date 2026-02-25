@@ -138,9 +138,24 @@ actor OpenAIAuthManager {
         // Salva refresh token para renovações futuras
         self.currentRefreshToken = tokens.refresh_token
         
-        // Step 2: Exchange id_token for actual API Key
-        let apiKey = try await obtainApiKey(idToken: tokens.id_token)
-        return apiKey
+        // Step 2: Try to exchange id_token for an API Key (optional, like Codex CLI .ok())
+        // If user doesn't have an API platform org, this will fail — fall back to access_token
+        if let apiKey = try? await obtainApiKey(idToken: tokens.id_token) {
+            return apiKey
+        }
+        
+        // Fallback: use the access_token directly (ChatGPT Plus auth)
+        self.currentAccessToken = tokens.access_token
+        self.hasValidToken = true
+        self.lastErrorMessage = nil
+        
+        if let expDate = JWTDecoder.decodeExpiration(jwtToken: tokens.access_token) {
+            self.tokenExpirationDate = expDate.addingTimeInterval(-300)
+        } else {
+            self.tokenExpirationDate = Date().addingTimeInterval(3300)
+        }
+        
+        return tokens.access_token
     }
     
     // MARK: - Local Server Callback
