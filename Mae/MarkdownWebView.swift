@@ -260,7 +260,7 @@ struct MarkdownWebView: NSViewRepresentable {
                     html.offsetHeight
                 );
                 
-                const h = height + 24; // Generous 24px safety margin
+                const h = height + 12; // Generous 24px safety margin
                 
                 if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
