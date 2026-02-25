@@ -335,9 +335,13 @@ class AssistantViewModel: ObservableObject {
         
         switch SettingsManager.selectedProvider {
         case .chatgptPlus:
-            // Simulação Codex CLI: intercepta e obtém o Token via PKCE (OAuth)
+            // Codex CLI auth: obtém o Token via PKCE (OAuth) + ChatGPT-Account-ID header
             let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
             request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+            // Critical: The ChatGPT-Account-ID header tells OpenAI which subscription to bill
+            if let accountId = await OpenAIAuthManager.shared.getAccountId() {
+                request.setValue(accountId, forHTTPHeaderField: "ChatGPT-Account-ID")
+            }
             
         case .openai, .google, .custom:
             if !apiKey.isEmpty {

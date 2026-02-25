@@ -13,6 +13,7 @@ actor OpenAIAuthManager {
     
     private var currentAccessToken: String?
     private var currentRefreshToken: String?
+    private var currentAccountId: String?
     private var tokenExpirationDate: Date?
     
     private var isRefreshing = false
@@ -86,9 +87,14 @@ actor OpenAIAuthManager {
     func clearTokens() {
         currentAccessToken = nil
         currentRefreshToken = nil
+        currentAccountId = nil
         tokenExpirationDate = nil
         hasValidToken = false
         lastErrorMessage = nil
+    }
+    
+    func getAccountId() -> String? {
+        return currentAccountId
     }
     
     // UI Helper — nonisolated para leitura rápida sem aguardar o actor
@@ -138,13 +144,13 @@ actor OpenAIAuthManager {
         // Salva refresh token para renovações futuras
         self.currentRefreshToken = tokens.refresh_token
         
-        // Step 2: Try to exchange id_token for an API Key (optional, like Codex CLI .ok())
-        // If user doesn't have an API platform org, this will fail — fall back to access_token
-        if let apiKey = try? await obtainApiKey(idToken: tokens.id_token) {
-            return apiKey
-        }
+        // Step 2: Extract account_id from id_token JWT claims
+        // The Codex CLI uses the access_token directly with a ChatGPT-Account-ID header
+        // It NEVER exchanges the id_token for an API key
+        self.currentAccountId = JWTDecoder.decodeAccountId(idToken: tokens.id_token)
+        print("[OpenAIAuth] Extracted ChatGPT Account ID: \(self.currentAccountId ?? "nil")")
         
-        // Fallback: use the access_token directly (ChatGPT Plus auth)
+        // Use the access_token directly (like Codex CLI does)
         self.currentAccessToken = tokens.access_token
         self.hasValidToken = true
         self.lastErrorMessage = nil
@@ -395,16 +401,24 @@ actor OpenAIAuthManager {
             self.currentRefreshToken = newRefresh
         }
         
-        // Se veio id_token, troca por API key
+        // Se veio id_token, extrai o account_id atualizado
         if let idToken = refreshResp.id_token {
-            return try await obtainApiKey(idToken: idToken)
+            self.currentAccountId = JWTDecoder.decodeAccountId(idToken: idToken)
+            print("[OpenAIAuth] Refresh: updated Account ID: \(self.currentAccountId ?? "nil")")
         }
         
-        // Fallback: usa access_token direto
+        // Usa access_token direto (como o Codex CLI faz)
         if let accessToken = refreshResp.access_token {
             self.currentAccessToken = accessToken
             self.hasValidToken = true
             self.lastErrorMessage = nil
+            
+            if let expDate = JWTDecoder.decodeExpiration(jwtToken: accessToken) {
+                self.tokenExpirationDate = expDate.addingTimeInterval(-300)
+            } else {
+                self.tokenExpirationDate = Date().addingTimeInterval(3300)
+            }
+            
             return accessToken
         }
         
@@ -516,8 +530,9 @@ actor OpenAIAuthManager {
         }
     }
 
-    private struct JWTDecoder {
-        static func decodeExpiration(jwtToken: String) -> Date? {
+    struct JWTDecoder {
+        /// Decode the base64url-encoded payload of a JWT token
+        private static func decodePayload(jwtToken: String) -> [String: Any]? {
             let segments = jwtToken.components(separatedBy: ".")
             guard segments.count > 1 else { return nil }
             
@@ -530,12 +545,46 @@ actor OpenAIAuthManager {
                 .replacingOccurrences(of: "_", with: "/")
             
             guard let data = Data(base64Encoded: safeBase64),
-                  let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                  let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+                return nil
+            }
+            return json
+        }
+        
+        static func decodeExpiration(jwtToken: String) -> Date? {
+            guard let json = decodePayload(jwtToken: jwtToken),
                   let exp = json["exp"] as? TimeInterval else {
                 return nil
             }
-            
             return Date(timeIntervalSince1970: exp)
+        }
+        
+        /// Extract the ChatGPT account ID from an id_token JWT.
+        /// The Codex CLI looks for this in the JWT claims to use as the
+        /// `ChatGPT-Account-ID` header on API requests.
+        static func decodeAccountId(idToken: String) -> String? {
+            guard let json = decodePayload(jwtToken: idToken) else { return nil }
+            
+            // Try: "https://api.openai.com/auth" -> "chatgpt_account_id"
+            if let authClaim = json["https://api.openai.com/auth"] as? [String: Any] {
+                if let accountId = authClaim["chatgpt_account_id"] as? String, !accountId.isEmpty {
+                    return accountId
+                }
+            }
+            
+            // Fallback: top-level "organization_id"
+            if let orgId = json["organization_id"] as? String, !orgId.isEmpty {
+                return orgId
+            }
+            
+            // Fallback: top-level "chatgpt_account_id"
+            if let accountId = json["chatgpt_account_id"] as? String, !accountId.isEmpty {
+                return accountId
+            }
+            
+            // Debug: print all JWT claims to help identify the correct field
+            print("[OpenAIAuth] JWT id_token claims: \(json.keys.sorted())")
+            return nil
         }
     }
 }
