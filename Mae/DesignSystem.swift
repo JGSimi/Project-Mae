@@ -269,7 +269,6 @@ struct MaeIconButton: View {
                 .foregroundStyle(color)
                 .padding(bgColor == .clear ? 0 : 8)
                 .background(bgColor)
-                .clipShape(Circle())
         }
         .buttonStyle(.plain)
         .help(helpText ?? "")

@@ -576,13 +576,13 @@ struct ContentView: View {
                     LazyVStack(spacing: 0) {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: Theme.Metrics.spacingDefault) {
-                                Image(systemName: "sparkles")
+                                Image(systemName: "sun.horizon.fill")
                                     .font(.system(size: 32, weight: .light))
                                     .foregroundStyle(Theme.Colors.accent.opacity(0.4))
                                 Text("Comece uma conversa")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundStyle(Theme.Colors.textMuted)
-                                Text("Pergunte qualquer coisa à Mãe.")
+                                Text("Pergunte qualquer coisa.")
                                     .font(Theme.Typography.caption)
                                     .foregroundStyle(Theme.Colors.textMuted.opacity(0.6))
                             }
