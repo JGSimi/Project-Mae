@@ -247,22 +247,27 @@ struct MarkdownWebView: NSViewRepresentable {
             document.getElementById('content').innerHTML = marked.parse(md);
         
             function notifyHeight() {
-                const el = document.getElementById('content');
-                if (!el) return;
+                // Bulletproof height calculation
+                const body = document.body;
+                const html = document.documentElement;
                 
-                const bodyStyle = window.getComputedStyle(document.body);
-                const pt = parseFloat(bodyStyle.paddingTop) || 0;
-                const pb = parseFloat(bodyStyle.paddingBottom) || 0;
+                const height = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.clientHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                );
                 
-                const h = el.offsetHeight + pt + pb + 12; // +12px safety margin
+                const h = height + 24; // Generous 24px safety margin
                 
-                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
                 }
             }
         
             const ro = new ResizeObserver(() => notifyHeight());
-            ro.observe(document.getElementById('content'));
+            ro.observe(document.body); // Observe the entire body
             
             document.querySelectorAll('img').forEach(img => {
                 img.addEventListener('load', notifyHeight);
@@ -376,7 +381,6 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
                 -webkit-font-smoothing: antialiased;
                 font-weight: 400;
                 letter-spacing: -0.01em;
-                overflow: hidden;
             }
         
             h1, h2, h3, h4, h5, h6 {
@@ -502,14 +506,18 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             document.getElementById('content').innerHTML = marked.parse(md);
         
             function notifyHeight() {
-                const el = document.getElementById('content');
-                if (!el) return;
+                const body = document.body;
+                const html = document.documentElement;
                 
-                const bodyStyle = window.getComputedStyle(document.body);
-                const pt = parseFloat(bodyStyle.paddingTop) || 0;
-                const pb = parseFloat(bodyStyle.paddingBottom) || 0;
+                const height = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.clientHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                );
                 
-                const h = el.offsetHeight + pt + pb + 12; // +12px safety margin
+                const h = height + 24; // Generous 24px safety margin
                 
                 if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
                     window.webkit.messageHandlers.heightChanged.postMessage(h);
@@ -517,7 +525,7 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             }
         
             const ro = new ResizeObserver(() => notifyHeight());
-            ro.observe(document.getElementById('content'));
+            ro.observe(document.body); // Observe the entire body
         
             document.querySelectorAll('img').forEach(img => {
                 img.addEventListener('load', notifyHeight);
