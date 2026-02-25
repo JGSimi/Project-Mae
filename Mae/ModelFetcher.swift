@@ -16,9 +16,13 @@ class ModelFetcher {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        if !apiKey.isEmpty {
+        if !apiKey.isEmpty || provider == .chatgptPlus {
             switch provider {
-            case .google, .openai, .custom:
+            case .chatgptPlus:
+                // Intercepta e usa o token JWT
+                let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
+                request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+            case .openai, .google, .custom:
                 request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
             case .anthropic:
                 request.setValue(apiKey, forHTTPHeaderField: "x-api-key")

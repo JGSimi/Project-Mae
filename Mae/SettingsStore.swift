@@ -9,7 +9,8 @@ enum InferenceMode: String, CaseIterable, Identifiable {
 
 enum CloudProvider: String, CaseIterable, Identifiable {
     case google = "Google Gemini"
-    case openai = "OpenAI ChatGPT"
+    case openai = "OpenAI (API Key)"
+    case chatgptPlus = "ChatGPT Plus/Pro (No Key)"
     case anthropic = "Anthropic Claude"
     case custom = "Personalizado (Outros)"
     
@@ -19,7 +20,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google:
             return "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
-        case .openai:
+        case .openai, .chatgptPlus:
             return "https://api.openai.com/v1/chat/completions"
         case .anthropic:
             return "https://api.anthropic.com/v1/messages" // Note: Anthropics format is different natively, but proxy endpoints exist. The user requested Anthropic so we add it conceptually.
@@ -32,7 +33,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google:
             return "https://generativelanguage.googleapis.com/v1beta/openai/models"
-        case .openai:
+        case .openai, .chatgptPlus:
             return "https://api.openai.com/v1/models"
         case .anthropic:
             return "https://api.anthropic.com/v1/models"
@@ -45,7 +46,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
         switch self {
         case .google:
             return ["API não disponível"]
-        case .openai:
+        case .openai, .chatgptPlus:
             return ["API não disponível"]
         case .anthropic:
             return ["API não disponível"]

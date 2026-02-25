@@ -321,24 +321,39 @@ struct AdvancedSettingsView: View {
                                 .padding(Theme.Metrics.spacingLarge)
                             }
                             
-                            MaeDivider()
-                            
-                            VStack(alignment: .leading, spacing: 12) {
-                                MaeActionRow(title: "Chave de API (Autenticação)", icon: "key.fill", iconColor: Theme.Colors.accent)
+                            if selectedProvider != .chatgptPlus {
+                                MaeDivider()
                                 
-                                SecureField("Cole sua API Key...", text: $apiKey)
-                                    .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
-                                    .onChange(of: apiKey) { _, newValue in
-                                        apiKeyTask?.cancel()
-                                        apiKeyTask = Task {
-                                            try? await Task.sleep(nanoseconds: 500_000_000)
-                                            guard !Task.isCancelled else { return }
-                                            KeychainManager.shared.saveKey(newValue)
-                                            await reloadModels()
+                                VStack(alignment: .leading, spacing: 12) {
+                                    MaeActionRow(title: "Chave de API (Autenticação)", icon: "key.fill", iconColor: Theme.Colors.accent)
+                                    
+                                    SecureField("Cole sua API Key...", text: $apiKey)
+                                        .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
+                                        .onChange(of: apiKey) { _, newValue in
+                                            apiKeyTask?.cancel()
+                                            apiKeyTask = Task {
+                                                try? await Task.sleep(nanoseconds: 500_000_000)
+                                                guard !Task.isCancelled else { return }
+                                                KeychainManager.shared.saveKey(newValue)
+                                                await reloadModels()
+                                            }
                                         }
+                                }
+                                .padding(Theme.Metrics.spacingLarge)
+                            } else {
+                                MaeDivider()
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Image(systemName: "info.circle.fill")
+                                        Text("O ChatGPT Plus não usa chave de API. Volte à tela principal e clique em 'Conectar Conta'.")
+                                            .font(Theme.Typography.bodySmall)
                                     }
+                                    .foregroundStyle(Theme.Colors.textSecondary)
+                                    .padding(.top, 4)
+                                }
+                                .padding(Theme.Metrics.spacingLarge)
                             }
-                            .padding(Theme.Metrics.spacingLarge)
                         }
                     }
                     .groupBoxStyle(MaeCardStyle())

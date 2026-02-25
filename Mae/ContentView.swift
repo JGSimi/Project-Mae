@@ -315,19 +315,37 @@ class AssistantViewModel: ObservableObject {
     }
     
     private func executeAPIRequest(prompt: String, images: [String]?) async throws -> String {
-        guard let url = URL(string: SettingsManager.apiEndpoint) else { throw URLError(.badURL) }
+        var baseEndpoint = SettingsManager.apiEndpoint
+        let isAnthropic = SettingsManager.selectedProvider == .anthropic
+        let isChatGPTPlus = SettingsManager.selectedProvider == .chatgptPlus
+        
+        // Enforce a rota para a provedora ChatGPT Plus (mesma usada pela Codex CLI com JWT)
+        if isChatGPTPlus {
+            if !baseEndpoint.contains("chat/completions") {
+                baseEndpoint = "https://api.openai.com/v1/chat/completions"
+            }
+        }
+        
+        guard let url = URL(string: baseEndpoint) else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let apiKey = SettingsManager.apiKey
-        let isAnthropic = SettingsManager.selectedProvider == .anthropic
         
-        if !apiKey.isEmpty {
-            switch SettingsManager.selectedProvider {
-            case .google, .openai, .custom:
+        switch SettingsManager.selectedProvider {
+        case .chatgptPlus:
+            // Simulação Codex CLI: intercepta e obtém o Token via PKCE (OAuth)
+            let jwtToken = try await OpenAIAuthManager.shared.getValidToken()
+            request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+            
+        case .openai, .google, .custom:
+            if !apiKey.isEmpty {
                 request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-            case .anthropic:
+            }
+            
+        case .anthropic:
+            if !apiKey.isEmpty {
                 request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
                 request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
             }
