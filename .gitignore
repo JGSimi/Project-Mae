@@ -199,3 +199,6 @@ src-tauri/Cargo.lock
 test_attr.swift
 test_capture.swift
 test*.swift
+
+# Build output
+build_output/

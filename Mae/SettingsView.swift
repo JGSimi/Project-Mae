@@ -5,7 +5,7 @@ struct SettingsView: View {
     
     @AppStorage("inferenceMode") var inferenceMode: InferenceMode = .local
     @AppStorage("selectedProvider") var selectedProvider: CloudProvider = .google
-    @AppStorage("apiModelName") var apiModelName: String = "gpt-4o-mini"
+    @AppStorage("apiModelName") var apiModelName: String = "gpt-5.2"
     @AppStorage("localModelName") var localModelName: String = "gemma3:4b"
 
     var body: some View {
