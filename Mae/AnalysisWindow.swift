@@ -84,17 +84,8 @@ struct AnalysisView: View {
                         }
                         .frame(maxWidth: .infinity)
                     } else {
-                        ScrollView {
-                            Text(.init(viewModel.analysisResult))
-                                .font(Theme.Typography.body)
-                                .lineSpacing(6)
-                                .foregroundColor(Theme.Colors.textPrimary)
-                                .textSelection(.enabled)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 8)
-                                .padding(.bottom, 24)
-                                .padding(.trailing, 12)
-                        }
+                        MarkdownWebView(markdown: viewModel.analysisResult)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 }
                 .padding(.horizontal, 24)
