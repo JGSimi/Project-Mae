@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║                     Mae · Design System                        ║
@@ -92,14 +93,26 @@ enum Theme {
         static let durationNormal: Double = 0.3
         static let durationSlow:   Double = 0.5
 
-        // Springs
+        // Springs — Core
         static let smooth  = SwiftUI.Animation.spring(response: 0.3, dampingFraction: 0.8)
         static let gentle  = SwiftUI.Animation.spring(response: 0.4, dampingFraction: 0.8)
         static let bouncy  = SwiftUI.Animation.spring(response: 0.35, dampingFraction: 0.6)
 
+        // Springs — Premium
+        static let snappy     = SwiftUI.Animation.spring(response: 0.25, dampingFraction: 0.82)
+        static let responsive = SwiftUI.Animation.spring(response: 0.3, dampingFraction: 0.75)
+        static let expressive = SwiftUI.Animation.spring(response: 0.5, dampingFraction: 0.7)
+        static let microBounce = SwiftUI.Animation.spring(response: 0.28, dampingFraction: 0.65)
+
         // Easing
         static let hover   = SwiftUI.Animation.easeInOut(duration: durationFast)
         static let fade    = SwiftUI.Animation.easeOut(duration: 0.25)
+        static let slowFade = SwiftUI.Animation.easeInOut(duration: 0.6)
+
+        // Stagger helper — delay for item at index in a list
+        static func staggerDelay(index: Int, base: Double = 0.04) -> SwiftUI.Animation {
+            Theme.Animation.responsive.delay(Double(index) * base)
+        }
     }
 }
 
@@ -110,27 +123,46 @@ enum Theme {
 extension AnyTransition {
     /// Slide from trailing edge + fade — settings panels, drawers
     static var maeSlideIn: AnyTransition {
-        .move(edge: .trailing).combined(with: .opacity)
+        .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .trailing).combined(with: .opacity)
+        )
     }
 
-    /// Scale up from 0.8 + fade + slide from bottom — chat message pop-in
+    /// Scale up from 0.92 + fade — chat message pop-in (refined)
     static var maePopIn: AnyTransition {
         .asymmetric(
-            insertion: .scale(scale: 0.8)
+            insertion: .scale(scale: 0.92)
                 .combined(with: .opacity)
-                .combined(with: .move(edge: .bottom)),
-            removal: .opacity
+                .combined(with: .offset(y: 8)),
+            removal: .scale(scale: 0.95).combined(with: .opacity)
         )
     }
 
     /// Scale + fade — buttons, action items
     static var maeScaleFade: AnyTransition {
-        .scale.combined(with: .opacity)
+        .scale(scale: 0.9).combined(with: .opacity)
     }
 
     /// Slide from bottom + fade — toasts, input areas
     static var maeSlideUp: AnyTransition {
-        .move(edge: .bottom).combined(with: .opacity)
+        .asymmetric(
+            insertion: .move(edge: .bottom).combined(with: .opacity),
+            removal: .move(edge: .bottom).combined(with: .opacity)
+        )
+    }
+
+    /// Slide from leading + fade — sidebar content
+    static var maeSlideFromLeading: AnyTransition {
+        .move(edge: .leading).combined(with: .opacity)
+    }
+
+    /// Subtle scale fade — panel content switching
+    static var maeFadeScale: AnyTransition {
+        .asymmetric(
+            insertion: .scale(scale: 0.96).combined(with: .opacity),
+            removal: .scale(scale: 1.02).combined(with: .opacity)
+        )
     }
 }
 
@@ -146,8 +178,9 @@ struct MaeHoverEffect: ViewModifier {
     func body(content: Content) -> some View {
         content
             .scaleEffect(isHovered ? scale : 1.0)
+            .shadow(color: Theme.Colors.accent.opacity(isHovered ? 0.06 : 0), radius: 8)
             .onHover { hovering in
-                withAnimation(Theme.Animation.hover) {
+                withAnimation(Theme.Animation.snappy) {
                     isHovered = hovering
                 }
             }
@@ -169,6 +202,155 @@ struct MaeAppearAnimation: ViewModifier {
                     isVisible = true
                 }
             }
+    }
+}
+
+/// Staggered appear — each item slides up + fades in with incremental delay
+struct MaeStaggeredAppear: ViewModifier {
+    var index: Int
+    var baseDelay: Double = 0.04
+    var offsetY: CGFloat = 12
+    @State private var isVisible = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isVisible ? 1.0 : 0.0)
+            .offset(y: isVisible ? 0 : offsetY)
+            .onAppear {
+                withAnimation(Theme.Animation.staggerDelay(index: index, base: baseDelay)) {
+                    isVisible = true
+                }
+            }
+    }
+}
+
+/// Button press feedback — scales down on tap with spring return
+struct MaeButtonPressEffect: ViewModifier {
+    @State private var isPressed = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isPressed ? 0.94 : 1.0)
+            .opacity(isPressed ? 0.85 : 1.0)
+            .animation(Theme.Animation.snappy, value: isPressed)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in isPressed = true }
+                    .onEnded { _ in isPressed = false }
+            )
+    }
+}
+
+/// Shimmer loading effect — animated gradient overlay
+struct MaeShimmerEffect: ViewModifier {
+    @State private var phase: CGFloat = -1.0
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                LinearGradient(
+                    colors: [
+                        .clear,
+                        Theme.Colors.accent.opacity(0.08),
+                        Theme.Colors.accent.opacity(0.15),
+                        Theme.Colors.accent.opacity(0.08),
+                        .clear
+                    ],
+                    startPoint: .init(x: phase - 0.5, y: 0.5),
+                    endPoint: .init(x: phase + 0.5, y: 0.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
+            )
+            .onAppear {
+                withAnimation(
+                    .linear(duration: 1.8)
+                    .repeatForever(autoreverses: false)
+                ) {
+                    phase = 2.0
+                }
+            }
+    }
+}
+
+/// Pulse effect — subtle scale + opacity breathing (status dots, icons)
+struct MaePulseEffect: ViewModifier {
+    var minScale: CGFloat = 0.92
+    var maxOpacity: Double = 1.0
+    var minOpacity: Double = 0.6
+    var duration: Double = 1.6
+    @State private var isPulsing = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isPulsing ? 1.0 : minScale)
+            .opacity(isPulsing ? maxOpacity : minOpacity)
+            .onAppear {
+                withAnimation(
+                    .easeInOut(duration: duration)
+                    .repeatForever(autoreverses: true)
+                ) {
+                    isPulsing = true
+                }
+            }
+    }
+}
+
+/// Floating effect — gentle vertical oscillation (empty states, decorative icons)
+struct MaeFloatingEffect: ViewModifier {
+    var amplitude: CGFloat = 6
+    var duration: Double = 3.0
+    @State private var isFloating = false
+
+    func body(content: Content) -> some View {
+        content
+            .offset(y: isFloating ? -amplitude : amplitude)
+            .onAppear {
+                withAnimation(
+                    .easeInOut(duration: duration)
+                    .repeatForever(autoreverses: true)
+                ) {
+                    isFloating = true
+                }
+            }
+    }
+}
+
+/// Glow hover effect — hover with radiant glow behind element
+struct MaeGlowHoverEffect: ViewModifier {
+    var glowColor: Color = Theme.Colors.accent
+    var glowRadius: CGFloat = 12
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isHovered ? 1.03 : 1.0)
+            .shadow(color: glowColor.opacity(isHovered ? 0.35 : 0), radius: glowRadius)
+            .brightness(isHovered ? 0.05 : 0)
+            .animation(Theme.Animation.responsive, value: isHovered)
+            .onHover { hovering in
+                isHovered = hovering
+            }
+    }
+}
+
+/// Animated typing dots for loading state
+struct MaeTypingDots: View {
+    @State private var activeIndex = 0
+    let timer = Timer.publish(every: 0.35, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(Theme.Colors.accent.opacity(activeIndex == index ? 0.9 : 0.3))
+                    .frame(width: 6, height: 6)
+                    .scaleEffect(activeIndex == index ? 1.3 : 1.0)
+                    .animation(Theme.Animation.microBounce, value: activeIndex)
+            }
+        }
+        .onReceive(timer) { _ in
+            activeIndex = (activeIndex + 1) % 3
+        }
     }
 }
 
@@ -248,6 +430,36 @@ extension View {
     /// Scale + fade appear animation on `.onAppear`
     func maeAppearAnimation(animation: SwiftUI.Animation = Theme.Animation.gentle, scale: CGFloat = 0.95) -> some View {
         self.modifier(MaeAppearAnimation(animation: animation, scale: scale))
+    }
+
+    /// Staggered appear — list items cascade in
+    func maeStaggered(index: Int, baseDelay: Double = 0.04) -> some View {
+        self.modifier(MaeStaggeredAppear(index: index, baseDelay: baseDelay))
+    }
+
+    /// Button press feedback
+    func maePressEffect() -> some View {
+        self.modifier(MaeButtonPressEffect())
+    }
+
+    /// Shimmer loading overlay
+    func maeShimmer() -> some View {
+        self.modifier(MaeShimmerEffect())
+    }
+
+    /// Pulse breathing effect
+    func maePulse(duration: Double = 1.6) -> some View {
+        self.modifier(MaePulseEffect(duration: duration))
+    }
+
+    /// Floating idle animation
+    func maeFloating(amplitude: CGFloat = 6, duration: Double = 3.0) -> some View {
+        self.modifier(MaeFloatingEffect(amplitude: amplitude, duration: duration))
+    }
+
+    /// Glow on hover
+    func maeGlowHover(color: Color = Theme.Colors.accent) -> some View {
+        self.modifier(MaeGlowHoverEffect(glowColor: color))
     }
 }
 

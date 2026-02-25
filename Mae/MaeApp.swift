@@ -120,10 +120,12 @@ struct WelcomeView: View {
                 Image(systemName: "sparkles")
                     .font(.system(size: 40, weight: .ultraLight))
                     .foregroundColor(Theme.Colors.accent)
+                    .maePulse(duration: 2.5)
                 
                 Text("Bem-vindo à Mãe")
                     .font(Theme.Typography.largeTitle)
                     .foregroundColor(Theme.Colors.textPrimary)
+                    .maeStaggered(index: 1, baseDelay: 0.15)
             }
             .padding(.top, 50)
             .padding(.bottom, 20)
@@ -135,6 +137,7 @@ struct WelcomeView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(Theme.Colors.textSecondary)
                     .padding(.horizontal)
+                    .maeStaggered(index: 2, baseDelay: 0.12)
                 
                 VStack(spacing: 20) {
                     FeatureRow(
@@ -142,18 +145,21 @@ struct WelcomeView: View {
                         title: "Sempre Pronta",
                         description: "Clique no ícone na barra de menus no topo da tela (perto do relógio) para abrir o chat a qualquer momento."
                     )
+                    .maeStaggered(index: 3, baseDelay: 0.10)
                     
                     FeatureRow(
                         icon: "macwindow.badge.plus",
                         title: "Análise de Tela Inteligente",
                         description: "Pressione ⌘ + ⇧ + Z para capturar sua tela e receber ajuda contextual automática."
                     )
+                    .maeStaggered(index: 4, baseDelay: 0.10)
                     
                     FeatureRow(
                         icon: "doc.on.clipboard",
                         title: "Análise de Área de Transferência",
                         description: "Pressione ⌘ + ⇧ + X para que a IA analise imediatamente o que você copiou."
                     )
+                    .maeStaggered(index: 5, baseDelay: 0.10)
                 }
                 .padding(.horizontal, 40)
                 
@@ -173,6 +179,9 @@ struct WelcomeView: View {
                     RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
                         .fill(Theme.Colors.accent.opacity(0.85))
                 )
+                .maeGlowHover()
+                .maePressEffect()
+                .maeStaggered(index: 6, baseDelay: 0.10)
                 .padding(.bottom, 30)
             }
             .padding(.top, 10)

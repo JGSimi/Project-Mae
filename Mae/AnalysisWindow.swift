@@ -75,6 +75,7 @@ struct AnalysisView: View {
                                 ) {
                                     Task { await viewModel.processarScreen() }
                                 }
+                                .maePressEffect()
                                 .transition(.maeScaleFade)
                                 
                                 MaeIconButton(
@@ -83,7 +84,7 @@ struct AnalysisView: View {
                                     bgColor: Theme.Colors.accentSubtle,
                                     helpText: "Transferir análise para o chat principal"
                                 ) {
-                                    withAnimation(Theme.Animation.gentle) {
+                                    withAnimation(Theme.Animation.bouncy) {
                                         showConfirmation = true
                                     }
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
@@ -93,6 +94,7 @@ struct AnalysisView: View {
                                         showConfirmation = false
                                     }
                                 }
+                                .maePressEffect()
                                 .transition(.maeScaleFade)
                             }
                         }
@@ -104,17 +106,21 @@ struct AnalysisView: View {
                         if viewModel.isAnalyzingScreen {
                             VStack(spacing: Theme.Metrics.spacingLarge) {
                                 Spacer()
-                                ProgressView()
-                                    .controlSize(.regular)
+                                MaeTypingDots()
+                                    .scaleEffect(1.5)
+                                    .padding(.bottom, 4)
                                 Text("Analisando...")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundColor(Theme.Colors.textSecondary)
+                                    .maePulse(duration: 2.0)
                                 Text("Processando captura de tela com IA...")
                                     .font(Theme.Typography.bodySmall)
                                     .foregroundColor(Theme.Colors.textMuted)
+                                    .maeStaggered(index: 1, baseDelay: 0.15)
                                 Spacer()
                             }
                             .frame(maxWidth: .infinity)
+                            .transition(.maeFadeScale)
                         } else if viewModel.analysisResult.isEmpty {
                             VStack {
                                 Spacer()
@@ -122,22 +128,27 @@ struct AnalysisView: View {
                                     .font(.system(size: 40, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.accent.opacity(0.3))
                                     .padding(.bottom, 8)
+                                    .maeFloating(amplitude: 5, duration: 3.0)
                                 Text("Nenhuma análise disponível.")
                                     .font(Theme.Typography.bodySmall)
                                     .foregroundColor(Theme.Colors.textSecondary)
+                                    .maeStaggered(index: 1, baseDelay: 0.12)
                                 Text("Pressione ⌘+⇧+Z para capturar sua tela")
                                     .font(Theme.Typography.caption)
                                     .foregroundColor(Theme.Colors.textMuted)
                                     .padding(.top, 4)
+                                    .maeStaggered(index: 2, baseDelay: 0.12)
                                 Spacer()
                             }
                             .frame(maxWidth: .infinity)
+                            .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
                             ScrollView {
                                 MarkdownWebView(markdown: viewModel.analysisResult)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, Theme.Metrics.spacingXLarge)
                             }
+                            .transition(.maeFadeScale)
                         }
                         
                         // Follow-up input area
@@ -191,15 +202,18 @@ struct AnalysisView: View {
                                 .aspectRatio(contentMode: .fit)
                                 .padding(Theme.Metrics.spacingXLarge)
                                 .maeMediumShadow()
+                                .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.94)
                         } else {
                             VStack(spacing: Theme.Metrics.spacingLarge) {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 60, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.textMuted)
+                                    .maeFloating(amplitude: 4, duration: 4.0)
                                 Text("Nenhuma captura de tela no momento.")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundColor(Theme.Colors.textSecondary)
                             }
+                            .maeAppearAnimation(animation: Theme.Animation.gentle)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -225,7 +239,15 @@ struct AnalysisView: View {
                         .maeMediumShadow()
                         .padding(.bottom, 40)
                     }
-                    .transition(.maeSlideUp)
+                    .transition(
+                        .asymmetric(
+                            insertion: .move(edge: .bottom)
+                                .combined(with: .scale(scale: 0.8))
+                                .combined(with: .opacity),
+                            removal: .scale(scale: 0.9)
+                                .combined(with: .opacity)
+                        )
+                    )
                     .zIndex(10)
                 }
             }

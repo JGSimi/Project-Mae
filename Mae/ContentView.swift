@@ -428,6 +428,7 @@ class AssistantViewModel: ObservableObject {
 
 struct ChatBubble: View {
     let message: ChatMessage
+    var animationIndex: Int = 0
     @State private var markdownHeight: CGFloat = 40
 
     var body: some View {
@@ -487,6 +488,7 @@ struct ChatBubble: View {
         }
         .padding(.horizontal, Theme.Metrics.spacingLarge)
         .padding(.vertical, 4)
+        .maeStaggered(index: animationIndex, baseDelay: 0.05)
     }
 }
 
@@ -499,8 +501,10 @@ struct ContentView: View {
         ZStack {
             chatView
                 .opacity(showSettings ? 0.0 : 1.0)
-                .offset(x: showSettings ? -20 : 0)
-                .animation(Theme.Animation.smooth, value: showSettings)
+                .offset(x: showSettings ? -30 : 0)
+                .blur(radius: showSettings ? 3 : 0)
+                .scaleEffect(showSettings ? 0.97 : 1.0)
+                .animation(Theme.Animation.responsive, value: showSettings)
                 .zIndex(1)
 
             if showSettings {
@@ -510,7 +514,7 @@ struct ContentView: View {
             }
         }
         .frame(width: 450, height: 650)
-        .maeAppearAnimation()
+        .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.92)
     }
 
     private var chatView: some View {
@@ -554,18 +558,22 @@ struct ContentView: View {
                                 Image(systemName: "sun.horizon.fill")
                                     .font(.system(size: 32, weight: .light))
                                     .foregroundStyle(Theme.Colors.accent.opacity(0.4))
+                                    .maeFloating(amplitude: 4, duration: 3.5)
                                 Text("Comece uma conversa")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundStyle(Theme.Colors.textMuted)
+                                    .maeStaggered(index: 1, baseDelay: 0.12)
                                 Text("Pergunte qualquer coisa.")
                                     .font(Theme.Typography.caption)
                                     .foregroundStyle(Theme.Colors.textMuted.opacity(0.6))
+                                    .maeStaggered(index: 2, baseDelay: 0.12)
                             }
                             .padding(.top, 120)
                             .frame(maxWidth: .infinity)
+                            .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
-                            ForEach(viewModel.messages) { message in
-                                ChatBubble(message: message)
+                            ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
+                                ChatBubble(message: message, animationIndex: index)
                                     .id(message.id)
                                     .transition(.maePopIn)
                             }
@@ -577,7 +585,7 @@ struct ContentView: View {
                 .scrollContentBackground(.hidden)
                 .background(Theme.Colors.background)
                 .onChange(of: viewModel.messages.count) {
-                    withAnimation(Theme.Animation.gentle) {
+                    withAnimation(Theme.Animation.responsive) {
                         proxy.scrollTo(bottomID, anchor: .bottom)
                     }
                 }
@@ -599,7 +607,9 @@ struct ContentView: View {
                                         .shadow(radius: 2)
                                     
                                     Button {
-                                        viewModel.attachedImages.remove(at: index)
+                                        withAnimation(Theme.Animation.snappy) {
+                                            let _ = viewModel.attachedImages.remove(at: index)
+                                        }
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
                                             .foregroundStyle(Theme.Colors.textPrimary, Theme.Colors.background)
@@ -607,12 +617,15 @@ struct ContentView: View {
                                     .buttonStyle(.plain)
                                     .offset(x: 6, y: -6)
                                 }
+                                .transition(.maeScaleFade)
+                                .maeStaggered(index: index, baseDelay: 0.06)
                             }
                         }
                         .padding(.horizontal, Theme.Metrics.spacingLarge)
                         .padding(.top, 10)
                         .padding(.bottom, 6)
                     }
+                    .transition(.maeSlideUp)
                 }
 
                 MaeGradientDivider()
@@ -640,9 +653,9 @@ struct ContentView: View {
                         .disabled(viewModel.isProcessing)
                     
                     if viewModel.isProcessing {
-                        ProgressView()
-                            .controlSize(.small)
+                        MaeTypingDots()
                             .frame(width: 32, height: 32)
+                            .transition(.maeScaleFade)
                     } else {
                         Button {
                             Task { await viewModel.sendManualMessage() }
@@ -658,6 +671,8 @@ struct ContentView: View {
                         .buttonStyle(.plain)
                         .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
                         .keyboardShortcut(.defaultAction)
+                        .maePressEffect()
+                        .transition(.maeScaleFade)
                     }
                 }
                 .padding(.horizontal, 18)

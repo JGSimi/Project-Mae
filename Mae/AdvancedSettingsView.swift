@@ -116,10 +116,10 @@ struct AdvancedSettingsView: View {
                             .padding(.bottom, 8)
                         
                         switch selectedTab {
-                        case .general:   generalSettings
-                        case .models:    modelSettings
-                        case .prompt:    promptSettings
-                        case .shortcuts: shortcutSettings
+                        case .general:   generalSettings.maeStaggered(index: 0)
+                        case .models:    modelSettings.maeStaggered(index: 0)
+                        case .prompt:    promptSettings.maeStaggered(index: 0)
+                        case .shortcuts: shortcutSettings.maeStaggered(index: 0)
                         case .none:
                             Text("Selecione uma categoria")
                                 .foregroundStyle(Theme.Colors.textSecondary)
@@ -129,7 +129,9 @@ struct AdvancedSettingsView: View {
                     .padding(.bottom, 40)
                     .frame(maxWidth: 600, alignment: .leading)
                 }
+                .id(selectedTab)  // Force re-render for animation
             }
+            .animation(Theme.Animation.responsive, value: selectedTab)
             .task {
                 await reloadModels()
             }

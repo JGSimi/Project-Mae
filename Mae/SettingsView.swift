@@ -56,6 +56,7 @@ struct SettingsView: View {
                                     .fill(Theme.Colors.accent)
                                     .frame(width: 8, height: 8)
                                     .shadow(color: Theme.Colors.accent.opacity(0.4), radius: 3)
+                                    .maePulse(duration: 2.0)
                                 
                                 Text(inferenceMode == .local ? localModelName : "\(selectedProvider.rawValue) • \(apiModelName)")
                                     .font(Theme.Typography.bodyBold)
@@ -72,6 +73,7 @@ struct SettingsView: View {
                     RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous)
                         .stroke(Theme.Colors.border, lineWidth: 1)
                 )
+                .maeStaggered(index: 0, baseDelay: 0.06)
                 
                 Spacer()
                 
@@ -98,6 +100,8 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, 4)
+                .maePressEffect()
+                .maeStaggered(index: 1, baseDelay: 0.06)
                 
                 // Botão Avançado Sleek
                 Button {
@@ -124,6 +128,8 @@ struct SettingsView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.bottom, 12)
+                .maePressEffect()
+                .maeStaggered(index: 2, baseDelay: 0.06)
             }
             .padding(.horizontal, 20)
         }
