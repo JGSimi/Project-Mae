@@ -49,6 +49,7 @@ struct AnalysisView: View {
     @ObservedObject var viewModel = AssistantViewModel.shared
     @State private var followUpText: String = ""
     @State private var showConfirmation = false
+    @State private var localImage: NSImage? = nil
     @FocusState private var isFollowUpFocused: Bool
     
     var body: some View {
@@ -97,17 +98,12 @@ struct AnalysisView: View {
                                         showConfirmation = false
                                     }
                                 }) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "bubble.left.and.bubble.right.fill")
-                                            .font(.system(size: 13))
-                                        Text("Continuar no Chat")
-                                            .font(.system(size: 12, weight: .semibold))
-                                    }
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(Theme.Colors.accent)
-                                    .clipShape(Capsule())
+                                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                        .padding(8)
+                                        .background(Theme.Colors.surfaceSecondary)
+                                        .clipShape(Circle())
                                 }
                                 .buttonStyle(.plain)
                                 .help("Transferir análise para o chat principal")
@@ -211,7 +207,7 @@ struct AnalysisView: View {
                     
                     // Right Panel: Image
                     VStack {
-                        if let image = viewModel.analysisImage {
+                        if let image = localImage {
                             Image(nsImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -257,6 +253,14 @@ struct AnalysisView: View {
             }
         }
         .edgesIgnoringSafeArea(.top)
+        .onAppear {
+            localImage = viewModel.analysisImage
+        }
+        .onChange(of: viewModel.analysisImage) { _, newImage in
+            if let newImage = newImage {
+                localImage = newImage
+            }
+        }
     }
 }
 

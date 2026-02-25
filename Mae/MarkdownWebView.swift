@@ -8,6 +8,15 @@
 import SwiftUI
 import WebKit
 
+/// WKWebView subclass that forwards scroll events to the parent responder,
+/// allowing SwiftUI ScrollViews to scroll even when the mouse is over the WebView.
+class NonScrollingWKWebView: WKWebView {
+    override func scrollWheel(with event: NSEvent) {
+        // Forward scroll events to next responder (parent scroll view)
+        nextResponder?.scrollWheel(with: event)
+    }
+}
+
 struct MarkdownWebView: NSViewRepresentable {
     let markdown: String
     
@@ -19,7 +28,7 @@ struct MarkdownWebView: NSViewRepresentable {
     
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
-        let webView = WKWebView(frame: .zero, configuration: config)
+        let webView = NonScrollingWKWebView(frame: .zero, configuration: config)
         webView.setValue(false, forKey: "drawsBackground")
         webView.navigationDelegate = context.coordinator
         context.coordinator.webView = webView
@@ -263,7 +272,7 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
         let config = WKWebViewConfiguration()
         config.userContentController = userContentController
         
-        let webView = WKWebView(frame: NSRect(x: 0, y: 0, width: 300, height: 40), configuration: config)
+        let webView = NonScrollingWKWebView(frame: NSRect(x: 0, y: 0, width: 300, height: 40), configuration: config)
         webView.setValue(false, forKey: "drawsBackground")
         webView.navigationDelegate = context.coordinator
         context.coordinator.webView = webView
