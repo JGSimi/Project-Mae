@@ -2,73 +2,7 @@ import SwiftUI
 import KeyboardShortcuts
 import ServiceManagement
 
-// Estilos customizados para o design Premium Dark
-
-struct PremiumSectionHeader: View {
-    let title: String
-    var body: some View {
-        Text(title.uppercased())
-            .font(.cormorantGaramond(size: 11, weight: .bold))
-            .foregroundStyle(Color.white.opacity(0.5))
-            .padding(.bottom, 4)
-            .padding(.top, 16)
-            .padding(.horizontal, 4)
-    }
-}
-
-struct PremiumGroupBoxStyle: GroupBoxStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            configuration.content
-        }
-        .background(Color(NSColor.windowBackgroundColor).opacity(0.8)) // Darker grouped background
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        )
-    }
-}
-
-struct PremiumRow: View {
-    let title: String
-    let subtitle: String?
-    let icon: String?
-    let iconColor: Color
-    
-    init(title: String, subtitle: String? = nil, icon: String? = nil, iconColor: Color = .white) {
-        self.title = title
-        self.subtitle = subtitle
-        self.icon = icon
-        self.iconColor = iconColor
-    }
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            if let icon = icon {
-                Image(systemName: icon)
-                    .font(.cormorantGaramond(size: 16, weight: .medium))
-                    .foregroundStyle(iconColor)
-                    .frame(width: 24, height: 24)
-                    .background(iconColor.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.cormorantGaramond(size: 14, weight: .medium))
-                    .foregroundStyle(.white)
-                
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.cormorantGaramond(size: 12, weight: .regular))
-                        .foregroundStyle(Color.white.opacity(0.5))
-                }
-            }
-            Spacer()
-        }
-    }
-}
+// MARK: - Advanced Settings Window Manager
 
 class AdvancedSettingsWindowManager {
     static let shared = AdvancedSettingsWindowManager()
@@ -92,15 +26,11 @@ class AdvancedSettingsWindowManager {
             defer: false
         )
         
-        // Premium transparent titlebar look
         newWindow.titlebarAppearsTransparent = true
         newWindow.titleVisibility = .hidden
         newWindow.isMovableByWindowBackground = true
-        
-        // Window general dark appearance
         newWindow.appearance = NSAppearance(named: .darkAqua)
         newWindow.backgroundColor = NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0)
-        
         newWindow.isReleasedWhenClosed = false
         newWindow.center()
         
@@ -110,6 +40,8 @@ class AdvancedSettingsWindowManager {
         NSApp.activate(ignoringOtherApps: true)
     }
 }
+
+// MARK: - Settings Tabs
 
 enum SettingsTab: String, CaseIterable, Identifiable {
     case general = "Geral"
@@ -121,13 +53,15 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     
     var icon: String {
         switch self {
-        case .general: return "slider.horizontal.3"
-        case .models: return "cpu"
-        case .prompt: return "text.bubble"
+        case .general:   return "slider.horizontal.3"
+        case .models:    return "cpu"
+        case .prompt:    return "text.bubble"
         case .shortcuts: return "command"
         }
     }
 }
+
+// MARK: - Advanced Settings View
 
 struct AdvancedSettingsView: View {
     @State private var selectedTab: SettingsTab? = .general
@@ -149,7 +83,6 @@ struct AdvancedSettingsView: View {
 
     var body: some View {
         NavigationSplitView {
-            // MARK: - Sidebar Setup
             List(selection: $selectedTab) {
                 Spacer().frame(height: 20)
                 
@@ -157,7 +90,7 @@ struct AdvancedSettingsView: View {
                     NavigationLink(value: tab) {
                         Label {
                             Text(tab.rawValue)
-                                .font(.cormorantGaramond(size: 14, weight: .medium))
+                                .font(Theme.Typography.bodySmall)
                         } icon: {
                             Image(systemName: tab.icon)
                         }
@@ -166,37 +99,30 @@ struct AdvancedSettingsView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 250)
-            // Override sidebar background for that solid dark look
             .scrollContentBackground(.hidden)
-            .background(Color(NSColor(red: 0.04, green: 0.04, blue: 0.05, alpha: 1.0)))
+            .background(Theme.Colors.background)
             
         } detail: {
-            // MARK: - Detail Setup
             ZStack {
-                Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0)) // Deep content bg
-                    .ignoresSafeArea()
+                Theme.Colors.backgroundSecondary.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: Theme.Metrics.spacingXLarge) {
                         
                         Text(selectedTab?.rawValue ?? "")
-                            .font(.cormorantGaramond(size: 28, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(.top, 40) // padding for transparent titlebar
+                            .font(Theme.Typography.title)
+                            .foregroundStyle(Theme.Colors.textPrimary)
+                            .padding(.top, 40)
                             .padding(.bottom, 8)
                         
                         switch selectedTab {
-                        case .general:
-                            generalSettings
-                        case .models:
-                            modelSettings
-                        case .prompt:
-                            promptSettings
-                        case .shortcuts:
-                            shortcutSettings
+                        case .general:   generalSettings
+                        case .models:    modelSettings
+                        case .prompt:    promptSettings
+                        case .shortcuts: shortcutSettings
                         case .none:
                             Text("Selecione uma categoria")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.Colors.textSecondary)
                         }
                     }
                     .padding(.horizontal, 40)
@@ -210,84 +136,83 @@ struct AdvancedSettingsView: View {
         }
     }
     
-    // MARK: - Views for Tabs
+    // MARK: - General
     
     private var generalSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PremiumSectionHeader(title: "Sistema & Notificações")
+            MaeSectionHeader(title: "Sistema & Notificações")
             
             GroupBox {
                 VStack(spacing: 0) {
                     HStack {
-                        PremiumRow(title: "Início Automático", subtitle: "Abrir a Mãe junto com o Mac", icon: "macwindow", iconColor: .blue)
+                        MaeActionRow(title: "Início Automático", subtitle: "Abrir a Mãe junto com o Mac", icon: "macwindow", iconColor: Theme.Colors.accent)
                         Toggle("", isOn: $launchAtLogin)
                             .toggleStyle(.switch)
                     }
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                     .onChange(of: launchAtLogin) { _, newValue in
                         do {
-                            if newValue {
-                                try SMAppService.mainApp.register()
-                            } else {
-                                try SMAppService.mainApp.unregister()
-                            }
+                            if newValue { try SMAppService.mainApp.register() }
+                            else { try SMAppService.mainApp.unregister() }
                         } catch {
                             print("Failed to change launchAtLogin state: \(error.localizedDescription)")
                             launchAtLogin = !newValue
                         }
                     }
                     
-                    Divider().background(Color.white.opacity(0.1))
+                    MaeDivider()
                     
                     HStack {
-                        PremiumRow(title: "Sons e Alertas", subtitle: "Tocar som quando a resposta terminar", icon: "bell.fill", iconColor: .orange)
+                        MaeActionRow(title: "Sons e Alertas", subtitle: "Tocar som quando a resposta terminar", icon: "bell.fill", iconColor: Theme.Colors.accent)
                         Toggle("", isOn: $playNotifications)
                             .toggleStyle(.switch)
                     }
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                     
-                    Divider().background(Color.white.opacity(0.1))
+                    MaeDivider()
                     
                     Button {
                         WelcomeWindowManager.shared.showWindow()
                     } label: {
                         HStack {
-                            PremiumRow(title: "Tela de Boas Vindas", subtitle: "Rever apresentação do aplicativo", icon: "hand.wave.fill", iconColor: .yellow)
+                            MaeActionRow(title: "Tela de Boas Vindas", subtitle: "Rever apresentação do aplicativo", icon: "hand.wave.fill", iconColor: Theme.Colors.accent)
                             Image(systemName: "chevron.right")
-                                .font(.cormorantGaramond(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.white.opacity(0.3))
+                                .font(Theme.Typography.bodySmall)
+                                .foregroundStyle(Theme.Colors.textMuted)
                         }
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                     
-                    Divider().background(Color.white.opacity(0.1))
+                    MaeDivider()
                     
                     Button {
                         UpdaterController.shared.checkForUpdates()
                     } label: {
                         HStack {
-                            PremiumRow(title: "Atualizações", subtitle: "Buscar nova versão da Mãe", icon: "arrow.triangle.2.circlepath", iconColor: .cyan)
+                            MaeActionRow(title: "Atualizações", subtitle: "Buscar nova versão da Mãe", icon: "arrow.triangle.2.circlepath", iconColor: Theme.Colors.accent)
                             Image(systemName: "chevron.right")
-                                .font(.cormorantGaramond(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.white.opacity(0.3))
+                                .font(Theme.Typography.bodySmall)
+                                .foregroundStyle(Theme.Colors.textMuted)
                         }
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                 }
             }
-            .groupBoxStyle(PremiumGroupBoxStyle())
+            .groupBoxStyle(MaeCardStyle())
         }
     }
+    
+    // MARK: - Models
     
     private var modelSettings: some View {
         VStack(alignment: .leading, spacing: 20) {
             
             VStack(alignment: .leading, spacing: 0) {
-                PremiumSectionHeader(title: "Modo de Inferência")
+                MaeSectionHeader(title: "Modo de Inferência")
                 
                 GroupBox {
                     Picker("", selection: $inferenceMode) {
@@ -297,41 +222,38 @@ struct AdvancedSettingsView: View {
                     }
                     .pickerStyle(.radioGroup)
                     .labelsHidden()
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                 }
-                .groupBoxStyle(PremiumGroupBoxStyle())
+                .groupBoxStyle(MaeCardStyle())
             }
             
             if inferenceMode == .local {
                 VStack(alignment: .leading, spacing: 0) {
-                    PremiumSectionHeader(title: "Ollama (Local)")
+                    MaeSectionHeader(title: "Ollama (Local)")
                     
                     GroupBox {
                         VStack(spacing: 0) {
                             HStack {
-                                PremiumRow(title: "Nome do Modelo", subtitle: "Deve estar baixado no Ollama", icon: "desktopcomputer", iconColor: .green)
+                                MaeActionRow(title: "Nome do Modelo", subtitle: "Deve estar baixado no Ollama", icon: "desktopcomputer", iconColor: Theme.Colors.accent)
                                 Spacer()
                                 TextField("ex: gemma3:4b", text: $localModelName)
-                                    .textFieldStyle(.plain)
-                                    .padding(8)
-                                    .background(Color.white.opacity(0.05))
-                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                     .frame(width: 150)
                             }
-                            .padding(16)
+                            .padding(Theme.Metrics.spacingLarge)
                         }
                     }
-                    .groupBoxStyle(PremiumGroupBoxStyle())
+                    .groupBoxStyle(MaeCardStyle())
                 }
                 
             } else {
                 VStack(alignment: .leading, spacing: 0) {
-                    PremiumSectionHeader(title: "Cloud API")
+                    MaeSectionHeader(title: "Cloud API")
                     
                     GroupBox {
                         VStack(spacing: 0) {
                             HStack {
-                                PremiumRow(title: "Provedor", icon: "cloud.fill", iconColor: .cyan)
+                                MaeActionRow(title: "Provedor", icon: "cloud.fill", iconColor: Theme.Colors.accent)
                                 Spacer()
                                 Picker("", selection: $selectedProvider) {
                                     ForEach(CloudProvider.allCases) { provider in
@@ -341,7 +263,7 @@ struct AdvancedSettingsView: View {
                                 .labelsHidden()
                                 .frame(width: 160)
                             }
-                            .padding(16)
+                            .padding(Theme.Metrics.spacingLarge)
                             .onChange(of: selectedProvider) { _, newValue in
                                 fetchModelsTask?.cancel()
                                 fetchModelsTask = Task {
@@ -356,27 +278,30 @@ struct AdvancedSettingsView: View {
                                 }
                             }
                             
-                            Divider().background(Color.white.opacity(0.1))
+                            MaeDivider()
                             
                             if selectedProvider == .custom {
                                 VStack(spacing: 12) {
                                     HStack {
-                                        Text("URL Custom:").foregroundStyle(.white).font(.cormorantGaramond(size: 13, weight: .medium))
+                                        Text("URL Custom:")
+                                            .foregroundStyle(Theme.Colors.textPrimary)
+                                            .font(Theme.Typography.bodySmall)
                                         TextField("URL", text: $apiEndpoint)
-                                            .textFieldStyle(.plain)
-                                            .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
+                                            .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                     }
                                     HStack {
-                                        Text("Modelo:").foregroundStyle(.white).font(.cormorantGaramond(size: 13, weight: .medium))
+                                        Text("Modelo:")
+                                            .foregroundStyle(Theme.Colors.textPrimary)
+                                            .font(Theme.Typography.bodySmall)
                                         TextField("Nome do Modelo", text: $apiModelName)
-                                            .textFieldStyle(.plain)
-                                            .padding(8).background(Color.white.opacity(0.05)).clipShape(RoundedRectangle(cornerRadius: 6))
+                                            .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                     }
-                                }.padding(16)
+                                }
+                                .padding(Theme.Metrics.spacingLarge)
                                 
                             } else {
                                 HStack {
-                                    PremiumRow(title: "Modelo", icon: "server.rack", iconColor: .purple)
+                                    MaeActionRow(title: "Modelo", icon: "server.rack", iconColor: Theme.Colors.accent)
                                     
                                     if isFetchingModels {
                                         ProgressView().controlSize(.small).padding(.trailing, 8)
@@ -391,20 +316,16 @@ struct AdvancedSettingsView: View {
                                     .labelsHidden()
                                     .frame(width: 160)
                                 }
-                                .padding(16)
+                                .padding(Theme.Metrics.spacingLarge)
                             }
                             
-                            Divider().background(Color.white.opacity(0.1))
+                            MaeDivider()
                             
                             VStack(alignment: .leading, spacing: 12) {
-                                PremiumRow(title: "Chave de API (Autenticação)", icon: "key.fill", iconColor: .yellow)
+                                MaeActionRow(title: "Chave de API (Autenticação)", icon: "key.fill", iconColor: Theme.Colors.accent)
                                 
                                 SecureField("Cole sua API Key...", text: $apiKey)
-                                    .textFieldStyle(.plain)
-                                    .padding(10)
-                                    .background(Color.white.opacity(0.05))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                                    .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                     .onChange(of: apiKey) { _, newValue in
                                         apiKeyTask?.cancel()
                                         apiKeyTask = Task {
@@ -415,63 +336,71 @@ struct AdvancedSettingsView: View {
                                         }
                                     }
                             }
-                            .padding(16)
+                            .padding(Theme.Metrics.spacingLarge)
                         }
                     }
-                    .groupBoxStyle(PremiumGroupBoxStyle())
+                    .groupBoxStyle(MaeCardStyle())
                 }
             }
         }
     }
     
+    // MARK: - Prompt
+    
     private var promptSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PremiumSectionHeader(title: "System Prompt")
+            MaeSectionHeader(title: "System Prompt")
             
             Text("Defina a personalidade e regras de resposta da IA.")
-                .font(.cormorantGaramond(size: 13))
-                .foregroundStyle(Color.white.opacity(0.5))
+                .font(Theme.Typography.bodySmall)
+                .foregroundStyle(Theme.Colors.textSecondary)
                 .padding(.bottom, 12)
             
             TextEditor(text: $systemPrompt)
-                .font(.cormorantGaramond(size: 14, weight: .regular))
-                .foregroundStyle(.white)
+                .font(Theme.Typography.bodySmall)
+                .foregroundStyle(Theme.Colors.textPrimary)
                 .padding(12)
                 .frame(minHeight: 180)
-                // Use a standard custom background mimicking premium inputs
                 .scrollContentBackground(.hidden)
-                .background(Color(NSColor.windowBackgroundColor).opacity(0.6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                .background(Theme.Colors.surfaceSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium)
+                        .stroke(Theme.Colors.border, lineWidth: 1)
+                )
         }
     }
     
+    // MARK: - Shortcuts
+    
     private var shortcutSettings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PremiumSectionHeader(title: "Ações Globais")
+            MaeSectionHeader(title: "Ações Globais")
             
             GroupBox {
                 VStack(spacing: 0) {
                     HStack {
-                        PremiumRow(title: "Analisar Clipboard", subtitle: "Manda o texto copiado para a IA", icon: "doc.on.clipboard", iconColor: .pink)
+                        MaeActionRow(title: "Analisar Clipboard", subtitle: "Manda o texto copiado para a IA", icon: "doc.on.clipboard", iconColor: Theme.Colors.accent)
                         Spacer()
                         KeyboardShortcuts.Recorder(for: .processClipboard)
                     }
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                     
-                    Divider().background(Color.white.opacity(0.1))
+                    MaeDivider()
                     
                     HStack {
-                        PremiumRow(title: "Analisar Tela", subtitle: "Tira print contínuo e analisa a tela", icon: "viewfinder", iconColor: .teal)
+                        MaeActionRow(title: "Analisar Tela", subtitle: "Tira print contínuo e analisa a tela", icon: "viewfinder", iconColor: Theme.Colors.accent)
                         Spacer()
                         KeyboardShortcuts.Recorder(for: .processScreen)
                     }
-                    .padding(16)
+                    .padding(Theme.Metrics.spacingLarge)
                 }
             }
-            .groupBoxStyle(PremiumGroupBoxStyle())
+            .groupBoxStyle(MaeCardStyle())
         }
     }
+    
+    // MARK: - Helpers
     
     private func reloadModels() async {
         guard selectedProvider.modelsEndpoint != nil, !apiKey.isEmpty else { return }

@@ -125,18 +125,7 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 20)
         }
-        // Fundo super escuro (estilo material glass) com gradiente radial sutil para não ficar chapado
-        .background(
-            ZStack {
-                Theme.Colors.backgroundSecondary.ignoresSafeArea()
-                RadialGradient(
-                    gradient: Gradient(colors: [Color.white.opacity(0.03), .clear]),
-                    center: .topLeading,
-                    startRadius: 0,
-                    endRadius: 400
-                )
-            }
-        )
+        .background(MaePageBackground())
         .preferredColorScheme(.dark)
     }
 }

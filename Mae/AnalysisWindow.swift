@@ -67,56 +67,42 @@ struct AnalysisView: View {
                             Spacer()
                             
                             if !viewModel.analysisResult.isEmpty && !viewModel.isAnalyzingScreen {
-                                // New analysis button
-                                Button(action: {
-                                    Task {
-                                        await viewModel.processarScreen()
-                                    }
-                                }) {
-                                    Image(systemName: "arrow.trianglehead.2.counterclockwise.rotate.90")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Theme.Colors.accent)
-                                        .padding(8)
-                                        .background(Theme.Colors.accentSubtle)
-                                        .clipShape(Circle())
+                                MaeIconButton(
+                                    icon: "arrow.trianglehead.2.counterclockwise.rotate.90",
+                                    color: Theme.Colors.accent,
+                                    bgColor: Theme.Colors.accentSubtle,
+                                    helpText: "Nova análise de tela"
+                                ) {
+                                    Task { await viewModel.processarScreen() }
                                 }
-                                .buttonStyle(.plain)
-                                .help("Nova análise de tela")
                                 .transition(.scale.combined(with: .opacity))
                                 
-                                // Continue conversation button with label
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                MaeIconButton(
+                                    icon: "bubble.left.and.bubble.right.fill",
+                                    color: Theme.Colors.accent,
+                                    bgColor: Theme.Colors.accentSubtle,
+                                    helpText: "Transferir análise para o chat principal"
+                                ) {
+                                    withAnimation(Theme.Animation.gentle) {
                                         showConfirmation = true
                                     }
-                                    
-                                    // Transfer to chat after a brief moment
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                                         viewModel.continueWithAnalysis(followUp: followUpText.isEmpty ? nil : followUpText)
                                         followUpText = ""
                                         AnalysisWindowManager.shared.closeWindow()
                                         showConfirmation = false
                                     }
-                                }) {
-                                    Image(systemName: "bubble.left.and.bubble.right.fill")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundStyle(Theme.Colors.accent)
-                                        .padding(8)
-                                        .background(Theme.Colors.accentSubtle)
-                                        .clipShape(Circle())
                                 }
-                                .buttonStyle(.plain)
-                                .help("Transferir análise para o chat principal")
                                 .transition(.scale.combined(with: .opacity))
                             }
                         }
                         .padding(.top, 30)
                         .padding(.bottom, 12)
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, Theme.Metrics.spacingXLarge)
                             
                         // Content
                         if viewModel.isAnalyzingScreen {
-                            VStack(spacing: 16) {
+                            VStack(spacing: Theme.Metrics.spacingLarge) {
                                 Spacer()
                                 ProgressView()
                                     .controlSize(.regular)
@@ -140,7 +126,7 @@ struct AnalysisView: View {
                                     .font(Theme.Typography.bodySmall)
                                     .foregroundColor(Theme.Colors.textSecondary)
                                 Text("Pressione ⌘+⇧+Z para capturar sua tela")
-                                    .font(.system(size: 11))
+                                    .font(Theme.Typography.caption)
                                     .foregroundColor(Theme.Colors.textMuted)
                                     .padding(.top, 4)
                                 Spacer()
@@ -150,28 +136,18 @@ struct AnalysisView: View {
                             ScrollView {
                                 MarkdownWebView(markdown: viewModel.analysisResult)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 24)
+                                    .padding(.horizontal, Theme.Metrics.spacingXLarge)
                             }
                         }
                         
                         // Follow-up input area
                         if !viewModel.analysisResult.isEmpty && !viewModel.isAnalyzingScreen {
                             VStack(spacing: 0) {
-                                Divider().background(Theme.Colors.border)
+                                MaeDivider()
                                 
                                 HStack(spacing: 10) {
                                     TextField("Perguntar algo sobre a análise...", text: $followUpText, axis: .vertical)
-                                        .textFieldStyle(.plain)
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(Theme.Colors.textPrimary)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .background(Theme.Colors.surfaceSecondary)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                                .stroke(Theme.Colors.borderHighlight, lineWidth: 1)
-                                        )
+                                        .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                         .lineLimit(1...4)
                                         .focused($isFollowUpFocused)
                                         .onSubmit {
@@ -191,13 +167,13 @@ struct AnalysisView: View {
                                             .font(.system(size: 24))
                                             .foregroundStyle(
                                                 followUpText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                                ? Theme.Colors.textSecondary : Theme.Colors.accent
+                                                ? Theme.Colors.textMuted : Theme.Colors.accent
                                             )
                                     }
                                     .buttonStyle(.plain)
                                 }
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
+                                .padding(.horizontal, Theme.Metrics.spacingXLarge)
+                                .padding(.vertical, Theme.Metrics.spacingDefault)
                             }
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -213,12 +189,12 @@ struct AnalysisView: View {
                             Image(nsImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .padding(24)
-                                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                                .padding(Theme.Metrics.spacingXLarge)
+                                .maeMediumShadow()
                         } else {
-                            VStack(spacing: 16) {
+                            VStack(spacing: Theme.Metrics.spacingLarge) {
                                 Image(systemName: "photo.on.rectangle.angled")
-                                    .font(.system(size: 60))
+                                    .font(.system(size: 60, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.textMuted)
                                 Text("Nenhuma captura de tela no momento.")
                                     .font(Theme.Typography.bodyBold)
@@ -237,16 +213,16 @@ struct AnalysisView: View {
                         HStack(spacing: 10) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 20))
-                                .foregroundStyle(.green)
+                                .foregroundStyle(Theme.Colors.success)
                             Text("Conversa transferida para o chat!")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.white)
+                                .font(Theme.Typography.bodyBold)
+                                .foregroundStyle(Theme.Colors.textPrimary)
                         }
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, Theme.Metrics.spacingXLarge)
                         .padding(.vertical, 14)
                         .background(.ultraThinMaterial)
                         .clipShape(Capsule())
-                        .shadow(color: .black.opacity(0.3), radius: 12, y: 4)
+                        .maeMediumShadow()
                         .padding(.bottom, 40)
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
