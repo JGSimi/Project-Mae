@@ -428,7 +428,6 @@ class AssistantViewModel: ObservableObject {
 
 struct ChatBubble: View {
     let message: ChatMessage
-    @State private var isHovered = false
     @State private var markdownHeight: CGFloat = 40
 
     var body: some View {
@@ -482,12 +481,7 @@ struct ChatBubble: View {
                     }
                 }
             }
-            .scaleEffect(isHovered ? 1.005 : 1.0)
-            .onHover { hovering in
-                withAnimation(Theme.Animation.hover) {
-                    isHovered = hovering
-                }
-            }
+            .maeHover()
             
             if !message.isUser { Spacer(minLength: 40) }
         }
@@ -500,7 +494,6 @@ struct ContentView: View {
     @ObservedObject private var viewModel = AssistantViewModel.shared
     @Namespace private var bottomID
     @State private var showSettings = false
-    @State private var isAppearing = false
 
     var body: some View {
         ZStack {
@@ -512,18 +505,12 @@ struct ContentView: View {
 
             if showSettings {
                 SettingsView(isPresented: $showSettings)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .transition(.maeSlideIn)
                     .zIndex(2)
             }
         }
         .frame(width: 450, height: 650)
-        .scaleEffect(isAppearing ? 1.0 : 0.95)
-        .opacity(isAppearing ? 1.0 : 0.0)
-        .onAppear {
-            withAnimation(Theme.Animation.gentle) {
-                isAppearing = true
-            }
-        }
+        .maeAppearAnimation()
     }
 
     private var chatView: some View {
@@ -583,12 +570,7 @@ struct ContentView: View {
                             ForEach(viewModel.messages) { message in
                                 ChatBubble(message: message)
                                     .id(message.id)
-                                    .transition(.asymmetric(
-                                        insertion: .scale(scale: 0.8)
-                                            .combined(with: .opacity)
-                                            .combined(with: .move(edge: .bottom)),
-                                        removal: .opacity
-                                    ))
+                                    .transition(.maePopIn)
                             }
                         }
                         Color.clear.frame(height: 10).id(bottomID)

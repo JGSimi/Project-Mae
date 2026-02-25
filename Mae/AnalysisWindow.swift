@@ -75,7 +75,7 @@ struct AnalysisView: View {
                                 ) {
                                     Task { await viewModel.processarScreen() }
                                 }
-                                .transition(.scale.combined(with: .opacity))
+                                .transition(.maeScaleFade)
                                 
                                 MaeIconButton(
                                     icon: "bubble.left.and.bubble.right.fill",
@@ -93,7 +93,7 @@ struct AnalysisView: View {
                                         showConfirmation = false
                                     }
                                 }
-                                .transition(.scale.combined(with: .opacity))
+                                .transition(.maeScaleFade)
                             }
                         }
                         .padding(.top, 30)
@@ -175,7 +175,7 @@ struct AnalysisView: View {
                                 .padding(.horizontal, Theme.Metrics.spacingXLarge)
                                 .padding(.vertical, Theme.Metrics.spacingDefault)
                             }
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .transition(.maeSlideUp)
                         }
                     }
                     .frame(width: max(360, geo.size.width * 0.38))
@@ -225,7 +225,7 @@ struct AnalysisView: View {
                         .maeMediumShadow()
                         .padding(.bottom, 40)
                     }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .transition(.maeSlideUp)
                     .zIndex(10)
                 }
             }

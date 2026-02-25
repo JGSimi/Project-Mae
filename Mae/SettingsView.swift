@@ -129,7 +129,7 @@ struct SettingsView: View {
         }
         .background(MaePageBackground())
         .overlay(alignment: .topTrailing) {
-            MaeIconButton(icon: "xmark.circle.fill", size: 18, color: Theme.Colors.textSecondary, bgColor: Theme.Colors.surfaceSecondary, helpText: "Fechar Configurações") {
+            MaeIconButton(icon: "xmark.circle.fill", size: 18, color: Theme.Colors.textSecondary, bgColor: .clear, helpText: "Fechar Configurações") {
                 withAnimation(Theme.Animation.smooth) {
                     isPresented = false
                 }

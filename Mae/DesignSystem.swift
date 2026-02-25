@@ -87,9 +87,88 @@ enum Theme {
 
     // MARK: Animation
     enum Animation {
+        // Durations
+        static let durationFast:   Double = 0.2
+        static let durationNormal: Double = 0.3
+        static let durationSlow:   Double = 0.5
+
+        // Springs
         static let smooth  = SwiftUI.Animation.spring(response: 0.3, dampingFraction: 0.8)
         static let gentle  = SwiftUI.Animation.spring(response: 0.4, dampingFraction: 0.8)
-        static let hover   = SwiftUI.Animation.easeInOut(duration: 0.25)
+        static let bouncy  = SwiftUI.Animation.spring(response: 0.35, dampingFraction: 0.6)
+
+        // Easing
+        static let hover   = SwiftUI.Animation.easeInOut(duration: durationFast)
+        static let fade    = SwiftUI.Animation.easeOut(duration: 0.25)
+    }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MARK: - 1.5. Standardized Transitions
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+extension AnyTransition {
+    /// Slide from trailing edge + fade — settings panels, drawers
+    static var maeSlideIn: AnyTransition {
+        .move(edge: .trailing).combined(with: .opacity)
+    }
+
+    /// Scale up from 0.8 + fade + slide from bottom — chat message pop-in
+    static var maePopIn: AnyTransition {
+        .asymmetric(
+            insertion: .scale(scale: 0.8)
+                .combined(with: .opacity)
+                .combined(with: .move(edge: .bottom)),
+            removal: .opacity
+        )
+    }
+
+    /// Scale + fade — buttons, action items
+    static var maeScaleFade: AnyTransition {
+        .scale.combined(with: .opacity)
+    }
+
+    /// Slide from bottom + fade — toasts, input areas
+    static var maeSlideUp: AnyTransition {
+        .move(edge: .bottom).combined(with: .opacity)
+    }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MARK: - 1.6. Animation View Modifiers
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/// Micro-scale effect triggered on hover — chat bubbles, cards
+struct MaeHoverEffect: ViewModifier {
+    var scale: CGFloat = 1.005
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isHovered ? scale : 1.0)
+            .onHover { hovering in
+                withAnimation(Theme.Animation.hover) {
+                    isHovered = hovering
+                }
+            }
+    }
+}
+
+/// Scale + fade appear animation triggered on `.onAppear`
+struct MaeAppearAnimation: ViewModifier {
+    var animation: SwiftUI.Animation = Theme.Animation.gentle
+    var scale: CGFloat = 0.95
+    @State private var isVisible = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isVisible ? 1.0 : scale)
+            .opacity(isVisible ? 1.0 : 0.0)
+            .onAppear {
+                withAnimation(animation) {
+                    isVisible = true
+                }
+            }
     }
 }
 
@@ -159,6 +238,16 @@ extension View {
     func maeMediumShadow() -> some View {
         let s = Theme.Shadows.medium
         return self.shadow(color: s.color, radius: s.radius, x: s.x, y: s.y)
+    }
+
+    /// Micro-scale hover effect
+    func maeHover(scale: CGFloat = 1.005) -> some View {
+        self.modifier(MaeHoverEffect(scale: scale))
+    }
+
+    /// Scale + fade appear animation on `.onAppear`
+    func maeAppearAnimation(animation: SwiftUI.Animation = Theme.Animation.gentle, scale: CGFloat = 0.95) -> some View {
+        self.modifier(MaeAppearAnimation(animation: animation, scale: scale))
     }
 }
 
