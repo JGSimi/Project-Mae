@@ -23,6 +23,10 @@ actor OpenAIAuthManager {
     private var authContinuation: CheckedContinuation<String, Error>?
     private var timeoutTask: Task<Void, Never>?
     
+    // Status para UI
+    private(set) var hasValidToken: Bool = false
+    private(set) var lastErrorMessage: String? = nil
+    
     private init() {}
     
     // MARK: - Token Management
@@ -82,6 +86,13 @@ actor OpenAIAuthManager {
         currentAccessToken = nil
         currentRefreshToken = nil
         tokenExpirationDate = nil
+        hasValidToken = false
+        lastErrorMessage = nil
+    }
+    
+    // UI Helper
+    func getStatus() -> (hasToken: Bool, lastError: String?) {
+        return (hasValidToken, lastErrorMessage)
     }
     
     // MARK: - Login Flow
@@ -255,29 +266,43 @@ actor OpenAIAuthManager {
     private func fetchAndParseToken(request: URLRequest) async throws -> String {
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            // Em caso de erro (ex: refresh expurgado), limpamos as credenciais
+        guard let httpResponse = response as? HTTPURLResponse else {
+            self.lastErrorMessage = "Resposta de servidor inválida"
+            clearTokens()
+            throw URLError(.badServerResponse)
+        }
+        
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Corpo de erro vazio"
+            self.lastErrorMessage = "Erro HTTP \(httpResponse.statusCode): \(errorStr)"
             clearTokens()
             throw URLError(.badServerResponse)
         }
         
         let decoder = JSONDecoder()
-        let tokenResponse = try decoder.decode(TokenResponse.self, from: data)
-        
-        self.currentAccessToken = tokenResponse.access_token
-        self.currentRefreshToken = tokenResponse.refresh_token
-        
-        // Custom JWT Decoding para identificar tempo real de expiração
-        if let expDate = JWTDecoder.decodeExpiration(jwtToken: tokenResponse.access_token) {
-            // Antecipa em 5 minutos a renovação (margem de segurança)
-            self.tokenExpirationDate = expDate.addingTimeInterval(-300)
-        } else {
-            // Fallback
-            self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval(tokenResponse.expires_in - 300))
+        do {
+            let tokenResponse = try decoder.decode(TokenResponse.self, from: data)
+            
+            self.currentAccessToken = tokenResponse.access_token
+            self.currentRefreshToken = tokenResponse.refresh_token
+            self.hasValidToken = true
+            self.lastErrorMessage = nil
+            
+            // Custom JWT Decoding para identificar tempo real de expiração
+            if let expDate = JWTDecoder.decodeExpiration(jwtToken: tokenResponse.access_token) {
+                // Antecipa em 5 minutos a renovação (margem de segurança)
+                self.tokenExpirationDate = expDate.addingTimeInterval(-300)
+            } else {
+                // Fallback
+                self.tokenExpirationDate = Date().addingTimeInterval(TimeInterval(tokenResponse.expires_in - 300))
+            }
+            
+            return tokenResponse.access_token
+        } catch {
+            self.lastErrorMessage = "Erro decodificando token: \(error.localizedDescription)"
+            clearTokens()
+            throw error
         }
-        
-        return tokenResponse.access_token
     }
     
     // MARK: - PKCE Helpers

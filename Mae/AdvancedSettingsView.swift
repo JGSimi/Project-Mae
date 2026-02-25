@@ -1,6 +1,7 @@
 import SwiftUI
 import KeyboardShortcuts
 import ServiceManagement
+import Combine
 
 // MARK: - Advanced Settings Window Manager
 
@@ -80,6 +81,11 @@ struct AdvancedSettingsView: View {
     @State private var isFetchingModels: Bool = false
     @State private var apiKeyTask: Task<Void, Never>? = nil
     @State private var fetchModelsTask: Task<Void, Never>? = nil
+    
+    // Auth Status
+    @State private var hasValidToken: Bool = false
+    @State private var authError: String? = nil
+    let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     var body: some View {
         NavigationSplitView {
@@ -134,6 +140,12 @@ struct AdvancedSettingsView: View {
             .animation(Theme.Animation.responsive, value: selectedTab)
             .task {
                 await reloadModels()
+                updateAuthStatus()
+            }
+            .onReceive(timer) { _ in
+                if selectedProvider == .chatgptPlus {
+                    updateAuthStatus()
+                }
             }
         }
     }
@@ -357,29 +369,52 @@ struct AdvancedSettingsView: View {
                                             do {
                                                 let token = try await OpenAIAuthManager.shared.getValidToken()
                                                 print("Token obtained: \(token.prefix(15))...")
+                                                updateAuthStatus()
                                             } catch {
                                                 print("Auth error: \(error)")
+                                                updateAuthStatus()
                                             }
                                         }
                                     } label: {
                                         HStack {
                                             Image(systemName: "link.badge.plus")
-                                            Text("Conectar Conta OpenAI / Plus")
+                                            Text(hasValidToken ? "Reconectar Conta Plus" : "Conectar Conta OpenAI / Plus")
                                                 .font(Theme.Typography.bodyBold)
                                             Spacer()
                                         }
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 14)
-                                        .background(Theme.Colors.accent.opacity(0.15))
+                                        .background(hasValidToken ? Theme.Colors.success.opacity(0.15) : Theme.Colors.accent.opacity(0.15))
                                         .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
                                         .overlay(
                                             RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
-                                                .stroke(Theme.Colors.accent.opacity(0.3), lineWidth: 1)
+                                                .stroke(hasValidToken ? Theme.Colors.success.opacity(0.3) : Theme.Colors.accent.opacity(0.3), lineWidth: 1)
                                         )
                                     }
                                     .buttonStyle(.plain)
-                                    .foregroundStyle(Theme.Colors.accent)
+                                    .foregroundStyle(hasValidToken ? Theme.Colors.success : Theme.Colors.accent)
                                     .maePressEffect()
+                                    
+                                    if hasValidToken {
+                                        HStack {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(Theme.Colors.success)
+                                            Text("Sessão ativa e autenticada.")
+                                                .font(Theme.Typography.caption)
+                                                .foregroundStyle(Theme.Colors.textSecondary)
+                                        }
+                                        .padding(.top, 4)
+                                    } else if let error = authError {
+                                        HStack(alignment: .top) {
+                                            Image(systemName: "exclamationmark.triangle.fill")
+                                                .foregroundStyle(Theme.Colors.error)
+                                            Text("Erro de Autenticação: \(error)")
+                                                .font(Theme.Typography.caption)
+                                                .foregroundStyle(Theme.Colors.textSecondary)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+                                        .padding(.top, 4)
+                                    }
                                 }
                                 .padding(Theme.Metrics.spacingLarge)
                             }
@@ -463,6 +498,16 @@ struct AdvancedSettingsView: View {
             }
         } catch {
             print("Failed to fetch dynamically: \(error)")
+        }
+    }
+    
+    private func updateAuthStatus() {
+        Task {
+            let status = await OpenAIAuthManager.shared.getStatus()
+            await MainActor.run {
+                self.hasValidToken = status.hasToken
+                self.authError = status.lastError
+            }
         }
     }
 }
