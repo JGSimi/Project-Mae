@@ -23,9 +23,10 @@ actor OpenAIAuthManager {
     private var authContinuation: CheckedContinuation<String, Error>?
     private var timeoutTask: Task<Void, Never>?
     
-    // Status para UI
-    private(set) var hasValidToken: Bool = false
-    private(set) var lastErrorMessage: String? = nil
+    // Status para UI — nonisolated para que a view possa ler sem bloquear o actor
+    nonisolated(unsafe) private(set) var hasValidToken: Bool = false
+    nonisolated(unsafe) private(set) var lastErrorMessage: String? = nil
+    nonisolated(unsafe) private(set) var isConnecting: Bool = false
     
     private init() {}
     
@@ -90,14 +91,17 @@ actor OpenAIAuthManager {
         lastErrorMessage = nil
     }
     
-    // UI Helper
-    func getStatus() -> (hasToken: Bool, lastError: String?) {
-        return (hasValidToken, lastErrorMessage)
+    // UI Helper — nonisolated para leitura rápida sem aguardar o actor
+    nonisolated func getStatus() -> (hasToken: Bool, lastError: String?, connecting: Bool) {
+        return (hasValidToken, lastErrorMessage, isConnecting)
     }
     
     // MARK: - Login Flow
     
     private func startLoginFlow() async throws -> String {
+        isConnecting = true
+        defer { isConnecting = false }
+        
         let codeVerifier = generateCodeVerifier()
         let codeChallenge = generateCodeChallenge(from: codeVerifier)
         let state = UUID().uuidString
@@ -231,17 +235,18 @@ actor OpenAIAuthManager {
     private func exchangeCodeForToken(code: String, codeVerifier: String) async throws -> String {
         var request = URLRequest(url: URL(string: tokenURL)!)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
         
-        let body: [String: String] = [
-            "client_id": clientId,
-            "code": code,
-            "code_verifier": codeVerifier,
-            "grant_type": "authorization_code",
-            "redirect_uri": redirectURI
+        let bodyParts = [
+            "client_id=\(clientId)",
+            "code=\(code)",
+            "code_verifier=\(codeVerifier)",
+            "grant_type=authorization_code",
+            "redirect_uri=\(redirectURI)"
         ]
         
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.httpBody = bodyParts.joined(separator: "&").data(using: .utf8)
         
         return try await fetchAndParseToken(request: request)
     }
@@ -249,16 +254,17 @@ actor OpenAIAuthManager {
     private func performRefreshToken(_ refreshToken: String) async throws -> String {
         var request = URLRequest(url: URL(string: tokenURL)!)
         request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 30
         
-        let body: [String: String] = [
-            "client_id": clientId,
-            "refresh_token": refreshToken,
-            "grant_type": "refresh_token",
-            "redirect_uri": redirectURI
+        let bodyParts = [
+            "client_id=\(clientId)",
+            "refresh_token=\(refreshToken)",
+            "grant_type=refresh_token",
+            "redirect_uri=\(redirectURI)"
         ]
         
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        request.httpBody = bodyParts.joined(separator: "&").data(using: .utf8)
         
         return try await fetchAndParseToken(request: request)
     }

@@ -85,6 +85,7 @@ struct AdvancedSettingsView: View {
     // Auth Status
     @State private var hasValidToken: Bool = false
     @State private var authError: String? = nil
+    @State private var isConnecting: Bool = false
     let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -143,9 +144,7 @@ struct AdvancedSettingsView: View {
                 updateAuthStatus()
             }
             .onReceive(timer) { _ in
-                if selectedProvider == .chatgptPlus {
-                    updateAuthStatus()
-                }
+                updateAuthStatus()
             }
         }
     }
@@ -369,16 +368,20 @@ struct AdvancedSettingsView: View {
                                             do {
                                                 let token = try await OpenAIAuthManager.shared.getValidToken()
                                                 print("Token obtained: \(token.prefix(15))...")
-                                                updateAuthStatus()
                                             } catch {
                                                 print("Auth error: \(error)")
-                                                updateAuthStatus()
                                             }
+                                            updateAuthStatus()
                                         }
                                     } label: {
                                         HStack {
-                                            Image(systemName: "link.badge.plus")
-                                            Text(hasValidToken ? "Reconectar Conta Plus" : "Conectar Conta OpenAI / Plus")
+                                            if isConnecting {
+                                                ProgressView()
+                                                    .controlSize(.small)
+                                                    .padding(.trailing, 4)
+                                            }
+                                            Image(systemName: isConnecting ? "arrow.2.circlepath" : "link.badge.plus")
+                                            Text(isConnecting ? "Conectando..." : (hasValidToken ? "Reconectar Conta" : "Conectar Conta OpenAI / Plus"))
                                                 .font(Theme.Typography.bodyBold)
                                             Spacer()
                                         }
@@ -502,12 +505,9 @@ struct AdvancedSettingsView: View {
     }
     
     private func updateAuthStatus() {
-        Task {
-            let status = await OpenAIAuthManager.shared.getStatus()
-            await MainActor.run {
-                self.hasValidToken = status.hasToken
-                self.authError = status.lastError
-            }
-        }
+        let status = OpenAIAuthManager.shared.getStatus()
+        self.hasValidToken = status.hasToken
+        self.authError = status.lastError
+        self.isConnecting = status.connecting
     }
 }
