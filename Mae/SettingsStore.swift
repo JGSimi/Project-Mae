@@ -65,15 +65,7 @@ enum CloudProvider: String, CaseIterable, Identifiable {
             ]
         case .chatgptPlus:
             return [
-                "gpt-4o",
-                "gpt-4o-mini",
-                "gpt-4.1",
-                "gpt-4.1-mini",
-                "gpt-4.1-nano",
-                "o3",
-                "o3-mini",
-                "o4-mini",
-                "chatgpt-4o-latest"
+                "gpt-5.2-codex"
             ]
         case .anthropic:
             return [
