@@ -445,7 +445,7 @@ struct ChatBubble: View {
                             .font(Theme.Typography.caption)
                     }
                     .foregroundStyle(Theme.Colors.accent)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 10)
                     .padding(.vertical, 3)
                     .background(Theme.Colors.accentSubtle)
                     .clipShape(Capsule())
