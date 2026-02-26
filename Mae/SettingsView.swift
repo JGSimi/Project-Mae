@@ -146,7 +146,7 @@ struct SettingsView: View {
                     isPresented = false
                 }
             }
-            .keyboardShortcut(.cancel) // Add ESC shortcut
+            .keyboardShortcut(.escape, modifiers: []) // ESC shortcut
             .padding(.top, 12)
             .padding(.trailing, Theme.Metrics.spacingLarge)
         }
