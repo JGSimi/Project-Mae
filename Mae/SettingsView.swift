@@ -105,6 +105,12 @@ struct SettingsView: View {
                 
                 // Botão Avançado Sleek
                 Button {
+                    withAnimation {
+                        isPresented = false
+                    }
+                    // Close the MenuBarExtra window
+                    NSApp.sendAction(#selector(NSPopover.performClose(_:)), to: nil, from: nil)
+                    // Show advanced settings window
                     AdvancedSettingsWindowManager.shared.showWindow()
                 } label: {
                     HStack {
@@ -140,6 +146,7 @@ struct SettingsView: View {
                     isPresented = false
                 }
             }
+            .keyboardShortcut(.cancel) // Add ESC shortcut
             .padding(.top, 12)
             .padding(.trailing, Theme.Metrics.spacingLarge)
         }

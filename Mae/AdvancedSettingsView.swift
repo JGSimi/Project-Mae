@@ -225,6 +225,7 @@ struct AdvancedSettingsView: View {
                     .pickerStyle(.radioGroup)
                     .labelsHidden()
                     .padding(Theme.Metrics.spacingLarge)
+                    .accessibilityLabel("Modo de Inferência")
                 }
                 .groupBoxStyle(MaeCardStyle())
             }
@@ -241,6 +242,7 @@ struct AdvancedSettingsView: View {
                                 TextField("ex: gemma3:4b", text: $localModelName)
                                     .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
                                     .frame(width: 150)
+                                    .accessibilityLabel("Nome do Modelo Ollama")
                             }
                             .padding(Theme.Metrics.spacingLarge)
                         }
@@ -264,6 +266,7 @@ struct AdvancedSettingsView: View {
                                 }
                                 .labelsHidden()
                                 .frame(width: 160)
+                                .accessibilityLabel("Provedor Cloud")
                             }
                             .padding(Theme.Metrics.spacingLarge)
                             .onChange(of: selectedProvider) { _, newValue in
@@ -290,6 +293,7 @@ struct AdvancedSettingsView: View {
                                             .font(Theme.Typography.bodySmall)
                                         TextField("URL", text: $apiEndpoint)
                                             .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
+                                            .accessibilityLabel("URL da API Customizada")
                                     }
                                     HStack {
                                         Text("Modelo:")
@@ -297,6 +301,7 @@ struct AdvancedSettingsView: View {
                                             .font(Theme.Typography.bodySmall)
                                         TextField("Nome do Modelo", text: $apiModelName)
                                             .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
+                                            .accessibilityLabel("Nome do Modelo Customizado")
                                     }
                                 }
                                 .padding(Theme.Metrics.spacingLarge)
@@ -317,6 +322,7 @@ struct AdvancedSettingsView: View {
                                     }
                                     .labelsHidden()
                                     .frame(width: 160)
+                                    .accessibilityLabel("Modelo Cloud")
                                 }
                                 .padding(Theme.Metrics.spacingLarge)
                             }
@@ -328,6 +334,7 @@ struct AdvancedSettingsView: View {
                                 
                                 SecureField("Cole sua API Key...", text: $apiKey)
                                     .maeInputStyle(cornerRadius: Theme.Metrics.radiusSmall)
+                                    .accessibilityLabel("Chave de API")
                                     .onChange(of: apiKey) { _, newValue in
                                         apiKeyTask?.cancel()
                                         apiKeyTask = Task {

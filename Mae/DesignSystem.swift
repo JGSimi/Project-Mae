@@ -535,6 +535,7 @@ struct MaeActionRow: View {
                     .frame(width: 24, height: 24)
                     .background(iconColor.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .accessibilityHidden(true)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -550,6 +551,8 @@ struct MaeActionRow: View {
             }
             Spacer()
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(subtitle != nil ? "\(title), \(subtitle!)" : title)
     }
 }
 
@@ -573,6 +576,7 @@ struct MaeIconButton: View {
         }
         .buttonStyle(.plain)
         .help(helpText ?? "")
+        .accessibilityLabel(helpText ?? "")
     }
 }
 

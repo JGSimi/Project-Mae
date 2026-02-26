@@ -496,6 +496,7 @@ struct ContentView: View {
     @ObservedObject private var viewModel = AssistantViewModel.shared
     @Namespace private var bottomID
     @State private var showSettings = false
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
         ZStack {
@@ -515,10 +516,22 @@ struct ContentView: View {
         }
         .frame(width: 450, height: 650)
         .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.92)
+        .onAppear {
+            isInputFocused = true
+        }
+        .onChange(of: showSettings) { _, newValue in
+            if !newValue {
+                // Focus back on input when settings close
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    isInputFocused = true
+                }
+            }
+        }
     }
 
     private var chatView: some View {
         VStack(spacing: 0) {
+            // ... (keeping previous header content)
             // Header
             HStack {
                 HStack(spacing: 6) {
@@ -647,6 +660,7 @@ struct ContentView: View {
                     TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
                         .maeInputStyle(cornerRadius: Theme.Metrics.radiusLarge)
                         .lineLimit(1...6)
+                        .focused($isInputFocused)
                         .onSubmit {
                             Task { await viewModel.sendManualMessage() }
                         }

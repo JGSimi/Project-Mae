@@ -203,12 +203,14 @@ struct AnalysisView: View {
                                 .padding(Theme.Metrics.spacingXLarge)
                                 .maeMediumShadow()
                                 .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.94)
+                                .accessibilityLabel("Captura de tela atual para análise")
                         } else {
                             VStack(spacing: Theme.Metrics.spacingLarge) {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 60, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.textMuted)
                                     .maeFloating(amplitude: 4, duration: 4.0)
+                                    .accessibilityHidden(true)
                                 Text("Nenhuma captura de tela no momento.")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundColor(Theme.Colors.textSecondary)
@@ -255,6 +257,16 @@ struct AnalysisView: View {
         .edgesIgnoringSafeArea(.top)
         .onAppear {
             localImage = viewModel.analysisImage
+            if !viewModel.analysisResult.isEmpty {
+                isFollowUpFocused = true
+            }
+        }
+        .onChange(of: viewModel.analysisResult) { _, newResult in
+            if !newResult.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isFollowUpFocused = true
+                }
+            }
         }
         .onChange(of: viewModel.analysisImage) { _, newImage in
             if let newImage = newImage {

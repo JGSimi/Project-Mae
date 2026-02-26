@@ -337,16 +337,23 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "heightChanged", let height = message.body as? CGFloat, height > 0 {
                 DispatchQueue.main.async {
-                    self.parent.measuredHeight = height + 4 // small padding
+                    // Only update if height actually changed to prevent feedback loop
+                    let newHeight = height + 4
+                    if abs(self.parent.measuredHeight - newHeight) > 1 {
+                        self.parent.measuredHeight = newHeight
+                    }
                 }
             }
         }
         
         func measureHeight(_ webView: WKWebView) {
-            webView.evaluateJavaScript("document.body.scrollHeight") { [weak self] result, _ in
+            webView.evaluateJavaScript("document.getElementById('content').scrollHeight") { [weak self] result, _ in
                 if let height = result as? CGFloat, height > 0 {
                     DispatchQueue.main.async {
-                        self?.parent.measuredHeight = height + 4
+                        let newHeight = height + 12 // content height + padding
+                        if let self = self, abs(self.parent.measuredHeight - newHeight) > 1 {
+                            self.parent.measuredHeight = newHeight
+                        }
                     }
                 }
             }
@@ -507,22 +514,20 @@ struct AutoSizingMarkdownWebView: NSViewRepresentable {
             const md = `\(escapedMarkdown)`;
             document.getElementById('content').innerHTML = marked.parse(md);
         
+            var lastReportedHeight = 0;
             function notifyHeight() {
-                const body = document.body;
-                const html = document.documentElement;
+                // Measure #content div directly to avoid feedback loop
+                // (body.scrollHeight includes the frame height set by Swift)
+                const contentEl = document.getElementById('content');
+                if (!contentEl) return;
+                const h = contentEl.scrollHeight + 8; // 8px body padding (4px top + 4px bottom)
                 
-                const height = Math.max(
-                    body.scrollHeight,
-                    body.offsetHeight,
-                    html.clientHeight,
-                    html.scrollHeight,
-                    html.offsetHeight
-                );
-                
-                const h = height + 24; // Generous 24px safety margin
-                
-                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged && h > 0) {
-                    window.webkit.messageHandlers.heightChanged.postMessage(h);
+                // Only notify if height actually changed
+                if (Math.abs(h - lastReportedHeight) > 1 && h > 0) {
+                    lastReportedHeight = h;
+                    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.heightChanged) {
+                        window.webkit.messageHandlers.heightChanged.postMessage(h);
+                    }
                 }
             }
         
