@@ -11,6 +11,7 @@ import UserNotifications
 import Combine
 import KeyboardShortcuts
 import UniformTypeIdentifiers
+import PDFKit
 
 // MARK: - Shortcut Name definition
 extension KeyboardShortcuts.Name {
@@ -121,6 +122,62 @@ class AssistantViewModel: ObservableObject {
     init(pasteboard: PasteboardClient = NSPasteboard.general, session: URLSession = .shared) {
         self.pasteboard = pasteboard
         self.session = session
+    }
+
+    func attachment(from url: URL) -> ChatAttachment? {
+        let didAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if didAccess { url.stopAccessingSecurityScopedResource() }
+        }
+
+        let type = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
+
+        if (type?.conforms(to: .image) == true || NSImage(contentsOf: url) != nil),
+           let image = NSImage(contentsOf: url) {
+            return ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+        }
+
+        if type?.conforms(to: .pdf) == true || url.pathExtension.lowercased() == "pdf" {
+            let pdfText = extractPDFText(from: url)
+            let normalized = pdfText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let content = normalized.isEmpty
+                ? "[PDF anexado: \(url.lastPathComponent)]\nNão foi possível extrair texto pesquisável deste PDF."
+                : pdfText
+            return ChatAttachment(name: url.lastPathComponent, data: nil, content: content, image: nil, isImage: false)
+        }
+
+        if let textContent = extractTextFileContent(from: url) {
+            return ChatAttachment(name: url.lastPathComponent, data: nil, content: textContent, image: nil, isImage: false)
+        }
+
+        if let data = try? Data(contentsOf: url) {
+            let content = "[Arquivo binário anexado: \(url.lastPathComponent)]\nO conteúdo não é texto e não pôde ser extraído automaticamente."
+            return ChatAttachment(name: url.lastPathComponent, data: data, content: content, image: nil, isImage: false)
+        }
+
+        return nil
+    }
+
+    private func extractPDFText(from url: URL) -> String {
+        guard let document = PDFDocument(url: url), document.pageCount > 0 else { return "" }
+        return document.string ?? ""
+    }
+
+    private func extractTextFileContent(from url: URL) -> String? {
+        if let utf8 = try? String(contentsOf: url, encoding: .utf8) {
+            let trimmed = utf8.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty { return utf8 }
+        }
+
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        let encodings: [String.Encoding] = [.utf16, .unicode, .isoLatin1, .windowsCP1252, .ascii]
+        for encoding in encodings {
+            if let decoded = String(data: data, encoding: encoding) {
+                let trimmed = decoded.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { return decoded }
+            }
+        }
+        return nil
     }
     
     /// Chamado pelo atalho global (Processa Clipboard)
@@ -476,19 +533,19 @@ struct ChatBubble: View {
                 }
                 
                 if let attachments = message.attachments {
-                    ForEach(attachments.indices, id: \.self) { index in
-                        if attachments[index].isImage, let img = attachments[index].image {
+                    ForEach(Array(attachments.enumerated()), id: \.offset) { _, attachment in
+                        if attachment.isImage, let img = attachment.image {
                             Image(nsImage: img)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(maxHeight: 250)
                                 .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
                                 .maeMediumShadow()
-                        } else if !attachments[index].isImage {
+                        } else if !attachment.isImage {
                             HStack(spacing: 8) {
                                 Image(systemName: "doc.text.fill")
                                     .foregroundStyle(Theme.Colors.accent)
-                                Text(attachments[index].name)
+                                Text(attachment.name)
                                     .font(Theme.Typography.caption)
                                     .foregroundStyle(Theme.Colors.textPrimary)
                                     .lineLimit(1)
@@ -496,7 +553,7 @@ struct ChatBubble: View {
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Theme.Colors.backgroundHover)
+                            .background(Theme.Colors.surfaceSecondary)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
                             .maeSoftShadow()
                         }
@@ -663,9 +720,9 @@ struct ContentView: View {
                 if !viewModel.pendingAttachments.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(viewModel.pendingAttachments.indices, id: \.self) { index in
+                            ForEach(Array(viewModel.pendingAttachments.enumerated()), id: \.offset) { index, attachment in
                                 ZStack(alignment: .topTrailing) {
-                                    if viewModel.pendingAttachments[index].isImage, let img = viewModel.pendingAttachments[index].image {
+                                    if attachment.isImage, let img = attachment.image {
                                         Image(nsImage: img)
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
@@ -677,14 +734,14 @@ struct ContentView: View {
                                             Image(systemName: "doc.text.fill")
                                                 .font(.system(size: 24))
                                                 .foregroundColor(Theme.Colors.accent)
-                                            Text(viewModel.pendingAttachments[index].name)
+                                            Text(attachment.name)
                                                 .font(.system(size: 9))
                                                 .lineLimit(1)
                                                 .truncationMode(.middle)
                                                 .frame(width: 50)
                                         }
                                         .frame(width: 60, height: 60)
-                                        .background(Theme.Colors.backgroundHover)
+                                        .background(Theme.Colors.surfaceSecondary)
                                         .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
                                         .shadow(radius: 2)
                                     }
@@ -720,19 +777,10 @@ struct ContentView: View {
                         panel.allowsMultipleSelection = true
                         if panel.runModal() == .OK {
                             for url in panel.urls {
-                                if let image = NSImage(contentsOf: url) {
-                                    let attachment = ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+                                if let attachment = viewModel.attachment(from: url) {
                                     viewModel.pendingAttachments.append(attachment)
                                 } else {
-                                    do {
-                                        let data = try Data(contentsOf: url)
-                                        // Attempt to read as text
-                                        let textContent = String(data: data, encoding: .utf8) ?? "Arquivo binário ou não suportado"
-                                        let attachment = ChatAttachment(name: url.lastPathComponent, data: data, content: textContent, image: nil, isImage: false)
-                                        viewModel.pendingAttachments.append(attachment)
-                                    } catch {
-                                        print("Erro ao ler arquivo: \(error)")
-                                    }
+                                    print("Erro ao ler arquivo selecionado: \(url.lastPathComponent)")
                                 }
                             }
                         }
@@ -795,16 +843,13 @@ struct ContentView: View {
                     }
                 } else if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
                     provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (item, error) in
-                        if let data = item as? Data, let urlString = String(data: data, encoding: .utf8), let url = URL(string: urlString) {
-                            do {
-                                let fileData = try Data(contentsOf: url)
-                                let textContent = String(data: fileData, encoding: .utf8) ?? "Arquivo binário ou não suportado"
-                                DispatchQueue.main.async {
-                                    let attachment = ChatAttachment(name: url.lastPathComponent, data: fileData, content: textContent, image: nil, isImage: false)
+                        if let url = Self.resolveDroppedFileURL(item) {
+                            DispatchQueue.main.async {
+                                if let attachment = self.viewModel.attachment(from: url) {
                                     self.viewModel.pendingAttachments.append(attachment)
+                                } else {
+                                    print("Erro ao ler arquivo do drop: \(url.lastPathComponent)")
                                 }
-                            } catch {
-                                print("Erro ao ler arquivo do drop: \(error)")
                             }
                         }
                     }
@@ -812,6 +857,24 @@ struct ContentView: View {
             }
             return true
         }
+    }
+
+    private static func resolveDroppedFileURL(_ item: NSSecureCoding?) -> URL? {
+        if let url = item as? URL {
+            return url
+        }
+        if let data = item as? Data {
+            if let url = NSURL(absoluteURLWithDataRepresentation: data, relativeTo: nil) as URL? {
+                return url
+            }
+            if let urlString = String(data: data, encoding: .utf8) {
+                return URL(string: urlString)
+            }
+        }
+        if let urlString = item as? String {
+            return URL(string: urlString)
+        }
+        return nil
     }
 }
 
