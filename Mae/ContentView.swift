@@ -26,17 +26,28 @@ enum MessageSource {
     case screenAnalysis
 }
 
+struct ChatAttachment: Identifiable {
+    let id = UUID()
+    let name: String
+    let data: Data?
+    let content: String?
+    let image: NSImage?
+    let isImage: Bool
+}
+
 struct ChatMessage: Identifiable {
     let id = UUID()
     let content: String
     var images: [NSImage]? = nil
+    var attachments: [ChatAttachment]? = nil
     let isUser: Bool
     let source: MessageSource
     let timestamp = Date()
     
-    init(content: String, images: [NSImage]? = nil, isUser: Bool, source: MessageSource = .chat) {
+    init(content: String, images: [NSImage]? = nil, attachments: [ChatAttachment]? = nil, isUser: Bool, source: MessageSource = .chat) {
         self.content = content
         self.images = images
+        self.attachments = attachments
         self.isUser = isUser
         self.source = source
     }
@@ -96,7 +107,8 @@ class AssistantViewModel: ObservableObject {
     @Published var isProcessing = false
     @Published var messages: [ChatMessage] = []
     @Published var inputText: String = ""
-    @Published var attachedImages: [NSImage] = []
+    @Published var attachedImages: [NSImage] = [] // Deprecated logic soon
+    @Published var pendingAttachments: [ChatAttachment] = []
     
     // Análise de Tela - Novas Propriedades
     @Published var isAnalyzingScreen = false
@@ -135,7 +147,7 @@ class AssistantViewModel: ObservableObject {
 
         guard !textoClipboard.isEmpty || copiedImage != nil else { return }
 
-        await executeRequest(prompt: textoClipboard, rawImages: copiedImage != nil ? [copiedImage!] : nil)
+        await executeRequest(prompt: textoClipboard, rawImages: copiedImage != nil ? [copiedImage!] : nil, attachments: nil)
     }
 
     /// Chamado pelo atalho global (Intelligent Screen Analysis)
@@ -205,8 +217,8 @@ class AssistantViewModel: ObservableObject {
         
         let prompt = "📸 Análise de Tela"
         
-        let userMsg = ChatMessage(content: prompt, images: analysisImage != nil ? [analysisImage!] : nil, isUser: true, source: .screenAnalysis)
-        let assistantMsg = ChatMessage(content: analysisResult, images: nil, isUser: false, source: .screenAnalysis)
+        let userMsg = ChatMessage(content: prompt, images: analysisImage != nil ? [analysisImage!] : nil, attachments: nil, isUser: true, source: .screenAnalysis)
+        let assistantMsg = ChatMessage(content: analysisResult, images: nil, attachments: nil, isUser: false, source: .screenAnalysis)
         
         messages.append(userMsg)
         messages.append(assistantMsg)
@@ -214,7 +226,7 @@ class AssistantViewModel: ObservableObject {
         // Se houver follow-up, enviar como nova mensagem
         if let followUp = followUp, !followUp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             Task {
-                await executeRequest(prompt: followUp, rawImages: nil)
+                await executeRequest(prompt: followUp, rawImages: nil, attachments: nil)
             }
         }
         
@@ -241,17 +253,29 @@ class AssistantViewModel: ObservableObject {
     /// Chamado pela interface via TextField
     func sendManualMessage() async {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let imagesToProcess = attachedImages
+        let attachmentsToProcess = pendingAttachments
         
-        guard !isProcessing && (!text.isEmpty || !imagesToProcess.isEmpty) else { return }
+        guard !isProcessing && (!text.isEmpty || !attachmentsToProcess.isEmpty) else { return }
         
         inputText = ""
+        pendingAttachments.removeAll()
         attachedImages.removeAll()
         
-        await executeRequest(prompt: text, rawImages: imagesToProcess.isEmpty ? nil : imagesToProcess)
+        var finalPrompt = text
+        var extractedImages: [NSImage] = []
+        
+        for attachment in attachmentsToProcess {
+            if attachment.isImage, let img = attachment.image {
+                extractedImages.append(img)
+            } else if let content = attachment.content {
+                finalPrompt += "\n\n[Arquivo: \(attachment.name)]\n\(content)"
+            }
+        }
+        
+        await executeRequest(prompt: finalPrompt, rawImages: extractedImages.isEmpty ? nil : extractedImages, attachments: attachmentsToProcess.isEmpty ? nil : attachmentsToProcess)
     }
 
-    private func executeRequest(prompt: String, rawImages: [NSImage]?) async {
+    private func executeRequest(prompt: String, rawImages: [NSImage]?, attachments: [ChatAttachment]?) async {
         isProcessing = true
         defer { isProcessing = false }
 
@@ -262,7 +286,7 @@ class AssistantViewModel: ObservableObject {
         let base64Images = rawImages?.compactMap { $0.resizedAndCompressedBase64() }
         
         // Adiciona a pergunta ao histórico
-        let userMsg = ChatMessage(content: prompt, images: rawImages, isUser: true)
+        let userMsg = ChatMessage(content: prompt, images: rawImages, attachments: attachments, isUser: true)
         messages.append(userMsg)
 
         do {
@@ -451,7 +475,36 @@ struct ChatBubble: View {
                     .clipShape(Capsule())
                 }
                 
-                if let images = message.images {
+                if let attachments = message.attachments {
+                    ForEach(attachments.indices, id: \.self) { index in
+                        if attachments[index].isImage, let img = attachments[index].image {
+                            Image(nsImage: img)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: 250)
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
+                                .maeMediumShadow()
+                        } else if !attachments[index].isImage {
+                            HStack(spacing: 8) {
+                                Image(systemName: "doc.text.fill")
+                                    .foregroundStyle(Theme.Colors.accent)
+                                Text(attachments[index].name)
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(Theme.Colors.textPrimary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Theme.Colors.backgroundHover)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
+                            .maeSoftShadow()
+                        }
+                    }
+                }
+                
+                // Fallback for screen analysis and backward compatibility
+                if message.attachments == nil, let images = message.images {
                     ForEach(images.indices, id: \.self) { index in
                         Image(nsImage: images[index])
                             .resizable()
@@ -606,22 +659,39 @@ struct ContentView: View {
 
             // Footer / Input Area
             VStack(spacing: 0) {
-                // Attached Images Preview
-                if !viewModel.attachedImages.isEmpty {
+                // Attached Images and Files Preview
+                if !viewModel.pendingAttachments.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(viewModel.attachedImages.indices, id: \.self) { index in
+                            ForEach(viewModel.pendingAttachments.indices, id: \.self) { index in
                                 ZStack(alignment: .topTrailing) {
-                                    Image(nsImage: viewModel.attachedImages[index])
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
+                                    if viewModel.pendingAttachments[index].isImage, let img = viewModel.pendingAttachments[index].image {
+                                        Image(nsImage: img)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 60, height: 60)
+                                            .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
+                                            .shadow(radius: 2)
+                                    } else {
+                                        VStack(spacing: 4) {
+                                            Image(systemName: "doc.text.fill")
+                                                .font(.system(size: 24))
+                                                .foregroundColor(Theme.Colors.accent)
+                                            Text(viewModel.pendingAttachments[index].name)
+                                                .font(.system(size: 9))
+                                                .lineLimit(1)
+                                                .truncationMode(.middle)
+                                                .frame(width: 50)
+                                        }
                                         .frame(width: 60, height: 60)
+                                        .background(Theme.Colors.backgroundHover)
                                         .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
                                         .shadow(radius: 2)
+                                    }
                                     
                                     Button {
                                         withAnimation(Theme.Animation.snappy) {
-                                            let _ = viewModel.attachedImages.remove(at: index)
+                                            let _ = viewModel.pendingAttachments.remove(at: index)
                                         }
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
@@ -644,14 +714,25 @@ struct ContentView: View {
                 MaeGradientDivider()
                 
                 HStack(alignment: .center, spacing: Theme.Metrics.spacingDefault) {
-                    MaeIconButton(icon: "photo.badge.plus", size: 18, color: Theme.Colors.textSecondary, helpText: "Anexar imagem") {
+                    MaeIconButton(icon: "plus.circle.fill", size: 18, color: Theme.Colors.textSecondary, helpText: "Anexar arquivo/imagem") {
                         let panel = NSOpenPanel()
-                        panel.allowedContentTypes = [UTType.image]
+                        panel.allowedContentTypes = [UTType.image, UTType.plainText, UTType.pdf, UTType.json, UTType.sourceCode, UTType.data]
                         panel.allowsMultipleSelection = true
                         if panel.runModal() == .OK {
                             for url in panel.urls {
                                 if let image = NSImage(contentsOf: url) {
-                                    viewModel.attachedImages.append(image)
+                                    let attachment = ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+                                    viewModel.pendingAttachments.append(attachment)
+                                } else {
+                                    do {
+                                        let data = try Data(contentsOf: url)
+                                        // Attempt to read as text
+                                        let textContent = String(data: data, encoding: .utf8) ?? "Arquivo binário ou não suportado"
+                                        let attachment = ChatAttachment(name: url.lastPathComponent, data: data, content: textContent, image: nil, isImage: false)
+                                        viewModel.pendingAttachments.append(attachment)
+                                    } catch {
+                                        print("Erro ao ler arquivo: \(error)")
+                                    }
                                 }
                             }
                         }
@@ -677,13 +758,13 @@ struct ContentView: View {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(Font.system(size: 28))
                                 .foregroundStyle(
-                                    (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
+                                    (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.pendingAttachments.isEmpty)
                                     ? Theme.Colors.textMuted : Theme.Colors.accent
                                 )
                                 .background(Theme.Colors.background.clipShape(Circle()))
                         }
                         .buttonStyle(.plain)
-                        .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.attachedImages.isEmpty)
+                        .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.pendingAttachments.isEmpty)
                         .keyboardShortcut(.defaultAction)
                         .maePressEffect()
                         .transition(.maeScaleFade)
@@ -702,11 +783,28 @@ struct ContentView: View {
                     provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { (item, error) in
                         if let url = item as? URL, let image = NSImage(contentsOf: url) {
                             DispatchQueue.main.async {
-                                self.viewModel.attachedImages.append(image)
+                                let attachment = ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+                                self.viewModel.pendingAttachments.append(attachment)
                             }
                         } else if let data = item as? Data, let image = NSImage(data: data) {
                             DispatchQueue.main.async {
-                                self.viewModel.attachedImages.append(image)
+                                let attachment = ChatAttachment(name: "Imagem", data: nil, content: nil, image: image, isImage: true)
+                                self.viewModel.pendingAttachments.append(attachment)
+                            }
+                        }
+                    }
+                } else if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+                    provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (item, error) in
+                        if let data = item as? Data, let urlString = String(data: data, encoding: .utf8), let url = URL(string: urlString) {
+                            do {
+                                let fileData = try Data(contentsOf: url)
+                                let textContent = String(data: fileData, encoding: .utf8) ?? "Arquivo binário ou não suportado"
+                                DispatchQueue.main.async {
+                                    let attachment = ChatAttachment(name: url.lastPathComponent, data: fileData, content: textContent, image: nil, isImage: false)
+                                    self.viewModel.pendingAttachments.append(attachment)
+                                }
+                            } catch {
+                                print("Erro ao ler arquivo do drop: \(error)")
                             }
                         }
                     }
