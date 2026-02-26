@@ -170,14 +170,79 @@ button:disabled {
   box-shadow: 0 2px 3px rgba(0,0,0,0.05);
 }
 
+.footer-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--header-bg);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+}
+
+.pending-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 16px 0 16px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.pending-attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  max-width: 150px;
+}
+
+.attachment-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.remove-att-btn {
+  padding: 0;
+  color: var(--text-muted);
+}
+.remove-att-btn:hover {
+  color: #ff453a;
+  background: transparent;
+}
+
+.message-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.message-img-attachment {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.message-file-attachment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
 .footer {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   padding: 12px 16px;
-  background-color: var(--header-bg);
-  border-top: 1px solid var(--border-color);
-  backdrop-filter: blur(20px);
 }
 
 .input-wrapper {

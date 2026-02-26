@@ -5,10 +5,17 @@ import { sendNotification, isPermissionGranted, requestPermission } from '@tauri
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { executeAIRequest } from '../utils/api';
 
+export type Attachment = {
+    name: string;
+    type: string;
+    data: string; // Base64 for images, text content for documents
+};
+
 export type ChatMessage = {
     id: string;
     text: string;
     isUser: boolean;
+    attachments?: Attachment[];
 };
 
 export function useAssistant() {
@@ -16,17 +23,35 @@ export function useAssistant() {
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Mock LLM processor (to be replaced by Ollama/Cloud fetch)
-    const processPrompt = async (prompt: string) => {
+    const processPrompt = async (prompt: string, attachments?: Attachment[]) => {
         setIsProcessing(true);
 
         // Add User Message
-        const userMsg: ChatMessage = { id: Date.now().toString(), text: prompt, isUser: true };
+        const userMsg: ChatMessage = { id: Date.now().toString(), text: prompt, isUser: true, attachments };
         setMessages((prev) => [...prev, userMsg]);
 
         try {
             let response = "";
+            
+            // Separar anexos
+            let finalPrompt = prompt;
+            const imagesBase64: string[] = [];
+            
+            if (attachments) {
+                for (const att of attachments) {
+                    if (att.type.startsWith("image/")) {
+                        // O Ollama espera apenas a base64 sem o prefixo data:image/...;base64,
+                        const base64Data = att.data.split(',')[1] || att.data;
+                        imagesBase64.push(base64Data);
+                    } else {
+                        // Para documentos e texto
+                        finalPrompt += `\n\n[Arquivo: ${att.name}]\n${att.data}`;
+                    }
+                }
+            }
+
             try {
-                response = await executeAIRequest(prompt);
+                response = await executeAIRequest(finalPrompt, imagesBase64);
             } catch (err) {
                 console.warn("Local API returned error, returning fallback simulate.", err);
                 // Fallback simulate to show the UI works even without local ollama running

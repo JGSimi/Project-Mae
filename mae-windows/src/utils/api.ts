@@ -12,9 +12,9 @@ export const SettingsManager = {
     get apiKey(): string { return ''; } // Would be fetched from tauri-plugin-store
 };
 
-export async function fetchLocalOllama(prompt: string, model: string, system: string) {
+export async function fetchLocalOllama(prompt: string, model: string, system: string, images?: string[]) {
     const fullPrompt = system + prompt;
-    const payload = {
+    const payload: any = {
         model,
         prompt: fullPrompt,
         stream: false,
@@ -22,6 +22,10 @@ export async function fetchLocalOllama(prompt: string, model: string, system: st
             temperature: 0.0
         }
     };
+    
+    if (images && images.length > 0) {
+        payload.images = images;
+    }
 
     const response = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
@@ -37,12 +41,12 @@ export async function fetchLocalOllama(prompt: string, model: string, system: st
     return data.response.trim();
 }
 
-export async function executeAIRequest(prompt: string): Promise<string> {
+export async function executeAIRequest(prompt: string, images?: string[]): Promise<string> {
     const mode = SettingsManager.inferenceMode;
     const system = SettingsManager.systemPrompt;
 
     if (mode === 'local') {
-        return fetchLocalOllama(prompt, SettingsManager.localModelName, system);
+        return fetchLocalOllama(prompt, SettingsManager.localModelName, system, images);
     } else {
         // Cloud API logic structure
         return Promise.resolve("Cloud APIs to be connected via tauri-plugin-http.");
