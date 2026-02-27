@@ -265,7 +265,8 @@ struct QuickInputView: View {
 
                         Button {
                             withAnimation(Theme.Animation.snappy) {
-                                viewModel.pendingAttachments.remove(at: index)
+                                let i: Int = index
+                                viewModel.pendingAttachments.remove(at: i)
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
