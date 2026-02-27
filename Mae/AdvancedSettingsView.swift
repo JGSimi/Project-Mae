@@ -403,6 +403,15 @@ struct AdvancedSettingsView: View {
                         KeyboardShortcuts.Recorder(for: .processScreen)
                     }
                     .padding(Theme.Metrics.spacingLarge)
+                    
+                    MaeDivider()
+                    
+                    HStack {
+                        MaeActionRow(title: "Input Rápido", subtitle: "Abre overlay para perguntar sem abrir o chat", icon: "text.cursor", iconColor: Theme.Colors.accent)
+                        Spacer()
+                        KeyboardShortcuts.Recorder(for: .quickInput)
+                    }
+                    .padding(Theme.Metrics.spacingLarge)
                 }
             }
             .groupBoxStyle(MaeCardStyle())

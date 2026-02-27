@@ -17,6 +17,7 @@ import PDFKit
 extension KeyboardShortcuts.Name {
     static let processClipboard = Self("processClipboard", default: .init(.x, modifiers: [.command, .shift]))
     static let processScreen = Self("processScreen", default: .init(.z, modifiers: [.command, .shift]))
+    static let quickInput = Self("quickInput", default: .init(.space, modifiers: [.command, .shift]))
 }
 
 
@@ -292,7 +293,7 @@ class AssistantViewModel: ObservableObject {
         analysisImage = nil
     }
     
-    private func captureScreen() -> NSImage? {
+    func captureScreen() -> NSImage? {
         // Obsolete in macOS 15.0: CGDisplayCreateImage(CGMainDisplayID())
         // Using screencapture CLI as a robust workaround that also triggers the permission prompt
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension("png")
@@ -752,7 +753,9 @@ struct ContentView: View {
                                         }
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 20))
                                             .foregroundStyle(Theme.Colors.textPrimary, Theme.Colors.background)
+                                            .frame(width: 28, height: 28)
                                     }
                                     .buttonStyle(.plain)
                                     .offset(x: 6, y: -6)
@@ -804,12 +807,13 @@ struct ContentView: View {
                             Task { await viewModel.sendManualMessage() }
                         } label: {
                             Image(systemName: "arrow.up.circle.fill")
-                                .font(Font.system(size: 28))
+                                .font(.system(size: 32))
                                 .foregroundStyle(
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.pendingAttachments.isEmpty)
                                     ? Theme.Colors.textMuted : Theme.Colors.accent
                                 )
                                 .background(Theme.Colors.background.clipShape(Circle()))
+                                .frame(width: 40, height: 40)
                         }
                         .buttonStyle(.plain)
                         .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.pendingAttachments.isEmpty)

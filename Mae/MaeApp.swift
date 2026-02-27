@@ -63,6 +63,10 @@ struct MaeApp: App {
                 await AssistantViewModel.shared.processarScreen()
             }
         }
+        
+        KeyboardShortcuts.onKeyDown(for: .quickInput) {
+            QuickInputWindowManager.shared.toggleWindow()
+        }
     }
     
     var body: some Scene {

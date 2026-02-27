@@ -560,7 +560,7 @@ struct MaeActionRow: View {
 /// Circular icon button with optional accent highlighting.
 struct MaeIconButton: View {
     let icon: String
-    var size: CGFloat = 14
+    var size: CGFloat = 16
     var color: Color = Theme.Colors.textSecondary
     var bgColor: Color = .clear
     var helpText: String? = nil
@@ -571,8 +571,10 @@ struct MaeIconButton: View {
             Image(systemName: icon)
                 .font(.system(size: size, weight: .regular))
                 .foregroundStyle(color)
-                .padding(bgColor == .clear ? 0 : 8)
+                .padding(bgColor == .clear ? 6 : 8)
                 .background(bgColor)
+                .frame(width: 36, height: 36)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .help(helpText ?? "")
