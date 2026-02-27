@@ -1,3 +1,17 @@
+# Mãe
+
+**Uma assistente de IA que mora na sua barra de menus.** Discreta, rápida e sempre a um clique de distância — sem janelas extras, sem distrações. Ela está ali quando você precisa e desaparece quando não precisa.
+
+## Funcionalidades
+
+- **Sempre disponível, nunca no caminho** — Vive na barra de menus do macOS. Um clique abre, um clique fecha. Sem janelas ocupando espaço na sua tela.
+- **Análise Inteligente de Tela** — Captura o que está na sua tela e oferece ajuda contextual automaticamente. Está lendo um currículo? Ela dá dicas. Vendo código? Ela encontra bugs.
+- **Processamento Instantâneo da Área de Transferência** — Copie qualquer texto ou imagem e deixe a Mãe processar por você com um atalho. A resposta volta direto para a sua área de transferência.
+- **Suporte a Anexos** — Arraste imagens, PDFs, códigos ou qualquer arquivo de texto direto no chat.
+- **Respostas Formatadas** — Tudo renderizado em Markdown para facilitar a leitura.
+
+---
+
 ## 🍏 Guia de Instalação para macOS
 
 A versão para Mac é um aplicativo nativo Swift e requer o ambiente de desenvolvimento da Apple.
