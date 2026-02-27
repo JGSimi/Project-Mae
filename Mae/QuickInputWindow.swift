@@ -31,6 +31,7 @@ final class QuickInputPanel: NSPanel {
 
 // MARK: - Window Manager
 
+@MainActor
 class QuickInputWindowManager {
     static let shared = QuickInputWindowManager()
     private var panel: NSPanel?
