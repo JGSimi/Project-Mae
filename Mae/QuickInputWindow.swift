@@ -11,40 +11,9 @@ import UniformTypeIdentifiers
 
 // MARK: - NSPanel Subclass (Spotlight-like)
 
-final class QuickInputPanel<Content: View>: NSPanel {
+final class QuickInputPanel: NSPanel {
 
-    private let onClose: () -> Void
-
-    init(view: () -> Content, contentRect: NSRect, onClose: @escaping () -> Void) {
-        self.onClose = onClose
-
-        super.init(
-            contentRect: contentRect,
-            styleMask: [.borderless, .nonactivatingPanel, .titled, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-
-        isFloatingPanel = true
-        level = .floating
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
-
-        titleVisibility = .hidden
-        titlebarAppearsTransparent = true
-        isMovableByWindowBackground = true
-        isOpaque = false
-        backgroundColor = .clear
-        hasShadow = true
-        animationBehavior = .utilityWindow
-
-        sharingType = .none
-
-        standardWindowButton(.closeButton)?.isHidden = true
-        standardWindowButton(.miniaturizeButton)?.isHidden = true
-        standardWindowButton(.zoomButton)?.isHidden = true
-
-        contentView = NSHostingView(rootView: view().ignoresSafeArea())
-    }
+    var onClose: (() -> Void)?
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
@@ -56,7 +25,7 @@ final class QuickInputPanel<Content: View>: NSPanel {
 
     override func close() {
         super.close()
-        onClose()
+        onClose?()
     }
 }
 
@@ -77,16 +46,35 @@ class QuickInputWindowManager {
     }
 
     private func openWindow() {
-        let contentRect = NSRect(x: 0, y: 0, width: 680, height: 0)
-
         let newPanel = QuickInputPanel(
-            view: { QuickInputView() },
-            contentRect: contentRect,
-            onClose: { [weak self] in
-                guard let self, !self.isCapturingScreen else { return }
-                self.panel = nil
-            }
+            contentRect: NSRect(x: 0, y: 0, width: 680, height: 0),
+            styleMask: [.borderless, .nonactivatingPanel, .titled, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
         )
+
+        newPanel.isFloatingPanel = true
+        newPanel.level = .floating
+        newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
+        newPanel.titleVisibility = .hidden
+        newPanel.titlebarAppearsTransparent = true
+        newPanel.isMovableByWindowBackground = true
+        newPanel.isOpaque = false
+        newPanel.backgroundColor = .clear
+        newPanel.hasShadow = true
+        newPanel.animationBehavior = .utilityWindow
+        newPanel.sharingType = .none
+
+        newPanel.standardWindowButton(.closeButton)?.isHidden = true
+        newPanel.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        newPanel.standardWindowButton(.zoomButton)?.isHidden = true
+
+        newPanel.contentView = NSHostingView(rootView: QuickInputView().ignoresSafeArea())
+
+        newPanel.onClose = { [weak self] in
+            guard let self, !self.isCapturingScreen else { return }
+            self.panel = nil
+        }
 
         newPanel.center()
         if let screen = NSScreen.main {
