@@ -202,3 +202,4 @@ test*.swift
 
 # Build output
 build_output/
+build2/
