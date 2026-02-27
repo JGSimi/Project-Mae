@@ -9,53 +9,84 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
+// MARK: - NSPanel Subclass (Spotlight-like)
+
+final class QuickInputPanel<Content: View>: NSPanel {
+
+    private let onClose: () -> Void
+
+    init(view: () -> Content, contentRect: NSRect, onClose: @escaping () -> Void) {
+        self.onClose = onClose
+
+        super.init(
+            contentRect: contentRect,
+            styleMask: [.borderless, .nonactivatingPanel, .titled, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+
+        isFloatingPanel = true
+        level = .floating
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
+
+        titleVisibility = .hidden
+        titlebarAppearsTransparent = true
+        isMovableByWindowBackground = true
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = true
+        animationBehavior = .utilityWindow
+
+        sharingType = .none
+
+        standardWindowButton(.closeButton)?.isHidden = true
+        standardWindowButton(.miniaturizeButton)?.isHidden = true
+        standardWindowButton(.zoomButton)?.isHidden = true
+
+        contentView = NSHostingView(rootView: view().ignoresSafeArea())
+    }
+
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+
+    override func resignKey() {
+        super.resignKey()
+        close()
+    }
+
+    override func close() {
+        super.close()
+        onClose()
+    }
+}
+
 // MARK: - Window Manager
 
 class QuickInputWindowManager {
     static let shared = QuickInputWindowManager()
     private var panel: NSPanel?
+    private(set) var isCapturingScreen = false
 
     func toggleWindow() {
-        if let panel = panel, panel.isVisible {
+        if panel != nil {
             closeWindow()
         } else {
-            showWindow()
+            AssistantViewModel.shared.pendingAttachments.removeAll()
+            openWindow()
         }
     }
 
-    func showWindow() {
-        if let panel = panel {
-            panel.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
+    private func openWindow() {
+        let contentRect = NSRect(x: 0, y: 0, width: 680, height: 0)
 
-        let contentView = QuickInputView()
-
-        let newPanel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 680, height: 72),
-            styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
+        let newPanel = QuickInputPanel(
+            view: { QuickInputView() },
+            contentRect: contentRect,
+            onClose: { [weak self] in
+                guard let self, !self.isCapturingScreen else { return }
+                self.panel = nil
+            }
         )
-
-        newPanel.isFloatingPanel = true
-        newPanel.level = .floating
-        newPanel.backgroundColor = .clear
-        newPanel.isOpaque = false
-        newPanel.hasShadow = true
-        newPanel.isMovableByWindowBackground = true
-        newPanel.isReleasedWhenClosed = false
-        newPanel.hidesOnDeactivate = false
-        newPanel.animationBehavior = .utilityWindow
-        newPanel.titleVisibility = .hidden
-        newPanel.titlebarAppearsTransparent = true
-        newPanel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-
-        let hostingView = NSHostingView(rootView: contentView)
-        hostingView.layer?.cornerRadius = Theme.Metrics.radiusLarge
-        hostingView.layer?.masksToBounds = true
-        newPanel.contentView = hostingView
 
         newPanel.center()
         if let screen = NSScreen.main {
@@ -67,20 +98,37 @@ class QuickInputWindowManager {
         }
 
         self.panel = newPanel
-        newPanel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        newPanel.makeKeyAndOrderFront(nil)
+        newPanel.orderFrontRegardless()
     }
 
     func closeWindow() {
-        panel?.orderOut(nil)
+        guard !isCapturingScreen else { return }
+        panel?.close()
+        panel = nil
     }
 
-    func updatePanelHeight(_ height: CGFloat) {
-        guard let panel = panel else { return }
-        let frame = panel.frame
-        let newHeight = max(72, min(height, 400))
-        let newOrigin = NSPoint(x: frame.origin.x, y: frame.origin.y + frame.height - newHeight)
-        panel.setFrame(NSRect(origin: newOrigin, size: NSSize(width: frame.width, height: newHeight)), display: true, animate: true)
+    func captureAndReopen() {
+        isCapturingScreen = true
+        panel?.close()
+        panel = nil
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            let image = AssistantViewModel.shared.captureScreen()
+
+            self.isCapturingScreen = false
+
+            if let image {
+                let attachment = ChatAttachment(
+                    name: "Captura de Tela", data: nil, content: nil, image: image, isImage: true
+                )
+                AssistantViewModel.shared.pendingAttachments.append(attachment)
+            }
+
+            self.openWindow()
+        }
     }
 }
 
@@ -89,25 +137,22 @@ class QuickInputWindowManager {
 struct QuickInputView: View {
     @ObservedObject private var viewModel = AssistantViewModel.shared
     @State private var inputText: String = ""
-    @State private var localAttachments: [ChatAttachment] = []
-    @State private var screenshotImage: NSImage? = nil
-    @State private var isAppearing = false
     @FocusState private var isInputFocused: Bool
 
     private var hasContent: Bool {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        || !localAttachments.isEmpty
-        || screenshotImage != nil
+        || !viewModel.pendingAttachments.isEmpty
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            if !localAttachments.isEmpty || screenshotImage != nil {
+            if !viewModel.pendingAttachments.isEmpty {
                 attachmentsPreview
             }
 
             inputBar
         }
+        .fixedSize(horizontal: false, vertical: true)
         .background(
             VisualEffectView(material: .hudWindow, blendingMode: .behindWindow)
         )
@@ -116,20 +161,9 @@ struct QuickInputView: View {
             RoundedRectangle(cornerRadius: Theme.Metrics.radiusLarge, style: .continuous)
                 .stroke(Theme.Colors.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.35), radius: 30, y: 10)
-        .padding(1)
-        .scaleEffect(isAppearing ? 1.0 : 0.95)
-        .opacity(isAppearing ? 1.0 : 0.0)
+        .frame(width: 680)
         .onAppear {
-            withAnimation(Theme.Animation.smooth) {
-                isAppearing = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isInputFocused = true
-            }
-        }
-        .onExitCommand {
-            dismiss()
+            isInputFocused = true
         }
         .preferredColorScheme(.dark)
     }
@@ -164,7 +198,6 @@ struct QuickInputView: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!hasContent)
-                .keyboardShortcut(.defaultAction)
                 .maePressEffect()
                 .transition(.maeScaleFade)
             }
@@ -181,8 +214,14 @@ struct QuickInputView: View {
                 attachFile()
             }
 
-            MaeIconButton(icon: "camera.viewfinder", size: 18, color: screenshotImage != nil ? Theme.Colors.accent : Theme.Colors.textSecondary, helpText: "Capturar tela") {
-                captureScreenshot()
+            MaeIconButton(
+                icon: "camera.viewfinder",
+                size: 18,
+                color: viewModel.pendingAttachments.contains(where: { $0.name == "Captura de Tela" })
+                    ? Theme.Colors.accent : Theme.Colors.textSecondary,
+                helpText: "Capturar tela"
+            ) {
+                QuickInputWindowManager.shared.captureAndReopen()
             }
         }
     }
@@ -192,34 +231,7 @@ struct QuickInputView: View {
     private var attachmentsPreview: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                if let screenshot = screenshotImage {
-                    ZStack(alignment: .topTrailing) {
-                        Image(nsImage: screenshot)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 60, height: 60)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall)
-                                    .stroke(Theme.Colors.accent.opacity(0.4), lineWidth: 1)
-                            )
-
-                        Button {
-                            withAnimation(Theme.Animation.snappy) {
-                                screenshotImage = nil
-                                updatePanelSize()
-                            }
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(Theme.Colors.textPrimary, Theme.Colors.background)
-                        }
-                        .buttonStyle(.plain)
-                        .offset(x: 6, y: -6)
-                    }
-                    .transition(.maeScaleFade)
-                }
-
-                ForEach(Array(localAttachments.enumerated()), id: \.offset) { index, attachment in
+                ForEach(Array(viewModel.pendingAttachments.enumerated()), id: \.offset) { index, attachment in
                     ZStack(alignment: .topTrailing) {
                         if attachment.isImage, let img = attachment.image {
                             Image(nsImage: img)
@@ -227,6 +239,12 @@ struct QuickInputView: View {
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: 60, height: 60)
                                 .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
+                                .overlay(
+                                    attachment.name == "Captura de Tela"
+                                    ? RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall)
+                                        .stroke(Theme.Colors.accent.opacity(0.4), lineWidth: 1)
+                                    : nil
+                                )
                                 .shadow(radius: 2)
                         } else {
                             VStack(spacing: 4) {
@@ -247,8 +265,7 @@ struct QuickInputView: View {
 
                         Button {
                             withAnimation(Theme.Animation.snappy) {
-                                localAttachments.remove(at: index)
-                                updatePanelSize()
+                                viewModel.pendingAttachments.remove(at: index)
                             }
                         } label: {
                             Image(systemName: "xmark.circle.fill")
@@ -273,35 +290,13 @@ struct QuickInputView: View {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard hasContent && !viewModel.isProcessing else { return }
 
-        var allAttachments = localAttachments
-        if let screenshot = screenshotImage {
-            allAttachments.insert(
-                ChatAttachment(name: "Captura de Tela", data: nil, content: nil, image: screenshot, isImage: true),
-                at: 0
-            )
-        }
-
         viewModel.inputText = text
-        viewModel.pendingAttachments = allAttachments
-
-        inputText = ""
-        localAttachments = []
-        screenshotImage = nil
 
         Task {
             await viewModel.sendManualMessage()
         }
 
-        dismiss()
-    }
-
-    private func dismiss() {
-        withAnimation(Theme.Animation.smooth) {
-            isAppearing = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            QuickInputWindowManager.shared.closeWindow()
-        }
+        QuickInputWindowManager.shared.closeWindow()
     }
 
     private func attachFile() {
@@ -312,33 +307,10 @@ struct QuickInputView: View {
             for url in panel.urls {
                 if let attachment = viewModel.attachment(from: url) {
                     withAnimation(Theme.Animation.snappy) {
-                        localAttachments.append(attachment)
+                        viewModel.pendingAttachments.append(attachment)
                     }
                 }
             }
-            updatePanelSize()
         }
-    }
-
-    private func captureScreenshot() {
-        QuickInputWindowManager.shared.closeWindow()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            let image = AssistantViewModel.shared.captureScreen()
-
-            DispatchQueue.main.async {
-                if let image = image {
-                    self.screenshotImage = image
-                }
-                QuickInputWindowManager.shared.showWindow()
-                updatePanelSize()
-            }
-        }
-    }
-
-    private func updatePanelSize() {
-        let hasAttachments = !localAttachments.isEmpty || screenshotImage != nil
-        let height: CGFloat = hasAttachments ? 150 : 72
-        QuickInputWindowManager.shared.updatePanelHeight(height)
     }
 }
