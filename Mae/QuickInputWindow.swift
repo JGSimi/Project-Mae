@@ -184,6 +184,7 @@ struct QuickInputView: View {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.system(size: 26))
                         .foregroundStyle(hasContent ? Theme.Colors.accent : Theme.Colors.textMuted)
+                        .symbolEffect(.bounce, options: .nonRepeating)
                 }
                 .buttonStyle(.plain)
                 .disabled(!hasContent)
@@ -240,6 +241,7 @@ struct QuickInputView: View {
                                 Image(systemName: "doc.text.fill")
                                     .font(.system(size: 24))
                                     .foregroundColor(Theme.Colors.accent)
+                                    .symbolEffect(.bounce, options: .nonRepeating)
                                 Text(attachment.name)
                                     .font(.system(size: 9))
                                     .lineLimit(1)
@@ -260,6 +262,7 @@ struct QuickInputView: View {
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundStyle(Theme.Colors.textPrimary, Theme.Colors.background)
+                                .symbolEffect(.bounce, options: .nonRepeating)
                         }
                         .buttonStyle(.plain)
                         .offset(x: 6, y: -6)

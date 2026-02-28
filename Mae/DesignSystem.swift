@@ -525,6 +525,7 @@ struct MaeActionRow: View {
     var subtitle: String? = nil
     var icon: String? = nil
     var iconColor: Color = Theme.Colors.accent
+    @State private var appeared = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -532,10 +533,12 @@ struct MaeActionRow: View {
                 Image(systemName: icon)
                     .font(Theme.Typography.bodyBold)
                     .foregroundStyle(iconColor)
+                    .symbolEffect(.bounce, value: appeared)
                     .frame(width: 24, height: 24)
                     .background(iconColor.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .accessibilityHidden(true)
+                    .onAppear { appeared = true }
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -565,12 +568,17 @@ struct MaeIconButton: View {
     var bgColor: Color = .clear
     var helpText: String? = nil
     let action: () -> Void
+    @State private var tapCount: Int = 0
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            tapCount += 1
+            action()
+        } label: {
             Image(systemName: icon)
                 .font(.system(size: size, weight: .regular))
                 .foregroundStyle(color)
+                .symbolEffect(.bounce, value: tapCount)
                 .padding(bgColor == .clear ? 6 : 8)
                 .background(bgColor)
                 .frame(width: 36, height: 36)

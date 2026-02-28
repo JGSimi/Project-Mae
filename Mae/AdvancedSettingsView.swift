@@ -93,6 +93,7 @@ struct AdvancedSettingsView: View {
                                 .font(Theme.Typography.bodySmall)
                         } icon: {
                             Image(systemName: tab.icon)
+                                .symbolEffect(.bounce, value: selectedTab == tab)
                         }
                         .padding(.vertical, 6)
                     }
@@ -181,6 +182,7 @@ struct AdvancedSettingsView: View {
                             Image(systemName: "chevron.right")
                                 .font(Theme.Typography.bodySmall)
                                 .foregroundStyle(Theme.Colors.textMuted)
+                                .symbolEffect(.bounce, options: .nonRepeating)
                         }
                         .contentShape(Rectangle())
                     }
@@ -197,6 +199,7 @@ struct AdvancedSettingsView: View {
                             Image(systemName: "chevron.right")
                                 .font(Theme.Typography.bodySmall)
                                 .foregroundStyle(Theme.Colors.textMuted)
+                                .symbolEffect(.bounce, options: .nonRepeating)
                         }
                         .contentShape(Rectangle())
                     }

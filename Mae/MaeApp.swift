@@ -124,6 +124,7 @@ struct WelcomeView: View {
                 Image(systemName: "sparkles")
                     .font(.system(size: 40, weight: .ultraLight))
                     .foregroundColor(Theme.Colors.accent)
+                    .symbolEffect(.breathe.plain)
                     .maePulse(duration: 2.5)
                 
                 Text("Bem-vindo à Mãe")
@@ -208,6 +209,7 @@ struct FeatureRow: View {
             Image(systemName: icon)
                 .font(.system(size: 20, weight: .light))
                 .foregroundColor(Theme.Colors.accent)
+                .symbolEffect(.pulse.byLayer)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {

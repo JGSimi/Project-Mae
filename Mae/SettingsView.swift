@@ -85,6 +85,7 @@ struct SettingsView: View {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(Theme.Typography.bodySmall)
                             .foregroundStyle(Theme.Colors.accent.opacity(0.8))
+                            .symbolEffect(.rotate, options: .nonRepeating)
                         Text("Verificar Atualizações")
                             .font(Theme.Typography.bodyBold)
                         Spacer()
@@ -116,12 +117,14 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "gearshape.fill")
                             .font(Theme.Typography.bodySmall)
+                            .symbolEffect(.rotate, options: .nonRepeating)
                         Text("Configurações Avançadas")
                             .font(Theme.Typography.bodyBold)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(Theme.Typography.caption)
                             .foregroundStyle(Theme.Colors.textSecondary)
+                            .symbolEffect(.bounce, options: .nonRepeating)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)

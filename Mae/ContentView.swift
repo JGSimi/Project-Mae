@@ -523,6 +523,7 @@ struct ChatBubble: View {
                     HStack(spacing: 4) {
                         Image(systemName: "camera.viewfinder")
                             .font(Theme.Typography.caption)
+                            .symbolEffect(.pulse)
                         Text("Análise de Tela")
                             .font(Theme.Typography.caption)
                     }
@@ -546,6 +547,7 @@ struct ChatBubble: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "doc.text.fill")
                                     .foregroundStyle(Theme.Colors.accent)
+                                    .symbolEffect(.bounce, options: .nonRepeating)
                                 Text(attachment.name)
                                     .font(Theme.Typography.caption)
                                     .foregroundStyle(Theme.Colors.textPrimary)
@@ -682,6 +684,7 @@ struct ContentView: View {
                                 Image(systemName: "sun.horizon.fill")
                                     .font(.system(size: 32, weight: .light))
                                     .foregroundStyle(Theme.Colors.accent.opacity(0.4))
+                                    .symbolEffect(.breathe.plain)
                                     .maeFloating(amplitude: 4, duration: 3.5)
                                 Text("Comece uma conversa")
                                     .font(Theme.Typography.bodyBold)
@@ -735,6 +738,7 @@ struct ContentView: View {
                                             Image(systemName: "doc.text.fill")
                                                 .font(.system(size: 24))
                                                 .foregroundColor(Theme.Colors.accent)
+                                                .symbolEffect(.bounce, options: .nonRepeating)
                                             Text(attachment.name)
                                                 .font(.system(size: 9))
                                                 .lineLimit(1)
@@ -755,6 +759,7 @@ struct ContentView: View {
                                         Image(systemName: "xmark.circle.fill")
                                             .font(.system(size: 20))
                                             .foregroundStyle(Theme.Colors.textPrimary, Theme.Colors.background)
+                                            .symbolEffect(.bounce, options: .nonRepeating)
                                             .frame(width: 28, height: 28)
                                     }
                                     .buttonStyle(.plain)
@@ -812,6 +817,7 @@ struct ContentView: View {
                                     (viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && viewModel.pendingAttachments.isEmpty)
                                     ? Theme.Colors.textMuted : Theme.Colors.accent
                                 )
+                                .symbolEffect(.bounce, options: .nonRepeating)
                                 .background(Theme.Colors.background.clipShape(Circle()))
                                 .frame(width: 40, height: 40)
                         }

@@ -127,6 +127,7 @@ struct AnalysisView: View {
                                 Image(systemName: "magnifyingglass")
                                     .font(.system(size: 40, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.accent.opacity(0.3))
+                                    .symbolEffect(.breathe.plain)
                                     .padding(.bottom, 8)
                                     .maeFloating(amplitude: 5, duration: 3.0)
                                 Text("Nenhuma análise disponível.")
@@ -180,6 +181,7 @@ struct AnalysisView: View {
                                                 followUpText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                                                 ? Theme.Colors.textMuted : Theme.Colors.accent
                                             )
+                                            .symbolEffect(.bounce, options: .nonRepeating)
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -209,6 +211,7 @@ struct AnalysisView: View {
                                 Image(systemName: "photo.on.rectangle.angled")
                                     .font(.system(size: 60, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.textMuted)
+                                    .symbolEffect(.pulse.byLayer)
                                     .maeFloating(amplitude: 4, duration: 4.0)
                                     .accessibilityHidden(true)
                                 Text("Nenhuma captura de tela no momento.")
@@ -230,6 +233,7 @@ struct AnalysisView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 20))
                                 .foregroundStyle(Theme.Colors.success)
+                                .symbolEffect(.bounce, options: .nonRepeating)
                             Text("Conversa transferida para o chat!")
                                 .font(Theme.Typography.bodyBold)
                                 .foregroundStyle(Theme.Colors.textPrimary)
