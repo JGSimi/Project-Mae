@@ -27,7 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
             let center = UNUserNotificationCenter.current()
             let settings = await center.notificationSettings()
             if settings.authorizationStatus == .notDetermined {
-                try? await center.requestAuthorization(options: [.alert, .sound])
+                _ = try? await center.requestAuthorization(options: [.alert, .sound])
             }
         }
         
@@ -48,7 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 struct MaeApp: App {
     // Adaptador para usar o AppDelegate em SwiftUI
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @ObservedObject private var viewModel = AssistantViewModel.shared
+    @StateObject private var viewModel = AssistantViewModel.shared
     
     init() {
         // Registramos o listener global para o atalho quando o app inicia

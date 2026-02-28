@@ -335,21 +335,19 @@ struct MaeGlowHoverEffect: ViewModifier {
 
 /// Animated typing dots for loading state
 struct MaeTypingDots: View {
-    @State private var activeIndex = 0
-    let timer = Timer.publish(every: 0.35, on: .main, in: .common).autoconnect()
-
     var body: some View {
-        HStack(spacing: 5) {
-            ForEach(0..<3) { index in
-                Circle()
-                    .fill(Theme.Colors.accent.opacity(activeIndex == index ? 0.9 : 0.3))
-                    .frame(width: 6, height: 6)
-                    .scaleEffect(activeIndex == index ? 1.3 : 1.0)
-                    .animation(Theme.Animation.microBounce, value: activeIndex)
+        TimelineView(.periodic(from: .now, by: 0.35)) { context in
+            let activeIndex = Int(context.date.timeIntervalSinceReferenceDate / 0.35) % 3
+
+            HStack(spacing: 5) {
+                ForEach(0..<3) { index in
+                    Circle()
+                        .fill(Theme.Colors.accent.opacity(activeIndex == index ? 0.9 : 0.3))
+                        .frame(width: 6, height: 6)
+                        .scaleEffect(activeIndex == index ? 1.3 : 1.0)
+                        .animation(Theme.Animation.microBounce, value: activeIndex)
+                }
             }
-        }
-        .onReceive(timer) { _ in
-            activeIndex = (activeIndex + 1) % 3
         }
     }
 }

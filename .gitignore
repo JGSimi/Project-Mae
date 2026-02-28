@@ -202,4 +202,14 @@ test*.swift
 
 # Build output
 build_output/
-build2/
+build[0-9]*/
+
+# Sparkle artifacts generated/downloaded in CI
+Sparkle-*.tar.xz
+jq_sparkle/
+
+# Local build logs
+build_log.txt
+build_tmp.log
+logs.txt
+build_review/

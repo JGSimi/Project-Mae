@@ -42,15 +42,25 @@ class AnalysisWindowManager {
     
     func closeWindow() {
         window?.close()
+        window = nil
     }
 }
 
+@MainActor
 struct AnalysisView: View {
-    @ObservedObject var viewModel = AssistantViewModel.shared
+    @ObservedObject var viewModel: AssistantViewModel
     @State private var followUpText: String = ""
     @State private var showConfirmation = false
     @State private var localImage: NSImage? = nil
     @FocusState private var isFollowUpFocused: Bool
+
+    init(viewModel: AssistantViewModel) {
+        self.viewModel = viewModel
+    }
+
+    init() {
+        self.viewModel = AssistantViewModel.shared
+    }
     
     var body: some View {
         GeometryReader { geo in
@@ -87,7 +97,8 @@ struct AnalysisView: View {
                                     withAnimation(Theme.Animation.bouncy) {
                                         showConfirmation = true
                                     }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                    Task { @MainActor in
+                                        try? await Task.sleep(nanoseconds: 800_000_000)
                                         viewModel.continueWithAnalysis(followUp: followUpText.isEmpty ? nil : followUpText)
                                         followUpText = ""
                                         AnalysisWindowManager.shared.closeWindow()

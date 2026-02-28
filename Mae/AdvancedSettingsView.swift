@@ -136,6 +136,10 @@ struct AdvancedSettingsView: View {
             .task {
                 await reloadModels()
             }
+            .onDisappear {
+                apiKeyTask?.cancel()
+                fetchModelsTask?.cancel()
+            }
         }
     }
     
@@ -430,6 +434,7 @@ struct AdvancedSettingsView: View {
         
         do {
             let models = try await ModelFetcher.shared.fetchModels(for: selectedProvider, apiKey: apiKey)
+            guard !Task.isCancelled else { return }
             if !models.isEmpty {
                 fetchedModels = models
                 if !models.contains(apiModelName), let first = models.first {
