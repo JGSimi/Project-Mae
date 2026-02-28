@@ -157,9 +157,14 @@ struct AnalysisView: View {
                         } else {
                             ScrollView {
                                 MaeMarkdownView(markdown: viewModel.analysisResult)
-                                .font(Theme.Typography.bodySmall)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, Theme.Metrics.spacingXLarge)
+                                    .font(Theme.Typography.bodySmall)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, Theme.Metrics.spacingLarge)
+                                    .padding(.vertical, Theme.Metrics.spacingDefault)
+                                    .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
+                                    .maeSoftShadow()
+                                    .padding(.horizontal, Theme.Metrics.spacingXLarge)
+                                    .padding(.vertical, Theme.Metrics.spacingSmall)
                             }
                             .transition(.maeFadeScale)
                         }
