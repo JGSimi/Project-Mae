@@ -128,7 +128,7 @@ struct WelcomeView: View {
         VStack(spacing: 0) {
             // Header
             VStack(spacing: Theme.Metrics.spacingLarge) {
-                Image("undraw_annotation_rz2w")
+                Image("pc")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: 350)
