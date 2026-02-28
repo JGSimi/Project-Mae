@@ -9,30 +9,40 @@ struct KeychainManager {
     private init() {}
     
     func saveKey(_ key: String) {
-        let currentKey = loadKey()
+        let trimmedKey = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedKey.isEmpty {
+            deleteKey()
+            return
+        }
         
-        guard let data = key.data(using: .utf8) else { return }
+        guard let data = trimmedKey.data(using: .utf8) else { return }
         
-        if currentKey == nil {
-            // Add new item
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrService as String: service,
-                kSecAttrAccount as String: account,
-                kSecValueData as String: data
-            ]
-            SecItemAdd(query as CFDictionary, nil)
-        } else {
-            // Update existing item
-            let query: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrService as String: service,
-                kSecAttrAccount as String: account
-            ]
-            let attributesToUpdate: [String: Any] = [
-                kSecValueData as String: data
-            ]
-            SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        let attributesToUpdate: [String: Any] = [
+            kSecValueData as String: data
+        ]
+        
+        let updateStatus = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+        if updateStatus == errSecSuccess {
+            return
+        }
+        
+        if updateStatus == errSecItemNotFound {
+            var addQuery = query
+            addQuery[kSecValueData as String] = data
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            if addStatus != errSecSuccess {
+                print("Failed to save API key in Keychain. Status: \(addStatus)")
+            }
+            return
+        }
+        
+        if updateStatus != errSecSuccess {
+            print("Failed to update API key in Keychain. Status: \(updateStatus)")
         }
     }
     
@@ -60,6 +70,9 @@ struct KeychainManager {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account
         ]
-        SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(query as CFDictionary)
+        if status != errSecSuccess && status != errSecItemNotFound {
+            print("Failed to delete API key from Keychain. Status: \(status)")
+        }
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 import AppKit
 
+@MainActor
 class AnalysisWindowManager {
     static let shared = AnalysisWindowManager()
     private var window: NSWindow?
@@ -42,15 +43,25 @@ class AnalysisWindowManager {
     
     func closeWindow() {
         window?.close()
+        window = nil
     }
 }
 
+@MainActor
 struct AnalysisView: View {
-    @ObservedObject var viewModel = AssistantViewModel.shared
+    @ObservedObject var viewModel: AssistantViewModel
     @State private var followUpText: String = ""
     @State private var showConfirmation = false
     @State private var localImage: NSImage? = nil
     @FocusState private var isFollowUpFocused: Bool
+
+    init(viewModel: AssistantViewModel) {
+        self.viewModel = viewModel
+    }
+
+    init() {
+        self.viewModel = AssistantViewModel.shared
+    }
     
     var body: some View {
         GeometryReader { geo in
@@ -87,7 +98,8 @@ struct AnalysisView: View {
                                     withAnimation(Theme.Animation.bouncy) {
                                         showConfirmation = true
                                     }
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                    Task { @MainActor in
+                                        try? await Task.sleep(nanoseconds: 800_000_000)
                                         viewModel.continueWithAnalysis(followUp: followUpText.isEmpty ? nil : followUpText)
                                         followUpText = ""
                                         AnalysisWindowManager.shared.closeWindow()
@@ -144,10 +156,13 @@ struct AnalysisView: View {
                             .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
                             ScrollView {
-                                MarkdownWebView(markdown: viewModel.analysisResult)
+                                MaeMarkdownView(markdown: viewModel.analysisResult)
+                                    .font(Theme.Typography.bodySmall)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, Theme.Metrics.spacingXLarge)
+                                    .padding(.vertical, Theme.Metrics.spacingDefault)
                             }
+                            .background(Theme.Colors.backgroundSecondary)
                             .transition(.maeFadeScale)
                         }
                         
@@ -191,7 +206,7 @@ struct AnalysisView: View {
                         }
                     }
                     .frame(width: max(360, geo.size.width * 0.38))
-                    .background(VisualEffectView(material: .sidebar, blendingMode: .behindWindow))
+                    .background(Theme.Colors.backgroundSecondary)
                     
                     Divider()
                     

@@ -103,7 +103,8 @@ class QuickInputWindowManager {
         panel?.close()
         panel = nil
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000)
             guard let self else { return }
             let image = AssistantViewModel.shared.captureScreen()
 
@@ -123,10 +124,19 @@ class QuickInputWindowManager {
 
 // MARK: - Quick Input View
 
+@MainActor
 struct QuickInputView: View {
-    @ObservedObject private var viewModel = AssistantViewModel.shared
+    @ObservedObject private var viewModel: AssistantViewModel
     @State private var inputText: String = ""
     @FocusState private var isInputFocused: Bool
+
+    init(viewModel: AssistantViewModel) {
+        self.viewModel = viewModel
+    }
+
+    init() {
+        self.viewModel = AssistantViewModel.shared
+    }
 
     private var hasContent: Bool {
         !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -221,7 +231,8 @@ struct QuickInputView: View {
     private var attachmentsPreview: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                ForEach(Array(viewModel.pendingAttachments.enumerated()), id: \.offset) { index, attachment in
+                ForEach(viewModel.pendingAttachments.indices, id: \.self) { index in
+                    let attachment = viewModel.pendingAttachments[index]
                     ZStack(alignment: .topTrailing) {
                         if attachment.isImage, let img = attachment.image {
                             Image(nsImage: img)
@@ -298,9 +309,11 @@ struct QuickInputView: View {
         panel.allowsMultipleSelection = true
         if panel.runModal() == .OK {
             for url in panel.urls {
-                if let attachment = viewModel.attachment(from: url) {
-                    withAnimation(Theme.Animation.snappy) {
-                        viewModel.pendingAttachments.append(attachment)
+                Task { @MainActor in
+                    if let attachment = await viewModel.attachment(from: url) {
+                        withAnimation(Theme.Animation.snappy) {
+                            viewModel.pendingAttachments.append(attachment)
+                        }
                     }
                 }
             }

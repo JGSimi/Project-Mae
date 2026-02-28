@@ -10,6 +10,7 @@
 		2785BC7E2F47910D00D7252D /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 2785BC7D2F47910D00D7252D /* AsyncAlgorithms */; };
 		2785BC822F4797A000D7252D /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 2785BC812F4797A000D7252D /* KeyboardShortcuts */; };
 		27FD4B782F4CE26D002BD509 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 27FD4B772F4CE26D002BD509 /* Sparkle */; };
+		3A9E5C9D2F700F5500A1B001 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3A9E5C9E2F700F5500A1B001 /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 				27FD4B782F4CE26D002BD509 /* Sparkle in Frameworks */,
 				2785BC7E2F47910D00D7252D /* AsyncAlgorithms in Frameworks */,
 				2785BC822F4797A000D7252D /* KeyboardShortcuts in Frameworks */,
+				3A9E5C9D2F700F5500A1B001 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +79,7 @@
 				2785BC7D2F47910D00D7252D /* AsyncAlgorithms */,
 				2785BC812F4797A000D7252D /* KeyboardShortcuts */,
 				27FD4B772F4CE26D002BD509 /* Sparkle */,
+				3A9E5C9E2F700F5500A1B001 /* MarkdownUI */,
 			);
 			productName = Mae;
 			productReference = 2785BC6C2F478DC400D7252D /* Mae.app */;
@@ -110,6 +113,7 @@
 				2785BC7C2F47910D00D7252D /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 				2785BC802F4797A000D7252D /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
 				27FD4B762F4CE26D002BD509 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				3A9E5C9F2F700F5500A1B001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2785BC6D2F478DC400D7252D /* Products */;
@@ -396,6 +400,14 @@
 				minimumVersion = 2.9.0;
 			};
 		};
+		3A9E5C9F2F700F5500A1B001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -413,6 +425,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 27FD4B762F4CE26D002BD509 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		3A9E5C9E2F700F5500A1B001 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3A9E5C9F2F700F5500A1B001 /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

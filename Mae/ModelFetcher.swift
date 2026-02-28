@@ -2,8 +2,15 @@ import Foundation
 
 class ModelFetcher {
     static let shared = ModelFetcher()
+    private let session: URLSession
     
-    private init() {}
+    private init() {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 15
+        config.timeoutIntervalForResource = 30
+        config.waitsForConnectivity = false
+        self.session = URLSession(configuration: config)
+    }
     
     /// Bate no endpoint `/v1/models` dos provedores compatíveis e retorna a lista de IDs de modelos disponíveis para a chave atual.
     func fetchModels(for provider: CloudProvider, apiKey: String) async throws -> [String] {
@@ -27,9 +34,9 @@ class ModelFetcher {
         }
         
         // Timeout curto para não prender a interface se a rede estiver ruim
-        request.timeoutInterval = 10
+        request.timeoutInterval = 15
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {

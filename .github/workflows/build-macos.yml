@@ -51,8 +51,9 @@ jobs:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           # Baixar ferramentas do Sparkle versão 2.9.0 (a mais recente 2.x estável)
-          curl -L -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz
-          mkdir jq_sparkle && tar -xf Sparkle-2.9.0.tar.xz -C jq_sparkle
+          rm -rf jq_sparkle Sparkle-2.9.0.tar.xz
+          curl -fL -O https://github.com/sparkle-project/Sparkle/releases/download/2.9.0/Sparkle-2.9.0.tar.xz
+          mkdir -p jq_sparkle && tar -xf Sparkle-2.9.0.tar.xz -C jq_sparkle
           
           # Criar o diretório final para o release e mover o zip
           mkdir -p release_folder
@@ -63,7 +64,7 @@ jobs:
           # Porem o standard agora é usar o `-ed-key-file` com um arquivo gerado de forma extremamente segura sem quebras de linha:
           printf "%s" "$SPARKLE_PRIVATE_KEY" > eddsa_key
           ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Project-Mae/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
-          rm eddsa_key
+          rm -f eddsa_key Sparkle-2.9.0.tar.xz
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v2

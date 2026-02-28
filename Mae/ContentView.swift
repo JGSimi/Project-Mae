@@ -125,17 +125,25 @@ class AssistantViewModel: ObservableObject {
         self.session = session
     }
 
-    func attachment(from url: URL) -> ChatAttachment? {
+    func attachment(from url: URL) async -> ChatAttachment? {
+        await Task.detached(priority: .userInitiated) {
+            Self.attachmentSync(from: url)
+        }.value
+    }
+
+    nonisolated private static func attachmentSync(from url: URL) -> ChatAttachment? {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
             if didAccess { url.stopAccessingSecurityScopedResource() }
         }
 
         let type = (try? url.resourceValues(forKeys: [.contentTypeKey]))?.contentType
+        let image = NSImage(contentsOf: url)
 
-        if (type?.conforms(to: .image) == true || NSImage(contentsOf: url) != nil),
-           let image = NSImage(contentsOf: url) {
-            return ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+        if type?.conforms(to: .image) == true || image != nil {
+            if let image {
+                return ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
+            }
         }
 
         if type?.conforms(to: .pdf) == true || url.pathExtension.lowercased() == "pdf" {
@@ -159,12 +167,12 @@ class AssistantViewModel: ObservableObject {
         return nil
     }
 
-    private func extractPDFText(from url: URL) -> String {
+    nonisolated private static func extractPDFText(from url: URL) -> String {
         guard let document = PDFDocument(url: url), document.pageCount > 0 else { return "" }
         return document.string ?? ""
     }
 
-    private func extractTextFileContent(from url: URL) -> String? {
+    nonisolated private static func extractTextFileContent(from url: URL) -> String? {
         if let utf8 = try? String(contentsOf: url, encoding: .utf8) {
             let trimmed = utf8.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmed.isEmpty { return utf8 }
@@ -221,12 +229,10 @@ class AssistantViewModel: ObservableObject {
         }
 
         // Abrir a nova janela de análise
-        DispatchQueue.main.async {
-            AnalysisWindowManager.shared.showWindow()
-            self.analysisImage = screenImage
-            self.analysisResult = ""
-            self.isAnalyzingScreen = true
-        }
+        AnalysisWindowManager.shared.showWindow()
+        self.analysisImage = screenImage
+        self.analysisResult = ""
+        self.isAnalyzingScreen = true
 
         let defaultPrompt = "Analise o que está na minha tela e me ajude de forma proativa. Não me pergunte o que fazer, apenas forneça a análise ou ajuda diretamente com base no contexto (por exemplo, se for um currículo, dê dicas; se for código, analise bugs, etc). Por favor, use formatação Markdown em sua resposta para garantir uma boa legibilidade."
         
@@ -234,10 +240,8 @@ class AssistantViewModel: ObservableObject {
     }
     
     private func executeSilentRequest(prompt: String, rawImages: [NSImage]?) async {
-        defer { 
-            DispatchQueue.main.async {
-                self.isAnalyzingScreen = false
-            }
+        defer {
+            self.isAnalyzingScreen = false
         }
 
         let inferenceMode = SettingsManager.inferenceMode
@@ -252,9 +256,7 @@ class AssistantViewModel: ObservableObject {
                 finalResponse = try await executeAPIRequest(prompt: systemPrompt + prompt, images: base64Images)
             }
 
-            DispatchQueue.main.async {
-                self.analysisResult = finalResponse
-            }
+            self.analysisResult = finalResponse
             
             if SettingsManager.playNotifications {
                 await sendNotification(text: "Análise de tela concluída!")
@@ -262,9 +264,7 @@ class AssistantViewModel: ObservableObject {
             }
             
         } catch {
-            DispatchQueue.main.async {
-                self.analysisResult = "Erro: \(error.localizedDescription)"
-            }
+            self.analysisResult = "Erro: \(error.localizedDescription)"
             print("Error processing AI: \(error)")
         }
     }
@@ -390,17 +390,28 @@ class AssistantViewModel: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(payload)
+        request.timeoutInterval = 60
         
-        let (data, _) = try await session.data(for: request)
+        let (data, response) = try await session.data(for: request)
+        if let httpRes = response as? HTTPURLResponse, !(200...299).contains(httpRes.statusCode) {
+            let errorStr = String(data: data, encoding: .utf8) ?? "Unknown HTTP ERROR"
+            throw NSError(domain: "AssistantLocalAPIError", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: "Local API Error: \(errorStr)"])
+        }
         let result = try JSONDecoder().decode(OllamaResponse.self, from: data)
         return result.response.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
     private func executeAPIRequest(prompt: String, images: [String]?) async throws -> String {
-        guard let url = URL(string: SettingsManager.apiEndpoint) else { throw URLError(.badURL) }
+        guard let url = URL(string: SettingsManager.apiEndpoint),
+              let scheme = url.scheme?.lowercased(),
+              (scheme == "http" || scheme == "https"),
+              url.host != nil else {
+            throw URLError(.badURL)
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 60
         
         let apiKey = SettingsManager.apiKey
         let isAnthropic = SettingsManager.selectedProvider == .anthropic
@@ -508,108 +519,20 @@ class AssistantViewModel: ObservableObject {
     }
 }
 
-struct ChatBubble: View {
-    let message: ChatMessage
-    var animationIndex: Int = 0
-    @State private var markdownHeight: CGFloat = 40
-
-    var body: some View {
-        HStack {
-            if message.isUser { Spacer(minLength: 40) }
-            
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
-                // Context label for screen analysis messages
-                if message.source == .screenAnalysis && message.isUser {
-                    HStack(spacing: 4) {
-                        Image(systemName: "camera.viewfinder")
-                            .font(Theme.Typography.caption)
-                            .symbolEffect(.pulse)
-                        Text("Análise de Tela")
-                            .font(Theme.Typography.caption)
-                    }
-                    .foregroundStyle(Theme.Colors.accent)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3)
-                    .background(Theme.Colors.accentSubtle)
-                    .clipShape(Capsule())
-                }
-                
-                if let attachments = message.attachments {
-                    ForEach(Array(attachments.enumerated()), id: \.offset) { _, attachment in
-                        if attachment.isImage, let img = attachment.image {
-                            Image(nsImage: img)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxHeight: 250)
-                                .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
-                                .maeMediumShadow()
-                        } else if !attachment.isImage {
-                            HStack(spacing: 8) {
-                                Image(systemName: "doc.text.fill")
-                                    .foregroundStyle(Theme.Colors.accent)
-                                    .symbolEffect(.bounce, options: .nonRepeating)
-                                Text(attachment.name)
-                                    .font(Theme.Typography.caption)
-                                    .foregroundStyle(Theme.Colors.textPrimary)
-                                    .lineLimit(1)
-                                    .truncationMode(.middle)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Theme.Colors.surfaceSecondary)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall))
-                            .maeSoftShadow()
-                        }
-                    }
-                }
-                
-                // Fallback for screen analysis and backward compatibility
-                if message.attachments == nil, let images = message.images {
-                    ForEach(images.indices, id: \.self) { index in
-                        Image(nsImage: images[index])
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxHeight: 250)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous))
-                            .maeMediumShadow()
-                    }
-                }
-                
-                if !message.content.isEmpty {
-                    if message.isUser {
-                        Text(.init(message.content))
-                            .font(Theme.Typography.bodySmall)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .foregroundStyle(Theme.Colors.textPrimary)
-                            .maeGlassBackground(cornerRadius: Theme.Metrics.radiusMedium)
-                            .maeSoftShadow()
-                            .textSelection(.enabled)
-                    } else {
-                        AutoSizingMarkdownWebView(markdown: message.content, measuredHeight: $markdownHeight)
-                            .frame(height: markdownHeight)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
-                            .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
-                            .maeSoftShadow()
-                    }
-                }
-            }
-            .maeHover()
-            
-            if !message.isUser { Spacer(minLength: 40) }
-        }
-        .padding(.horizontal, Theme.Metrics.spacingLarge)
-        .padding(.vertical, 4)
-        .maeStaggered(index: animationIndex, baseDelay: 0.05)
-    }
-}
-
+@MainActor
 struct ContentView: View {
-    @ObservedObject private var viewModel = AssistantViewModel.shared
+    @ObservedObject private var viewModel: AssistantViewModel
     @Namespace private var bottomID
     @State private var showSettings = false
     @FocusState private var isInputFocused: Bool
+
+    init(viewModel: AssistantViewModel) {
+        self.viewModel = viewModel
+    }
+
+    init() {
+        self.viewModel = AssistantViewModel.shared
+    }
 
     var body: some View {
         ZStack {
@@ -634,8 +557,8 @@ struct ContentView: View {
         }
         .onChange(of: showSettings) { _, newValue in
             if !newValue {
-                // Focus back on input when settings close
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                Task {
+                    try? await Task.sleep(nanoseconds: 300_000_000)
                     isInputFocused = true
                 }
             }
@@ -698,9 +621,9 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity)
                             .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
-                            ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
-                                ChatBubble(message: message, animationIndex: index)
-                                    .id(message.id)
+                            ForEach(viewModel.messages.indices, id: \.self) { index in
+                                ChatBubble(message: viewModel.messages[index], animationIndex: index)
+                                    .id(viewModel.messages[index].id)
                                     .transition(.maePopIn)
                             }
                         }
@@ -723,7 +646,8 @@ struct ContentView: View {
                 if !viewModel.pendingAttachments.isEmpty {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            ForEach(Array(viewModel.pendingAttachments.enumerated()), id: \.offset) { index, attachment in
+                            ForEach(viewModel.pendingAttachments.indices, id: \.self) { index in
+                                let attachment = viewModel.pendingAttachments[index]
                                 ZStack(alignment: .topTrailing) {
                                     if attachment.isImage, let img = attachment.image {
                                         Image(nsImage: img)
@@ -752,7 +676,7 @@ struct ContentView: View {
                                     
                                     Button {
                                         withAnimation(Theme.Animation.snappy) {
-                                            let _ = viewModel.pendingAttachments.remove(at: index)
+                                            viewModel.pendingAttachments.removeAll { $0.id == attachment.id }
                                         }
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
@@ -784,10 +708,12 @@ struct ContentView: View {
                         panel.allowsMultipleSelection = true
                         if panel.runModal() == .OK {
                             for url in panel.urls {
-                                if let attachment = viewModel.attachment(from: url) {
-                                    viewModel.pendingAttachments.append(attachment)
-                                } else {
-                                    print("Erro ao ler arquivo selecionado: \(url.lastPathComponent)")
+                                Task {
+                                    if let attachment = await viewModel.attachment(from: url) {
+                                        viewModel.pendingAttachments.append(attachment)
+                                    } else {
+                                        print("Erro ao ler arquivo selecionado: \(url.lastPathComponent)")
+                                    }
                                 }
                             }
                         }
@@ -839,12 +765,12 @@ struct ContentView: View {
                 if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
                     provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { (item, error) in
                         if let url = item as? URL, let image = NSImage(contentsOf: url) {
-                            DispatchQueue.main.async {
+                            Task { @MainActor in
                                 let attachment = ChatAttachment(name: url.lastPathComponent, data: nil, content: nil, image: image, isImage: true)
                                 self.viewModel.pendingAttachments.append(attachment)
                             }
                         } else if let data = item as? Data, let image = NSImage(data: data) {
-                            DispatchQueue.main.async {
+                            Task { @MainActor in
                                 let attachment = ChatAttachment(name: "Imagem", data: nil, content: nil, image: image, isImage: true)
                                 self.viewModel.pendingAttachments.append(attachment)
                             }
@@ -853,8 +779,8 @@ struct ContentView: View {
                 } else if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
                     provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (item, error) in
                         if let url = Self.resolveDroppedFileURL(item) {
-                            DispatchQueue.main.async {
-                                if let attachment = self.viewModel.attachment(from: url) {
+                            Task { @MainActor in
+                                if let attachment = await self.viewModel.attachment(from: url) {
                                     self.viewModel.pendingAttachments.append(attachment)
                                 } else {
                                     print("Erro ao ler arquivo do drop: \(url.lastPathComponent)")
@@ -868,7 +794,7 @@ struct ContentView: View {
         }
     }
 
-    private static func resolveDroppedFileURL(_ item: NSSecureCoding?) -> URL? {
+    nonisolated private static func resolveDroppedFileURL(_ item: NSSecureCoding?) -> URL? {
         if let url = item as? URL {
             return url
         }
