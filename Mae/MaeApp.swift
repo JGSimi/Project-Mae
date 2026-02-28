@@ -121,11 +121,10 @@ struct WelcomeView: View {
         VStack(spacing: 0) {
             // Header
             VStack(spacing: Theme.Metrics.spacingLarge) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 40, weight: .ultraLight))
-                    .foregroundColor(Theme.Colors.accent)
-                    .symbolEffect(.breathe.plain)
-                    .maePulse(duration: 2.5)
+                Image("undraw_annotation_rz2w")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 100)
                 
                 Text("Bem-vindo à Mãe")
                     .font(Theme.Typography.largeTitle)
