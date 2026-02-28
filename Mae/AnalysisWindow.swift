@@ -159,13 +159,10 @@ struct AnalysisView: View {
                                 MaeMarkdownView(markdown: viewModel.analysisResult)
                                     .font(Theme.Typography.bodySmall)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, Theme.Metrics.spacingLarge)
-                                    .padding(.vertical, Theme.Metrics.spacingDefault)
-                                    .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
-                                    .maeSoftShadow()
                                     .padding(.horizontal, Theme.Metrics.spacingXLarge)
-                                    .padding(.vertical, Theme.Metrics.spacingSmall)
+                                    .padding(.vertical, Theme.Metrics.spacingDefault)
                             }
+                            .background(Theme.Colors.backgroundSecondary)
                             .transition(.maeFadeScale)
                         }
                         
@@ -209,7 +206,7 @@ struct AnalysisView: View {
                         }
                     }
                     .frame(width: max(360, geo.size.width * 0.38))
-                    .background(VisualEffectView(material: .sidebar, blendingMode: .behindWindow))
+                    .background(Theme.Colors.backgroundSecondary)
                     
                     Divider()
                     
