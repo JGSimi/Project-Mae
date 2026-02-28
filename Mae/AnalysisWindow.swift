@@ -8,6 +8,7 @@
 import SwiftUI
 import AppKit
 
+@MainActor
 class AnalysisWindowManager {
     static let shared = AnalysisWindowManager()
     private var window: NSWindow?
