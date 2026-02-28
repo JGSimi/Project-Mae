@@ -91,8 +91,12 @@ class WelcomeWindowManager {
 
         let contentView = WelcomeView()
         
+        let screenRect = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 960)
+        let width = screenRect.width * 0.5
+        let height = screenRect.height * 0.5
+        
         let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: width, height: height),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -124,9 +128,10 @@ struct WelcomeView: View {
                 Image("undraw_annotation_rz2w")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 100)
+                    .frame(maxWidth: .infinity, maxHeight: 350)
+                    .padding(.horizontal, 40)
                 
-                Text("Bem-vindo à Mãe")
+                Text("Bem-vindo")
                     .font(Theme.Typography.largeTitle)
                     .foregroundColor(Theme.Colors.textPrimary)
                     .maeStaggered(index: 1, baseDelay: 0.15)
@@ -136,12 +141,6 @@ struct WelcomeView: View {
             
             // Content
             VStack(spacing: Theme.Metrics.spacingXLarge) {
-                Text("Sua assistente inteligente sempre disponível na barra de menus.")
-                    .font(Theme.Typography.heading)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(Theme.Colors.textSecondary)
-                    .padding(.horizontal)
-                    .maeStaggered(index: 2, baseDelay: 0.12)
                 
                 VStack(spacing: 20) {
                     FeatureRow(
@@ -193,7 +192,7 @@ struct WelcomeView: View {
         }
         .background(MaePageBackground(showGlow: true))
         .edgesIgnoringSafeArea(.all)
-        .frame(width: 600, height: 500)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .preferredColorScheme(.dark)
     }
 }
