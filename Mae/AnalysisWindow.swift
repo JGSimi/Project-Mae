@@ -59,7 +59,7 @@ struct AnalysisView: View {
                     // Left Panel: Analysis
                     VStack(alignment: .leading, spacing: 0) {
                         // Header
-                        HStack(spacing: 12) {
+                        HStack(spacing: 14) {
                             Text("Análise de Tela")
                                 .font(Theme.Typography.title)
                                 .foregroundStyle(Theme.Colors.textPrimary)
@@ -129,7 +129,6 @@ struct AnalysisView: View {
                                     .foregroundColor(Theme.Colors.accent.opacity(0.3))
                                     .symbolEffect(.breathe.plain)
                                     .padding(.bottom, 8)
-                                    .maeFloating(amplitude: 5, duration: 3.0)
                                 Text("Nenhuma análise disponível.")
                                     .font(Theme.Typography.bodySmall)
                                     .foregroundColor(Theme.Colors.textSecondary)
@@ -212,7 +211,6 @@ struct AnalysisView: View {
                                     .font(.system(size: 60, weight: .ultraLight))
                                     .foregroundColor(Theme.Colors.textMuted)
                                     .symbolEffect(.pulse.byLayer)
-                                    .maeFloating(amplitude: 4, duration: 4.0)
                                     .accessibilityHidden(true)
                                 Text("Nenhuma captura de tela no momento.")
                                     .font(Theme.Typography.bodyBold)
