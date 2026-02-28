@@ -78,8 +78,8 @@ struct ChatBubble: View {
                     } else {
                         MaeMarkdownView(markdown: message.content)
                             .font(Theme.Typography.bodySmall)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
                             .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
                             .maeSoftShadow()
                     }
