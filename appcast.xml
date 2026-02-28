@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Mae</title>
+        <item>
+            <title>1.1.1.105</title>
+            <pubDate>Sat, 28 Feb 2026 07:55:58 +0000</pubDate>
+            <sparkle:version>105</sparkle:version>
+            <sparkle:shortVersionString>1.1.1.105</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.2</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/JGSimi/Project-Mae/releases/download/mac-app-v105/Mae-macOS.zip" length="7893037" type="application/octet-stream" sparkle:edSignature="Hspnau6bpWYWy9rZhcnd6+RwPf48V6XO4kKgsKadb0t1e0ayB9ScD7gu6NHfsbDcrwfw23YBPEAQ00niiYbCAg=="/>
+        </item>
+    </channel>
+</rss>
