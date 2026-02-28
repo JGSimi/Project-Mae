@@ -89,11 +89,11 @@ class WelcomeWindowManager {
             return
         }
 
-        let contentView = WelcomeView()
-        
         let screenRect = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 960)
         let width = screenRect.width * 0.5
         let height = screenRect.height * 0.5
+        
+        let contentView = WelcomeView(width: width, height: height)
         
         let newWindow = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: width, height: height),
@@ -121,6 +121,9 @@ class WelcomeWindowManager {
 }
 
 struct WelcomeView: View {
+    let width: CGFloat
+    let height: CGFloat
+    
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -192,7 +195,7 @@ struct WelcomeView: View {
         }
         .background(MaePageBackground(showGlow: true))
         .edgesIgnoringSafeArea(.all)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: width, height: height)
         .preferredColorScheme(.dark)
     }
 }
