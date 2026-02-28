@@ -156,9 +156,10 @@ struct AnalysisView: View {
                             .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
                             ScrollView {
-                                MarkdownWebView(markdown: viewModel.analysisResult)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, Theme.Metrics.spacingXLarge)
+                                MaeMarkdownView(markdown: viewModel.analysisResult)
+                                .font(Theme.Typography.bodySmall)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, Theme.Metrics.spacingXLarge)
                             }
                             .transition(.maeFadeScale)
                         }

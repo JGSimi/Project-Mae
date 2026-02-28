@@ -3,7 +3,6 @@ import SwiftUI
 struct ChatBubble: View {
     let message: ChatMessage
     var animationIndex: Int = 0
-    @State private var markdownHeight: CGFloat = 40
 
     var body: some View {
         HStack {
@@ -77,8 +76,8 @@ struct ChatBubble: View {
                             .maeSoftShadow()
                             .textSelection(.enabled)
                     } else {
-                        AutoSizingMarkdownWebView(markdown: message.content, measuredHeight: $markdownHeight)
-                            .frame(height: markdownHeight)
+                        MaeMarkdownView(markdown: message.content)
+                            .font(Theme.Typography.bodySmall)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 4)
                             .maeSurfaceBackground(cornerRadius: Theme.Metrics.radiusMedium)
