@@ -14,7 +14,7 @@ struct MaeMarkdownView: View {
                 Text("")
             } else {
                 Markdown(markdown)
-                    .markdownTheme(.gitHub)
+                    .markdownTheme(.basic)
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .tint(Theme.Colors.accent)
                     .textSelection(.enabled)
