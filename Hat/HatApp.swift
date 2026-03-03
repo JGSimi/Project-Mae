@@ -49,7 +49,7 @@ struct HatApp: App {
     // Adaptador para usar o AppDelegate em SwiftUI
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var viewModel = AssistantViewModel.shared
-    
+
     init() {
         // Registramos o listener global para o atalho quando o app inicia
         KeyboardShortcuts.onKeyDown(for: .processClipboard) {
@@ -70,10 +70,48 @@ struct HatApp: App {
     }
     
     var body: some Scene {
-        MenuBarExtra("Hat", systemImage: viewModel.isProcessing ? "message.fill" : "message") {
+        MenuBarExtra {
             ContentView()
+        } label: {
+            MenuBarIconView(isProcessing: viewModel.isProcessing)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+private struct MenuBarIconView: View {
+    let isProcessing: Bool
+    @State private var popScale: CGFloat = 1.0
+    @State private var iconOpacity: Double = 1.0
+    
+    var body: some View {
+        Image(isProcessing ? "sunglasses-2-svgrepo-com" : "hat-svgrepo-com")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 16, height: 16)
+            .scaleEffect(popScale)
+            .opacity(iconOpacity)
+            .onAppear(perform: animateIconSwap)
+            .onChange(of: isProcessing) { _ in
+                animateIconSwap()
+            }
+    }
+    
+    private func animateIconSwap() {
+        popScale = 0.82
+        iconOpacity = 0.75
+        
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.5, blendDuration: 0.05)) {
+            popScale = 1.18
+            iconOpacity = 1.0
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.78, blendDuration: 0.05)) {
+                popScale = 1.0
+            }
+        }
     }
 }
 
