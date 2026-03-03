@@ -31,25 +31,25 @@ enum Theme {
     // MARK: Colors
     enum Colors {
         // Backgrounds
-        static let background          = Color(NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0))
-        static let backgroundSecondary = Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0))
+        static let background          = Color(NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0)) // #0A0A0A
+        static let backgroundSecondary = Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0)) // #070708
 
         // Surfaces
-        static let surface             = Color.white.opacity(0.04)
-        static let surfaceSecondary    = Color.white.opacity(0.03)
+        static let surface             = Color.white.opacity(0.04) // #0E0E0E
+        static let surfaceSecondary    = Color.white.opacity(0.03) // #111111
 
         // Borders
-        static let border              = Color.white.opacity(0.06)
+        static let border              = Color.white.opacity(0.06) // #141414
         static let borderHighlight     = Color.white.opacity(0.10)
 
         // Text
-        static let textPrimary         = Color.white.opacity(0.95)
+        static let textPrimary         = Color.white.opacity(0.95) // #E0E0E0
         static let textSecondary       = Color.white.opacity(0.50)
         static let textMuted           = Color.white.opacity(0.25)
 
         // Accent — warm gold
-        static let accent              = Color(red: 0.788, green: 0.663, blue: 0.431) // #C9A96E
-        static let accentSubtle        = Color(red: 0.788, green: 0.663, blue: 0.431).opacity(0.15)
+        static let accent              = Color(red: 1, green: 1, blue: 1) // #FFFFFF
+        static let accentSubtle        = Color(red: 1, green: 1, blue: 1).opacity(0.15) // #FFFFFF
 
         // Semantic
         static let success             = Color.green

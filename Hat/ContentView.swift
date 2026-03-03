@@ -501,7 +501,7 @@ class AssistantViewModel: ObservableObject {
 
     private func sendNotification(text: String) async {
         let content = UNMutableNotificationContent()
-        content.title = ">_"
+        content.title = "Hat"
         content.body = text
         content.sound = .default
 
@@ -571,7 +571,7 @@ struct ContentView: View {
             // Header
             HStack {
                 HStack(spacing: 6) {
-                    Text(">_")
+                    Text("Hat")
                         .font(Theme.Typography.heading)
                         .foregroundStyle(Theme.Colors.textPrimary)
                 }

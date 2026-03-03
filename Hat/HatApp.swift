@@ -148,7 +148,7 @@ struct WelcomeView: View {
                 VStack(spacing: 20) {
                     FeatureRow(
                         icon: "arrow.up.to.line.compact",
-                        title: "Sempre Pronta",
+                        title: "Sempre Pronto",
                         description: "Clique no ícone na barra de menus no topo da tela (perto do relógio) para abrir o chat a qualquer momento."
                     )
                     .maeStaggered(index: 3, baseDelay: 0.10)
@@ -176,7 +176,7 @@ struct WelcomeView: View {
                 }) {
                     Text("Começar a Usar")
                         .font(Theme.Typography.bodyBold)
-                        .foregroundColor(.white)
+                        .foregroundColor(.black) // #000000
                         .padding(.vertical, 8)
                         .padding(.horizontal, 32)
                 }
