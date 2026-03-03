@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 // ╔══════════════════════════════════════════════════════════════════╗
-// ║                     Mae · Design System                        ║
+// ║                     Hat · Design System                        ║
 // ║  Single source of truth for all visual tokens and components.  ║
 // ╚══════════════════════════════════════════════════════════════════╝
 

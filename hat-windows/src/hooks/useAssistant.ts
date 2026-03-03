@@ -72,7 +72,7 @@ export function useAssistant() {
                 permissionGranted = permission === 'granted';
             }
             if (permissionGranted) {
-                sendNotification({ title: 'Mãe', body: response });
+                sendNotification({ title: 'Hat', body: response });
             }
 
         } catch (e) {

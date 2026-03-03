@@ -37,7 +37,7 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Install Frontend Dependencies
-        working-directory: ./mae-windows
+        working-directory: ./hat-windows
         run: npm install
 
       - name: Build Tauri App
@@ -45,10 +45,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectPath: './mae-windows'
+          projectPath: './hat-windows'
           tagName: win-app-v${{ github.run_number }}
-          releaseName: 'Mãe para Windows v${{ github.run_number }}'
-          releaseBody: 'Release automatizado da conversão do Mãe para a plataforma Windows.'
+          releaseName: 'Hat para Windows v${{ github.run_number }}'
+          releaseBody: 'Release automatizado da conversão do Hat para a plataforma Windows.'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}

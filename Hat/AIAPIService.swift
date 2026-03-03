@@ -3,7 +3,9 @@ import Foundation
 class AIAPIService {
     static let shared = AIAPIService()
     private let session: URLSession
-    private static let debugLogPath = "/Users/simi/Documents/Mae - Beta/.cursor/debug-45d8c6.log"
+    private static let debugLogPath = FileManager.default.temporaryDirectory
+        .appendingPathComponent("hat-debug-45d8c6.log")
+        .path
     private static let debugSessionId = "45d8c6"
 
     init(session: URLSession = .shared) {

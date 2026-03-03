@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Mae
+//  Hat
 //
 //  Created by Joao Simi on 19/02/26.
 //
@@ -719,7 +719,7 @@ struct ContentView: View {
                         }
                     }
 
-                    TextField("Pergunte à Mãe...", text: $viewModel.inputText, axis: .vertical)
+                    TextField("Pergunte à Hat...", text: $viewModel.inputText, axis: .vertical)
                         .maeInputStyle(cornerRadius: Theme.Metrics.radiusLarge)
                         .lineLimit(1...6)
                         .focused($isInputFocused)

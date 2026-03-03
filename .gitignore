@@ -191,7 +191,7 @@ appcast.xml
 sparkle-keys.txt
 sparkle_private_key.txt
 
-# Tauri specifics (if any used via Mae-Windows)
+# Tauri specifics (if any used via Hat-Windows)
 src-tauri/target/
 src-tauri/Cargo.lock
 

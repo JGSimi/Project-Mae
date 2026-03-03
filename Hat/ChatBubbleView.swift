@@ -76,7 +76,7 @@ struct ChatBubble: View {
                             .maeSoftShadow()
                             .textSelection(.enabled)
                     } else {
-                        MaeMarkdownView(markdown: message.content)
+                        HatMarkdownView(markdown: message.content)
                             .font(Theme.Typography.bodySmall)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)

@@ -1,6 +1,6 @@
 //
 //  AnalysisWindow.swift
-//  Mae
+//  Hat
 //
 //  Created by Joao Simi on 23/02/26.
 //
@@ -156,7 +156,7 @@ struct AnalysisView: View {
                             .maeAppearAnimation(animation: Theme.Animation.expressive)
                         } else {
                             ScrollView {
-                                MaeMarkdownView(markdown: viewModel.analysisResult)
+                                HatMarkdownView(markdown: viewModel.analysisResult)
                                     .font(Theme.Typography.bodySmall)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, Theme.Metrics.spacingXLarge)

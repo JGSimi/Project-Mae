@@ -1,6 +1,6 @@
 //
 //  MaeApp.swift
-//  Mae
+//  Hat
 //
 //  Created by Joao Simi on 19/02/26.
 //
@@ -45,7 +45,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
 }
 
 @main
-struct MaeApp: App {
+struct HatApp: App {
     // Adaptador para usar o AppDelegate em SwiftUI
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var viewModel = AssistantViewModel.shared
@@ -70,7 +70,7 @@ struct MaeApp: App {
     }
     
     var body: some Scene {
-        MenuBarExtra("Mãe", systemImage: viewModel.isProcessing ? "message.fill" : "message") {
+        MenuBarExtra("Hat", systemImage: viewModel.isProcessing ? "message.fill" : "message") {
             ContentView()
         }
         .menuBarExtraStyle(.window)

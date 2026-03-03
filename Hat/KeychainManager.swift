@@ -3,7 +3,7 @@ import Security
 
 struct KeychainManager {
     static let shared = KeychainManager()
-    private let service = "com.mae.apikey"
+    private let service = "com.hat.apikey"
     private let account = "userAPIKey"
     
     private init() {}

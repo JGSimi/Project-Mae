@@ -14,13 +14,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2785BC6C2F478DC400D7252D /* Mae.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mae.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2785BC6C2F478DC400D7252D /* Hat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		2785BC6E2F478DC400D7252D /* Mae */ = {
+		2785BC6E2F478DC400D7252D /* Hat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Mae;
+			path = Hat;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -43,7 +43,7 @@
 		2785BC632F478DC400D7252D = {
 			isa = PBXGroup;
 			children = (
-				2785BC6E2F478DC400D7252D /* Mae */,
+				2785BC6E2F478DC400D7252D /* Hat */,
 				2785BC6D2F478DC400D7252D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,7 +51,7 @@
 		2785BC6D2F478DC400D7252D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2785BC6C2F478DC400D7252D /* Mae.app */,
+				2785BC6C2F478DC400D7252D /* Hat.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,9 +59,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2785BC6B2F478DC400D7252D /* Mae */ = {
+		2785BC6B2F478DC400D7252D /* Hat */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2785BC772F478DC600D7252D /* Build configuration list for PBXNativeTarget "Mae" */;
+			buildConfigurationList = 2785BC772F478DC600D7252D /* Build configuration list for PBXNativeTarget "Hat" */;
 			buildPhases = (
 				2785BC682F478DC400D7252D /* Sources */,
 				2785BC692F478DC400D7252D /* Frameworks */,
@@ -72,17 +72,17 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				2785BC6E2F478DC400D7252D /* Mae */,
+				2785BC6E2F478DC400D7252D /* Hat */,
 			);
-			name = Mae;
+			name = Hat;
 			packageProductDependencies = (
 				2785BC7D2F47910D00D7252D /* AsyncAlgorithms */,
 				2785BC812F4797A000D7252D /* KeyboardShortcuts */,
 				27FD4B772F4CE26D002BD509 /* Sparkle */,
 				3A9E5C9E2F700F5500A1B001 /* MarkdownUI */,
 			);
-			productName = Mae;
-			productReference = 2785BC6C2F478DC400D7252D /* Mae.app */;
+			productName = Hat;
+			productReference = 2785BC6C2F478DC400D7252D /* Hat.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -100,7 +100,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2785BC672F478DC400D7252D /* Build configuration list for PBXProject "Mae" */;
+			buildConfigurationList = 2785BC672F478DC400D7252D /* Build configuration list for PBXProject "Hat" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -120,7 +120,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2785BC6B2F478DC400D7252D /* Mae */,
+				2785BC6B2F478DC400D7252D /* Hat */,
 			);
 		};
 /* End PBXProject section */
@@ -290,14 +290,14 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Mae/Info.plist;
+				INFOPLIST_FILE = Hat/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = simi.Mae;
+				PRODUCT_BUNDLE_IDENTIFIER = simi.Hat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -333,14 +333,14 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Mae/Info.plist;
+				INFOPLIST_FILE = Hat/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = simi.Mae;
+				PRODUCT_BUNDLE_IDENTIFIER = simi.Hat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -355,7 +355,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2785BC672F478DC400D7252D /* Build configuration list for PBXProject "Mae" */ = {
+		2785BC672F478DC400D7252D /* Build configuration list for PBXProject "Hat" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2785BC752F478DC600D7252D /* Debug */,
@@ -364,7 +364,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2785BC772F478DC600D7252D /* Build configuration list for PBXNativeTarget "Mae" */ = {
+		2785BC772F478DC600D7252D /* Build configuration list for PBXNativeTarget "Hat" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2785BC782F478DC600D7252D /* Debug */,

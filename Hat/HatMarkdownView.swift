@@ -1,7 +1,7 @@
 import SwiftUI
 import MarkdownUI
 
-struct MaeMarkdownView: View {
+struct HatMarkdownView: View {
     let markdown: String
 
     private var trimmedMarkdown: String {

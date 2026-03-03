@@ -7,7 +7,7 @@ on:
     paths-ignore:
       - 'README.md'
       - '.gitignore'
-      - 'mae-windows/**'
+      - 'hat-windows/**'
   workflow_dispatch:
 
 permissions:
@@ -29,8 +29,8 @@ jobs:
           agvtool new-marketing-version "$(agvtool what-marketing-version -terse1 | head -n 1).${{ github.run_number }}"
           
           xcodebuild clean build \
-            -project "Mae.xcodeproj" \
-            -scheme "Mae" \
+            -project "Hat.xcodeproj" \
+            -scheme "Hat" \
             -configuration Release \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="-" \
@@ -42,9 +42,9 @@ jobs:
         run: |
           cd build/Build/Products/Release
           # Remove assinaturas antigas de frameworks embutidos e re-assina tudo (Deep Sign)
-          codesign --force --deep --sign - Mae.app
+          codesign --force --deep --sign - Hat.app
           # Zip the resulting .app bundle so it can be uploaded as an artifact/release
-          zip -r Mae-macOS.zip Mae.app
+          zip -r Hat-macOS.zip Hat.app
           
       - name: Generate Sparkle Appcast
         env:
@@ -57,13 +57,13 @@ jobs:
           
           # Criar o diretório final para o release e mover o zip
           mkdir -p release_folder
-          mv build/Build/Products/Release/Mae-macOS.zip release_folder/
+          mv build/Build/Products/Release/Hat-macOS.zip release_folder/
           
           # Fazer a assinatura do zip para o Appcast
           # Fornecer a chave via variável de ambiente pede que usemos o parâmetro -f (para assinar arquivo puro)
           # Porem o standard agora é usar o `-ed-key-file` com um arquivo gerado de forma extremamente segura sem quebras de linha:
           printf "%s" "$SPARKLE_PRIVATE_KEY" > eddsa_key
-          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Project-Mae/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
+          ./jq_sparkle/bin/generate_appcast --ed-key-file eddsa_key --download-url-prefix "https://github.com/JGSimi/Project-Hat/releases/download/mac-app-v${{ github.run_number }}/" release_folder/
           rm -f eddsa_key Sparkle-2.9.0.tar.xz
 
       - name: Create or Update Release
@@ -72,20 +72,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: mac-app-v${{ github.run_number }}
-          name: 'Mãe para macOS v${{ github.run_number }}'
+          name: 'Hat para macOS v${{ github.run_number }}'
           body: 'Release automatizado da versão nativa para macOS (Swift).'
           draft: false
           prerelease: false
           files: |
-            release_folder/Mae-macOS.zip
+            release_folder/Hat-macOS.zip
             release_folder/appcast.xml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Mae-macOS-Package
+          name: Hat-macOS-Package
           path: |
-            release_folder/Mae-macOS.zip
+            release_folder/Hat-macOS.zip
             release_folder/appcast.xml
 
       - name: Prepare Pages Deploy

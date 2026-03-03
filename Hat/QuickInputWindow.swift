@@ -1,6 +1,6 @@
 //
 //  QuickInputWindow.swift
-//  Mae
+//  Hat
 //
 //  Created by Joao Simi on 27/02/26.
 //
@@ -173,7 +173,7 @@ struct QuickInputView: View {
         HStack(alignment: .center, spacing: 10) {
             actionButtons
 
-            TextField("Pergunte algo à Mãe...", text: $inputText, axis: .vertical)
+            TextField("Pergunte algo à Hat...", text: $inputText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(Theme.Typography.body)
                 .foregroundStyle(Theme.Colors.textPrimary)

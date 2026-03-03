@@ -22,7 +22,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let quit_i = MenuItem::with_id(app, "quit", "Sair", true, None::<&str>)?;
-            let show_i = MenuItem::with_id(app, "show", "Mostrar Mãe", true, None::<&str>)?;
+            let show_i = MenuItem::with_id(app, "show", "Mostrar Hat", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
 
             TrayIconBuilder::new()

@@ -152,7 +152,7 @@ struct AdvancedSettingsView: View {
             GroupBox {
                 VStack(spacing: 0) {
                     HStack {
-                        MaeActionRow(title: "Início Automático", subtitle: "Abrir a Mãe junto com o Mac", icon: "macwindow", iconColor: Theme.Colors.accent)
+                        MaeActionRow(title: "Início Automático", subtitle: "Abrir a Hat junto com o Mac", icon: "macwindow", iconColor: Theme.Colors.accent)
                         Toggle("", isOn: $launchAtLogin)
                             .toggleStyle(.switch)
                     }
@@ -199,7 +199,7 @@ struct AdvancedSettingsView: View {
                         UpdaterController.shared.checkForUpdates()
                     } label: {
                         HStack {
-                            MaeActionRow(title: "Atualizações", subtitle: "Buscar nova versão da Mãe", icon: "arrow.triangle.2.circlepath", iconColor: Theme.Colors.accent)
+                            MaeActionRow(title: "Atualizações", subtitle: "Buscar nova versão da Hat", icon: "arrow.triangle.2.circlepath", iconColor: Theme.Colors.accent)
                             Image(systemName: "chevron.right")
                                 .font(Theme.Typography.bodySmall)
                                 .foregroundStyle(Theme.Colors.textMuted)
