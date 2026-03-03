@@ -571,8 +571,11 @@ struct ContentView: View {
             // Header
             HStack {
                 HStack(spacing: 6) {
-                    Text("Hat")
-                        .font(Theme.Typography.heading)
+                    Image("hat-svgrepo-com")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
                         .foregroundStyle(Theme.Colors.textPrimary)
                 }
                 
@@ -604,10 +607,12 @@ struct ContentView: View {
                     LazyVStack(spacing: 0) {
                         if viewModel.messages.isEmpty {
                             VStack(spacing: Theme.Metrics.spacingDefault) {
-                                Image(systemName: "sun.horizon.fill")
-                                    .font(.system(size: 32, weight: .light))
+                                Image("sunglasses-2-svgrepo-com")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 32, height: 32)
                                     .foregroundStyle(Theme.Colors.accent.opacity(0.4))
-                                    .symbolEffect(.variableColor, options: .nonRepeating)
                                 Text("Comece uma conversa")
                                     .font(Theme.Typography.bodyBold)
                                     .foregroundStyle(Theme.Colors.textMuted)
