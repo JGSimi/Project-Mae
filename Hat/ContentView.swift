@@ -13,13 +13,6 @@ import KeyboardShortcuts
 import UniformTypeIdentifiers
 import PDFKit
 
-private extension Double {
-    func clamped(to range: ClosedRange<Double>, fallback: Double) -> Double {
-        let value = self == 0 ? fallback : self
-        return min(max(value, range.lowerBound), range.upperBound)
-    }
-}
-
 // MARK: - Shortcut Name definition
 extension KeyboardShortcuts.Name {
     static let processClipboard = Self("processClipboard", default: .init(.x, modifiers: [.command, .shift]))
@@ -409,16 +402,7 @@ struct WindowAccessor: NSViewRepresentable {
     var onChange: (NSWindow?) -> Void
 
     final class Coordinator {
-        var observer: NSObjectProtocol?
-        var resizeObserver: NSObjectProtocol?
-        var resizeEndObserver: NSObjectProtocol?
         var configuredWindow: NSWindow?
-
-        deinit {
-            if let observer { NotificationCenter.default.removeObserver(observer) }
-            if let resizeObserver { NotificationCenter.default.removeObserver(resizeObserver) }
-            if let resizeEndObserver { NotificationCenter.default.removeObserver(resizeEndObserver) }
-        }
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -454,11 +438,7 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var showOpacitySlider = false
     @State private var hostWindow: NSWindow?
-    @State private var liveWidth: CGFloat = CGFloat(UserDefaults.standard.double(forKey: "windowWidth").clamped(to: 350...700, fallback: 450))
-    @State private var liveHeight: CGFloat = CGFloat(UserDefaults.standard.double(forKey: "windowHeight").clamped(to: 400...900, fallback: 650))
     @AppStorage("windowOpacity") private var windowOpacity: Double = 1.0
-    @AppStorage("windowWidth") private var windowWidth: Double = 450
-    @AppStorage("windowHeight") private var windowHeight: Double = 650
     @FocusState private var isInputFocused: Bool
 
     init(viewModel: AssistantViewModel) {
@@ -485,37 +465,12 @@ struct ContentView: View {
                     .zIndex(2)
             }
         }
-        .frame(minWidth: 350, idealWidth: liveWidth, maxWidth: 700, minHeight: 400, idealHeight: liveHeight, maxHeight: 900)
+        .frame(width: 450, height: 650)
         .background(WindowAccessor { window in
             guard let window = window else { return }
             if self.hostWindow !== window {
                 self.hostWindow = window
                 window.alphaValue = windowOpacity
-                window.styleMask.insert(.resizable)
-                window.minSize = NSSize(width: 350, height: 400)
-                window.maxSize = NSSize(width: 700, height: 900)
-                NotificationCenter.default.addObserver(
-                    forName: NSWindow.didResizeNotification,
-                    object: window,
-                    queue: .main
-                ) { _ in
-                    let size = window.frame.size
-                    if size.width >= 350 && size.height >= 400 {
-                        self.liveWidth = size.width
-                        self.liveHeight = size.height
-                    }
-                }
-                NotificationCenter.default.addObserver(
-                    forName: NSWindow.didEndLiveResizeNotification,
-                    object: window,
-                    queue: .main
-                ) { _ in
-                    let size = window.frame.size
-                    if size.width >= 350 && size.height >= 400 {
-                        self.windowWidth = Double(size.width)
-                        self.windowHeight = Double(size.height)
-                    }
-                }
             }
         })
         .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.92)
