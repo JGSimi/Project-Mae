@@ -488,37 +488,41 @@ struct ContentView: View {
         .frame(width: liveWidth, height: liveHeight)
         .background(WindowAccessor { window in
             guard let window = window else { return }
-            self.hostWindow = window
-            window.alphaValue = windowOpacity
-            // Enable resizing on the menubar panel
-            window.styleMask.insert(.resizable)
-            window.minSize = NSSize(width: 350, height: 400)
-            window.maxSize = NSSize(width: 700, height: 900)
-            // Apply persisted size
-            window.setContentSize(NSSize(width: liveWidth, height: liveHeight))
-
-            // Track live resize without writing to AppStorage (avoids layout thrashing)
-            NotificationCenter.default.addObserver(
-                forName: NSWindow.didResizeNotification,
-                object: window,
-                queue: .main
-            ) { _ in
-                let size = window.frame.size
-                if size.width >= 350 && size.height >= 400 {
-                    self.liveWidth = size.width
-                    self.liveHeight = size.height
+            if self.hostWindow !== window {
+                self.hostWindow = window
+                window.alphaValue = windowOpacity
+                window.styleMask.insert(.resizable)
+                window.minSize = NSSize(width: 350, height: 400)
+                window.maxSize = NSSize(width: 700, height: 900)
+                NotificationCenter.default.addObserver(
+                    forName: NSWindow.didResizeNotification,
+                    object: window,
+                    queue: .main
+                ) { _ in
+                    let size = window.frame.size
+                    if size.width >= 350 && size.height >= 400 {
+                        self.liveWidth = size.width
+                        self.liveHeight = size.height
+                    }
+                }
+                NotificationCenter.default.addObserver(
+                    forName: NSWindow.didEndLiveResizeNotification,
+                    object: window,
+                    queue: .main
+                ) { _ in
+                    let size = window.frame.size
+                    if size.width >= 350 && size.height >= 400 {
+                        self.windowWidth = Double(size.width)
+                        self.windowHeight = Double(size.height)
+                    }
                 }
             }
-            // Persist size only when resize ends
-            NotificationCenter.default.addObserver(
-                forName: NSWindow.didEndLiveResizeNotification,
-                object: window,
-                queue: .main
-            ) { _ in
-                let size = window.frame.size
-                if size.width >= 350 && size.height >= 400 {
-                    self.windowWidth = Double(size.width)
-                    self.windowHeight = Double(size.height)
+            // Always apply/restore size when accessor runs (e.g. when popover is shown again)
+            DispatchQueue.main.async {
+                let targetSize = NSSize(width: liveWidth, height: liveHeight)
+                if abs(window.frame.size.width - targetSize.width) > 1 ||
+                   abs(window.frame.size.height - targetSize.height) > 1 {
+                    window.setContentSize(targetSize)
                 }
             }
         })
