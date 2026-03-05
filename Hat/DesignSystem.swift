@@ -30,42 +30,42 @@ enum Theme {
 
     // MARK: Colors
     enum Colors {
-        // Backgrounds
-        static let background          = Color(NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0)) // #0A0A0A
-        static let backgroundSecondary = Color(NSColor(red: 0.03, green: 0.03, blue: 0.035, alpha: 1.0)) // #070708
+        // Backgrounds — Apple dark system palette
+        static let background          = Color(NSColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)) // #1C1C1E
+        static let backgroundSecondary = Color(NSColor(red: 0.08, green: 0.08, blue: 0.09, alpha: 1.0)) // #141415
 
-        // Surfaces
-        static let surface             = Color.white.opacity(0.04) // #0E0E0E
-        static let surfaceSecondary    = Color.white.opacity(0.03) // #111111
+        // Surfaces — slightly more visible for depth
+        static let surface             = Color.white.opacity(0.06)
+        static let surfaceSecondary    = Color.white.opacity(0.05)
 
-        // Borders
-        static let border              = Color.white.opacity(0.06) // #141414
-        static let borderHighlight     = Color.white.opacity(0.10)
+        // Borders — more visible for definition
+        static let border              = Color.white.opacity(0.08)
+        static let borderHighlight     = Color.white.opacity(0.14)
 
         // Text
-        static let textPrimary         = Color.white.opacity(0.95) // #E0E0E0
-        static let textSecondary       = Color.white.opacity(0.50)
-        static let textMuted           = Color.white.opacity(0.25)
+        static let textPrimary         = Color.white.opacity(0.95)
+        static let textSecondary       = Color.white.opacity(0.55)
+        static let textMuted           = Color.white.opacity(0.30)
 
-        // Accent — warm gold
-        static let accent              = Color(red: 1, green: 1, blue: 1) // #FFFFFF
-        static let accentSubtle        = Color(red: 1, green: 1, blue: 1).opacity(0.15) // #FFFFFF
+        // Accent
+        static let accent              = Color.white
+        static let accentSubtle        = Color.white.opacity(0.15)
 
         // Semantic
         static let success             = Color.green
         static let error               = Color.red
     }
 
-    // MARK: Typography
+    // MARK: Typography — SF Pro Rounded (Apple native)
     enum Typography {
-        static let largeTitle   = Font.cormorantGaramond(size: 32, weight: .semibold)
-        static let title        = Font.cormorantGaramond(size: 26, weight: .bold)
-        static let heading      = Font.cormorantGaramond(size: 20, weight: .semibold)
-        static let bodyBold     = Font.cormorantGaramond(size: 15, weight: .medium)
-        static let body         = Font.cormorantGaramond(size: 15, weight: .regular)
-        static let bodySmall    = Font.cormorantGaramond(size: 13, weight: .regular)
-        static let caption      = Font.cormorantGaramond(size: 11, weight: .light)
-        static let sectionHeader = Font.cormorantGaramond(size: 11, weight: .bold)
+        static let largeTitle    = Font.system(size: 28, weight: .bold, design: .rounded)
+        static let title         = Font.system(size: 22, weight: .bold, design: .rounded)
+        static let heading       = Font.system(size: 17, weight: .semibold, design: .rounded)
+        static let bodyBold      = Font.system(size: 14, weight: .medium, design: .rounded)
+        static let body          = Font.system(size: 14, weight: .regular, design: .rounded)
+        static let bodySmall     = Font.system(size: 13, weight: .regular, design: .rounded)
+        static let caption       = Font.system(size: 11, weight: .regular, design: .rounded)
+        static let sectionHeader = Font.system(size: 11, weight: .semibold, design: .rounded)
     }
 
     // MARK: Metrics
@@ -358,26 +358,27 @@ struct MaeTypingDots: View {
 
 extension View {
 
-    /// Glassmorphism — gold-tinted frost (user bubbles)
+    /// Glassmorphism — frosted glass with vibrancy (user bubbles)
     func maeGlassBackground(cornerRadius: CGFloat = Theme.Metrics.radiusMedium) -> some View {
         self
-            .background(.ultraThinMaterial)
-            .background(Theme.Colors.accent.opacity(0.06))
+            .background(.thinMaterial)
+            .background(Theme.Colors.accent.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Theme.Colors.accent.opacity(0.12), lineWidth: 1)
+                    .stroke(Theme.Colors.accent.opacity(0.15), lineWidth: 0.5)
             )
     }
 
-    /// Neutral dark surface (assistant bubbles, cards)
+    /// Neutral dark surface with subtle material (assistant bubbles, cards)
     func maeSurfaceBackground(cornerRadius: CGFloat = Theme.Metrics.radiusMedium) -> some View {
         self
+            .background(.ultraThinMaterial)
             .background(Theme.Colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Theme.Colors.border, lineWidth: 1)
+                    .stroke(Theme.Colors.border, lineWidth: 0.5)
             )
     }
 
@@ -392,7 +393,7 @@ extension View {
             )
     }
 
-    /// Text input style
+    /// Text input style — Apple-like with material background
     func maeInputStyle(cornerRadius: CGFloat = Theme.Metrics.radiusMedium) -> some View {
         self
             .textFieldStyle(.plain)
@@ -400,11 +401,12 @@ extension View {
             .foregroundStyle(Theme.Colors.textPrimary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
             .background(Theme.Colors.surfaceSecondary)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Theme.Colors.border, lineWidth: 1)
+                    .stroke(Theme.Colors.border, lineWidth: 0.5)
             )
     }
 
@@ -589,23 +591,26 @@ struct MaeIconButton: View {
 }
 
 // MARK: MaePageBackground
-/// Deep black background with optional accent radial glow.
+/// Vibrant background with material depth — Apple-like layered appearance.
 struct MaePageBackground: View {
     var showGlow: Bool = false
 
     var body: some View {
         ZStack {
             Theme.Colors.backgroundSecondary.ignoresSafeArea()
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
             if showGlow {
                 RadialGradient(
-                    gradient: Gradient(colors: [Theme.Colors.accent.opacity(0.04), .clear]),
+                    gradient: Gradient(colors: [Theme.Colors.accent.opacity(0.05), .clear]),
                     center: .topLeading,
                     startRadius: 0,
                     endRadius: 400
                 )
             } else {
                 RadialGradient(
-                    gradient: Gradient(colors: [Color.white.opacity(0.015), .clear]),
+                    gradient: Gradient(colors: [Color.white.opacity(0.02), .clear]),
                     center: .topLeading,
                     startRadius: 0,
                     endRadius: 400
