@@ -418,6 +418,8 @@ struct ContentView: View {
     @State private var showOpacitySlider = false
     @State private var hostWindow: NSWindow?
     @AppStorage("windowOpacity") private var windowOpacity: Double = 1.0
+    @AppStorage("windowWidth") private var windowWidth: Double = 450
+    @AppStorage("windowHeight") private var windowHeight: Double = 650
     @FocusState private var isInputFocused: Bool
 
     init(viewModel: AssistantViewModel) {
@@ -444,11 +446,31 @@ struct ContentView: View {
                     .zIndex(2)
             }
         }
-        .frame(width: 450, height: 650)
+        .frame(
+            minWidth: 350, idealWidth: CGFloat(windowWidth), maxWidth: 700,
+            minHeight: 400, idealHeight: CGFloat(windowHeight), maxHeight: 900
+        )
         .background(WindowAccessor { window in
             if let window = window, self.hostWindow !== window {
                 self.hostWindow = window
                 window.alphaValue = windowOpacity
+                // Enable resizing on the menubar panel
+                window.styleMask.insert(.resizable)
+                window.minSize = NSSize(width: 350, height: 400)
+                window.maxSize = NSSize(width: 700, height: 900)
+                window.setContentSize(NSSize(width: windowWidth, height: windowHeight))
+                // Observe resize to persist dimensions
+                NotificationCenter.default.addObserver(
+                    forName: NSWindow.didResizeNotification,
+                    object: window,
+                    queue: .main
+                ) { _ in
+                    let size = window.frame.size
+                    if size.width >= 350 && size.height >= 400 {
+                        self.windowWidth = Double(size.width)
+                        self.windowHeight = Double(size.height)
+                    }
+                }
             }
         })
         .maeAppearAnimation(animation: Theme.Animation.expressive, scale: 0.92)
@@ -517,7 +539,7 @@ struct ContentView: View {
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
-            .background(Theme.Colors.background)
+            .background(.regularMaterial)
             .overlay(MaeGradientDivider(), alignment: .bottom)
             .zIndex(1)
 
@@ -557,7 +579,8 @@ struct ContentView: View {
                     .padding(.vertical, Theme.Metrics.spacingDefault)
                 }
                 .scrollContentBackground(.hidden)
-                .background(Theme.Colors.background)
+                .background(Theme.Colors.background.opacity(0.5))
+                .background(.ultraThinMaterial)
                 .onChange(of: viewModel.messages.count) {
                     withAnimation(Theme.Animation.responsive) {
                         proxy.scrollTo(bottomID, anchor: .bottom)
@@ -680,7 +703,7 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 14)
-                .background(Theme.Colors.background)
+                .background(.regularMaterial)
             }
             .zIndex(1)
         }

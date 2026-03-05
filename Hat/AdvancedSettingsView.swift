@@ -30,7 +30,7 @@ class AdvancedSettingsWindowManager {
         newWindow.titleVisibility = .hidden
         newWindow.isMovableByWindowBackground = true
         newWindow.appearance = NSAppearance(named: .darkAqua)
-        newWindow.backgroundColor = NSColor(red: 0.04, green: 0.04, blue: 0.045, alpha: 1.0)
+        newWindow.backgroundColor = NSColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1.0)
         newWindow.isReleasedWhenClosed = false
         newWindow.center()
         
