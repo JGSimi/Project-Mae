@@ -451,24 +451,36 @@ struct ContentView: View {
             minHeight: 400, idealHeight: CGFloat(windowHeight), maxHeight: 900
         )
         .background(WindowAccessor { window in
-            if let window = window, self.hostWindow !== window {
-                self.hostWindow = window
-                window.alphaValue = windowOpacity
-                // Enable resizing on the menubar panel
-                window.styleMask.insert(.resizable)
-                window.minSize = NSSize(width: 350, height: 400)
-                window.maxSize = NSSize(width: 700, height: 900)
-                window.setContentSize(NSSize(width: windowWidth, height: windowHeight))
-                // Observe resize to persist dimensions
-                NotificationCenter.default.addObserver(
-                    forName: NSWindow.didResizeNotification,
-                    object: window,
-                    queue: .main
-                ) { _ in
-                    let size = window.frame.size
-                    if size.width >= 350 && size.height >= 400 {
-                        self.windowWidth = Double(size.width)
-                        self.windowHeight = Double(size.height)
+            if let window = window {
+                if self.hostWindow !== window {
+                    self.hostWindow = window
+                    window.alphaValue = windowOpacity
+                    // Enable resizing on the menubar panel
+                    window.styleMask.insert(.resizable)
+                    window.minSize = NSSize(width: 350, height: 400)
+                    window.maxSize = NSSize(width: 700, height: 900)
+                    
+                    // Observe resize to persist dimensions
+                    NotificationCenter.default.addObserver(
+                        forName: NSWindow.didResizeNotification,
+                        object: window,
+                        queue: .main
+                    ) { _ in
+                        let size = window.frame.size
+                        if size.width >= 350 && size.height >= 400 {
+                            self.windowWidth = Double(size.width)
+                            self.windowHeight = Double(size.height)
+                        }
+                    }
+                }
+                
+                // Always restore size when accessor runs (e.g., when popover is shown again)
+                // We use async to avoid fighting with SwiftUI's initial layout
+                DispatchQueue.main.async {
+                    let targetSize = NSSize(width: windowWidth, height: windowHeight)
+                    if abs(window.frame.size.width - targetSize.width) > 1 || 
+                       abs(window.frame.size.height - targetSize.height) > 1 {
+                        window.setContentSize(targetSize)
                     }
                 }
             }
