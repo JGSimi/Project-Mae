@@ -1,5 +1,17 @@
 import Foundation
 
+// MARK: - Token Usage (shared across providers)
+struct TokenUsage {
+    let inputTokens: Int
+    let outputTokens: Int
+    var totalTokens: Int { inputTokens + outputTokens }
+}
+
+struct AIResponse {
+    let text: String
+    let tokenUsage: TokenUsage?
+}
+
 // MARK: - Conversation History (shared across providers)
 struct ConversationTurn {
     let role: String        // "user" or "assistant"
@@ -54,6 +66,13 @@ struct OllamaChatMessage: Codable {
 
 struct OllamaChatResponse: Decodable {
     let message: OllamaChatResponseMessage
+    let prompt_eval_count: Int?
+    let eval_count: Int?
+
+    var tokenUsage: TokenUsage? {
+        guard let input = prompt_eval_count, let output = eval_count else { return nil }
+        return TokenUsage(inputTokens: input, outputTokens: output)
+    }
 }
 
 struct OllamaChatResponseMessage: Decodable {
@@ -137,13 +156,24 @@ struct MessageContent: Codable {
 
 struct APIResponse: Decodable {
     let choices: [Choice]
-    
+    let usage: Usage?
+
     struct Choice: Decodable {
         let message: ResponseMessage
     }
-    
+
     struct ResponseMessage: Decodable {
         let content: String
+    }
+
+    struct Usage: Decodable {
+        let prompt_tokens: Int?
+        let completion_tokens: Int?
+    }
+
+    var tokenUsage: TokenUsage? {
+        guard let u = usage, let input = u.prompt_tokens, let output = u.completion_tokens else { return nil }
+        return TokenUsage(inputTokens: input, outputTokens: output)
     }
 }
 
@@ -175,10 +205,21 @@ struct AnthropicImageSource: Codable {
 
 struct AnthropicResponse: Decodable {
     let content: [AnthropicResponseContent]
-    
+    let usage: Usage?
+
     struct AnthropicResponseContent: Decodable {
         let type: String
         let text: String
+    }
+
+    struct Usage: Decodable {
+        let input_tokens: Int?
+        let output_tokens: Int?
+    }
+
+    var tokenUsage: TokenUsage? {
+        guard let u = usage, let input = u.input_tokens, let output = u.output_tokens else { return nil }
+        return TokenUsage(inputTokens: input, outputTokens: output)
     }
 }
 

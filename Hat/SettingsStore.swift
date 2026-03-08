@@ -77,4 +77,31 @@ struct SettingsManager {
     static var apiKey: String { KeychainManager.shared.loadKey() ?? "" }
     static var systemPrompt: String { UserDefaults.standard.string(forKey: "systemPrompt") ?? "Resposta direta. Pergunta: " }
     static var playNotifications: Bool { UserDefaults.standard.object(forKey: "playNotifications") as? Bool ?? true }
+
+    static var globalTotalTokens: Int {
+        get { UserDefaults.standard.integer(forKey: "globalTotalTokens") }
+        set { UserDefaults.standard.set(newValue, forKey: "globalTotalTokens") }
+    }
+
+    static var globalInputTokens: Int {
+        get { UserDefaults.standard.integer(forKey: "globalInputTokens") }
+        set { UserDefaults.standard.set(newValue, forKey: "globalInputTokens") }
+    }
+
+    static var globalOutputTokens: Int {
+        get { UserDefaults.standard.integer(forKey: "globalOutputTokens") }
+        set { UserDefaults.standard.set(newValue, forKey: "globalOutputTokens") }
+    }
+
+    static func addGlobalTokens(input: Int, output: Int) {
+        globalInputTokens += input
+        globalOutputTokens += output
+        globalTotalTokens += (input + output)
+    }
+
+    static func resetGlobalTokens() {
+        globalTotalTokens = 0
+        globalInputTokens = 0
+        globalOutputTokens = 0
+    }
 }
