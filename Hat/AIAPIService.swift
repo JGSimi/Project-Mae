@@ -25,7 +25,7 @@ class AIAPIService {
         return result
     }
 
-    func executeRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> String {
+    func executeRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> AIResponse {
         let inferenceMode = SettingsManager.inferenceMode
         if inferenceMode == .local {
             return try await executeLocalRequest(prompt: prompt, images: images, history: history, systemPrompt: systemPrompt)
@@ -34,7 +34,7 @@ class AIAPIService {
         }
     }
 
-    private func executeLocalRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> String {
+    private func executeLocalRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> AIResponse {
         let trimmedHistory = truncateHistory(history, maxChars: 16_000)
 
         var messages: [OllamaChatMessage] = []
@@ -74,10 +74,13 @@ class AIAPIService {
                           userInfo: [NSLocalizedDescriptionKey: "Local API Error: \(errorStr)"])
         }
         let result = try JSONDecoder().decode(OllamaChatResponse.self, from: data)
-        return result.message.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        return AIResponse(
+            text: result.message.content.trimmingCharacters(in: .whitespacesAndNewlines),
+            tokenUsage: result.tokenUsage
+        )
     }
 
-    private func executeAPIRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> String {
+    private func executeAPIRequest(prompt: String, images: [String]?, history: [ConversationTurn], systemPrompt: String) async throws -> AIResponse {
         let trimmedHistory = truncateHistory(history, maxChars: 100_000)
 
         guard let url = URL(string: SettingsManager.apiEndpoint),
@@ -148,7 +151,10 @@ class AIAPIService {
 
             let result = try JSONDecoder().decode(AnthropicResponse.self, from: data)
             if let firstText = result.content.first(where: { $0.type == "text" }) {
-                return firstText.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                return AIResponse(
+                    text: firstText.text.trimmingCharacters(in: .whitespacesAndNewlines),
+                    tokenUsage: result.tokenUsage
+                )
             } else {
                 throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
             }
@@ -198,7 +204,10 @@ class AIAPIService {
             let result = try JSONDecoder().decode(APIResponse.self, from: data)
 
             if let firstChoice = result.choices.first {
-                return firstChoice.message.content.trimmingCharacters(in: .whitespacesAndNewlines)
+                return AIResponse(
+                    text: firstChoice.message.content.trimmingCharacters(in: .whitespacesAndNewlines),
+                    tokenUsage: result.tokenUsage
+                )
             } else {
                 throw NSError(domain: "AssistantError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No response from API."])
             }

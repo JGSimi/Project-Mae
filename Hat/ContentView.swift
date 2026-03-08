@@ -116,6 +116,11 @@ class AssistantViewModel: ObservableObject {
     @Published var isAnalyzingScreen = false
     @Published var analysisResult: String = ""
     @Published var analysisImage: NSImage? = nil
+
+    // Token Counters - Conversa atual
+    @Published var conversationInputTokens: Int = 0
+    @Published var conversationOutputTokens: Int = 0
+    var conversationTotalTokens: Int { conversationInputTokens + conversationOutputTokens }
     
     private let pasteboard: PasteboardClient
 
@@ -246,14 +251,19 @@ class AssistantViewModel: ObservableObject {
         let base64Images = rawImages?.compactMap { $0.resizedAndCompressedBase64() }
 
         do {
-            let finalResponse = try await AIAPIService.shared.executeRequest(
+            let aiResponse = try await AIAPIService.shared.executeRequest(
                 prompt: prompt,
                 images: base64Images,
                 history: [],
                 systemPrompt: systemPrompt
             )
 
-            self.analysisResult = finalResponse
+            self.analysisResult = aiResponse.text
+
+            // Acumula tokens apenas no contador global (análise de tela é fora do chat)
+            if let usage = aiResponse.tokenUsage {
+                SettingsManager.addGlobalTokens(input: usage.inputTokens, output: usage.outputTokens)
+            }
 
             if SettingsManager.playNotifications {
                 await sendNotification(text: "Análise de tela concluída!")
@@ -349,12 +359,21 @@ class AssistantViewModel: ObservableObject {
         messages.append(userMsg)
 
         do {
-            let finalResponse = try await AIAPIService.shared.executeRequest(
+            let aiResponse = try await AIAPIService.shared.executeRequest(
                 prompt: prompt,
                 images: base64Images,
                 history: history,
                 systemPrompt: systemPrompt
             )
+
+            let finalResponse = aiResponse.text
+
+            // Acumula tokens
+            if let usage = aiResponse.tokenUsage {
+                conversationInputTokens += usage.inputTokens
+                conversationOutputTokens += usage.outputTokens
+                SettingsManager.addGlobalTokens(input: usage.inputTokens, output: usage.outputTokens)
+            }
 
             // Adiciona a resposta ao histórico
             let assistantMsg = ChatMessage(content: finalResponse, images: nil, isUser: false)
@@ -393,6 +412,8 @@ class AssistantViewModel: ObservableObject {
 
     func clearHistory() {
         messages.removeAll()
+        conversationInputTokens = 0
+        conversationOutputTokens = 0
     }
 }
 
@@ -439,6 +460,7 @@ struct ContentView: View {
     @State private var showOpacitySlider = false
     @State private var hostWindow: NSWindow?
     @AppStorage("windowOpacity") private var windowOpacity: Double = 1.0
+    @AppStorage("globalTotalTokens") private var globalTotalTokens: Int = 0
     @FocusState private var isInputFocused: Bool
 
     init(viewModel: AssistantViewModel) {
@@ -506,6 +528,15 @@ struct ContentView: View {
                 Text("Hat")
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(Theme.Colors.textPrimary.opacity(0.9))
+
+                if globalTotalTokens > 0 {
+                    Text("·")
+                        .foregroundStyle(Theme.Colors.textMuted)
+                    Text(formatTokenCount(globalTotalTokens) + " tokens")
+                        .font(.system(size: 10, weight: .regular, design: .rounded))
+                        .foregroundStyle(Theme.Colors.textMuted.opacity(0.7))
+                        .help("Total de tokens usados no app")
+                }
 
                 Spacer()
 
@@ -685,6 +716,20 @@ struct ContentView: View {
 
                 MaeGradientDivider()
 
+                if viewModel.conversationTotalTokens > 0 {
+                    HStack(spacing: 6) {
+                        Image(systemName: "number.circle")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Theme.Colors.textMuted.opacity(0.6))
+                        Text("\(formatTokenCount(viewModel.conversationTotalTokens)) tokens na conversa")
+                            .font(.system(size: 9, weight: .medium, design: .rounded))
+                            .foregroundStyle(Theme.Colors.textMuted.opacity(0.6))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 3)
+                }
+
                 HStack(alignment: .bottom, spacing: 10) {
                     MaeIconButton(icon: "plus.circle.fill", size: 16, color: Theme.Colors.textSecondary.opacity(0.8), helpText: "Anexar arquivo/imagem") {
                         let panel = NSOpenPanel()
@@ -793,6 +838,12 @@ struct ContentView: View {
             return URL(string: urlString)
         }
         return nil
+    }
+
+    private func formatTokenCount(_ count: Int) -> String {
+        if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
+        if count >= 1_000 { return String(format: "%.1fK", Double(count) / 1_000) }
+        return "\(count)"
     }
 }
 

@@ -7,6 +7,9 @@ struct SettingsView: View {
     @AppStorage("selectedProvider") var selectedProvider: CloudProvider = .google
     @AppStorage("apiModelName") var apiModelName: String = "gpt-5.2"
     @AppStorage("localModelName") var localModelName: String = "gemma3:4b"
+    @AppStorage("globalTotalTokens") var globalTotalTokens: Int = 0
+    @AppStorage("globalInputTokens") var globalInputTokens: Int = 0
+    @AppStorage("globalOutputTokens") var globalOutputTokens: Int = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,6 +87,66 @@ struct SettingsView: View {
                 )
                 .maeStaggered(index: 0, baseDelay: 0.06)
 
+                // Token Usage Card
+                if globalTotalTokens > 0 {
+                    VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("USO DE TOKENS")
+                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .foregroundStyle(Theme.Colors.textMuted)
+                                .tracking(0.5)
+
+                            HStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Total")
+                                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textMuted)
+                                    Text(formatTokenCount(globalTotalTokens))
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textPrimary)
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Input")
+                                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textMuted)
+                                    Text(formatTokenCount(globalInputTokens))
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Output")
+                                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textMuted)
+                                    Text(formatTokenCount(globalOutputTokens))
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textSecondary)
+                                }
+                                Spacer()
+                                Button {
+                                    SettingsManager.resetGlobalTokens()
+                                } label: {
+                                    Text("Resetar")
+                                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                                        .foregroundStyle(Theme.Colors.textMuted)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(Theme.Colors.surfaceSecondary.opacity(0.5))
+                                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(14)
+                    }
+                    .background(Theme.Colors.surfaceSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Theme.Colors.border, lineWidth: 0.5)
+                    )
+                    .maeStaggered(index: 1, baseDelay: 0.06)
+                }
+
                 Spacer(minLength: 0)
 
                 // Action Buttons
@@ -111,7 +174,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .maePressEffect()
-                    .maeStaggered(index: 1, baseDelay: 0.06)
+                    .maeStaggered(index: 2, baseDelay: 0.06)
 
                     Button {
                         withAnimation {
@@ -143,7 +206,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .maePressEffect()
-                    .maeStaggered(index: 2, baseDelay: 0.06)
+                    .maeStaggered(index: 3, baseDelay: 0.06)
                 }
                 .padding(.bottom, 14)
             }
@@ -161,6 +224,12 @@ struct SettingsView: View {
             .padding(.trailing, Theme.Metrics.spacingDefault)
         }
         .preferredColorScheme(.dark)
+    }
+
+    private func formatTokenCount(_ count: Int) -> String {
+        if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
+        if count >= 1_000 { return String(format: "%.1fK", Double(count) / 1_000) }
+        return "\(count)"
     }
 }
 
