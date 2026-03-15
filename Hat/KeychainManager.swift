@@ -51,6 +51,24 @@ struct KeychainManager {
         UserDefaults.standard.set(true, forKey: "keychainMigratedPerProvider")
     }
 
+    // MARK: - Accessibility migration
+
+    /// Re-saves all existing keychain items with kSecAttrAccessibleWhenUnlocked
+    /// so macOS no longer prompts for permission after each app update.
+    static func migrateToAccessibleWhenUnlocked() {
+        let migrated = UserDefaults.standard.bool(forKey: "keychainMigratedAccessible")
+        guard !migrated else { return }
+
+        for provider in CloudProvider.allCases {
+            if let key = shared.loadKey(for: provider) {
+                shared.delete(account: provider.keychainAccount)
+                shared.saveKey(key, for: provider)
+            }
+        }
+
+        UserDefaults.standard.set(true, forKey: "keychainMigratedAccessible")
+    }
+
     // MARK: - Private helpers
 
     private func save(_ key: String, account: String) {
@@ -79,6 +97,7 @@ struct KeychainManager {
         if updateStatus == errSecItemNotFound {
             var addQuery = query
             addQuery[kSecValueData as String] = data
+            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
             if addStatus != errSecSuccess {
                 print("Failed to save API key in Keychain. Status: \(addStatus)")

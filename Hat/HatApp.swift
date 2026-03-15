@@ -63,6 +63,10 @@ struct HatApp: App {
         // Migra chave de API única para chaves por provedor (one-time)
         KeychainManager.migrateIfNeeded()
 
+        // Re-salva chaves com kSecAttrAccessibleWhenUnlocked para evitar
+        // prompt de permissão do Keychain a cada atualização do app
+        KeychainManager.migrateToAccessibleWhenUnlocked()
+
         // Registramos o listener global para o atalho quando o app inicia
         KeyboardShortcuts.onKeyDown(for: .processClipboard) {
             Task {
