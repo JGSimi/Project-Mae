@@ -8,31 +8,40 @@
 import SwiftUI
 import KeyboardShortcuts
 import UserNotifications
+import CoreGraphics
 
 // MARK: - App Delegate para gerenciar notificações
 class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Configura o delegado para capturar notificações em primeiro plano
         UNUserNotificationCenter.current().delegate = self
-        
+
         // Verifica primeiro acesso para mostrar a janela de boas vindas
         let hasSeenWelcome = UserDefaults.standard.bool(forKey: "hasSeenWelcome")
         if !hasSeenWelcome {
             WelcomeWindowManager.shared.showWindow()
             UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
         }
-        
-        // Solicita permissão de notificação apenas se ainda não foi definida (primeira vez)
+
+        // Verifica permissões a cada inicialização; abre tela de permissões se alguma estiver faltando
         Task {
-            let center = UNUserNotificationCenter.current()
-            let settings = await center.notificationSettings()
-            if settings.authorizationStatus == .notDetermined {
-                _ = try? await center.requestAuthorization(options: [.alert, .sound])
-            }
+            await checkAndShowPermissionsIfNeeded()
         }
-        
+
         // Verifica atualizações silenciosamente
         UpdaterController.shared.checkForUpdatesInBackground()
+    }
+
+    private func checkAndShowPermissionsIfNeeded() async {
+        let screenOK = CGPreflightScreenCaptureAccess()
+        let notifSettings = await UNUserNotificationCenter.current().notificationSettings()
+        let notifOK = notifSettings.authorizationStatus == .authorized
+
+        if !screenOK || !notifOK {
+            await MainActor.run {
+                PermissionsWindowManager.shared.showWindow()
+            }
+        }
     }
     
     // Esta função permite que a notificação apareça mesmo que o app esteja focado
@@ -128,6 +137,49 @@ private struct MenuBarIconView: View {
                 popScale = 1.0
             }
         }
+    }
+}
+
+// MARK: - Permissions Window
+class PermissionsWindowManager {
+    static let shared = PermissionsWindowManager()
+    private var window: NSWindow?
+
+    func showWindow() {
+        if let window = window {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let screenRect = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1200, height: 960)
+        let width: CGFloat = min(520, screenRect.width * 0.45)
+        let height: CGFloat = min(500, screenRect.height * 0.55)
+
+        let contentView = PermissionsView(width: width, height: height)
+
+        let newWindow = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: width, height: height),
+            styleMask: [.titled, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+
+        newWindow.titlebarAppearsTransparent = true
+        newWindow.titleVisibility = .hidden
+        newWindow.isMovableByWindowBackground = true
+        newWindow.isReleasedWhenClosed = false
+        newWindow.center()
+
+        newWindow.contentView = NSHostingView(rootView: contentView)
+        self.window = newWindow
+        newWindow.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    func closeWindow() {
+        window?.close()
+        window = nil
     }
 }
 
@@ -278,6 +330,220 @@ struct FeatureRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
+        }
+    }
+}
+
+// MARK: - Permissions Views
+
+struct PermissionRowView: View {
+    let icon: String
+    let title: String
+    let description: String
+    let isGranted: Bool
+    let onGrant: () -> Void
+    let index: Int
+
+    var body: some View {
+        HStack(alignment: .top, spacing: Theme.Metrics.spacingLarge) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .light))
+                .foregroundColor(Theme.Colors.accent)
+                .frame(width: 36, height: 36)
+                .background(Theme.Colors.accentSubtle)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(Theme.Typography.bodyBold)
+                    .foregroundColor(Theme.Colors.textPrimary)
+
+                Text(description)
+                    .font(Theme.Typography.bodySmall)
+                    .foregroundColor(Theme.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            if isGranted {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(Theme.Colors.success)
+                    .transition(.maeScaleFade)
+            } else {
+                Button(action: onGrant) {
+                    Text("Permitir")
+                        .font(Theme.Typography.bodyBold)
+                        .foregroundColor(.black)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 14)
+                }
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.Metrics.radiusSmall, style: .continuous)
+                        .fill(Theme.Colors.accent.opacity(0.85))
+                )
+                .maeGlowHover()
+                .maePressEffect()
+                .transition(.maeScaleFade)
+            }
+        }
+        .padding(Theme.Metrics.spacingLarge)
+        .maeCardStyle()
+        .maeStaggered(index: index, baseDelay: 0.12)
+    }
+}
+
+@MainActor
+struct PermissionsView: View {
+    let width: CGFloat
+    let height: CGFloat
+
+    @State private var screenRecordingGranted: Bool = CGPreflightScreenCaptureAccess()
+    @State private var notificationsGranted: Bool = false
+
+    private var allGranted: Bool { screenRecordingGranted && notificationsGranted }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            VStack(spacing: 8) {
+                Image(systemName: "lock.shield")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundColor(Theme.Colors.accent)
+                    .maeStaggered(index: 0, baseDelay: 0.12)
+
+                Text("Permissões Necessárias")
+                    .font(Theme.Typography.largeTitle)
+                    .foregroundColor(Theme.Colors.textPrimary)
+                    .maeStaggered(index: 1, baseDelay: 0.12)
+
+                Text("O Hat precisa das seguintes permissões para funcionar corretamente.")
+                    .font(Theme.Typography.bodySmall)
+                    .foregroundColor(Theme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                    .maeStaggered(index: 2, baseDelay: 0.12)
+            }
+            .padding(.top, 36)
+            .padding(.bottom, 24)
+
+            // Linhas de permissão
+            VStack(spacing: 12) {
+                PermissionRowView(
+                    icon: "rectangle.dashed.badge.record",
+                    title: "Gravação de Tela",
+                    description: "Necessária para o atalho ⌘+⇧+Z capturar a tela e enviar ao modelo de IA para análise.",
+                    isGranted: screenRecordingGranted,
+                    onGrant: requestScreenRecording,
+                    index: 3
+                )
+
+                PermissionRowView(
+                    icon: "bell.badge",
+                    title: "Notificações",
+                    description: "Usada para exibir as respostas da IA mesmo quando o app não está em foco.",
+                    isGranted: notificationsGranted,
+                    onGrant: requestNotifications,
+                    index: 4
+                )
+            }
+            .padding(.horizontal, 24)
+            .animation(Theme.Animation.smooth, value: screenRecordingGranted)
+            .animation(Theme.Animation.smooth, value: notificationsGranted)
+
+            Spacer()
+
+            // Rodapé
+            VStack(spacing: 12) {
+                if !allGranted {
+                    Button(action: recheckPermissions) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 12))
+                            Text("Já Concedi")
+                                .font(Theme.Typography.bodySmall)
+                        }
+                        .foregroundColor(Theme.Colors.textSecondary)
+                    }
+                    .buttonStyle(.plain)
+                    .maeStaggered(index: 5, baseDelay: 0.12)
+                }
+
+                Button(action: {
+                    PermissionsWindowManager.shared.closeWindow()
+                }) {
+                    Text(allGranted ? "Continuar" : "Continuar mesmo assim")
+                        .font(Theme.Typography.bodyBold)
+                        .foregroundColor(allGranted ? .black : Theme.Colors.textSecondary)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 32)
+                }
+                .buttonStyle(.plain)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.Metrics.radiusMedium, style: .continuous)
+                        .fill(allGranted ? Theme.Colors.accent.opacity(0.85) : Theme.Colors.surface)
+                )
+                .maeGlowHover()
+                .maePressEffect()
+                .maeStaggered(index: 6, baseDelay: 0.12)
+                .animation(Theme.Animation.smooth, value: allGranted)
+            }
+            .padding(.bottom, 30)
+        }
+        .background(MaePageBackground(showGlow: true))
+        .edgesIgnoringSafeArea(.all)
+        .frame(width: width, height: height)
+        .preferredColorScheme(.dark)
+        .task {
+            await refreshNotificationStatus()
+        }
+    }
+
+    private func requestScreenRecording() {
+        let granted = CGRequestScreenCaptureAccess()
+        if granted {
+            withAnimation(Theme.Animation.smooth) {
+                screenRecordingGranted = true
+            }
+        } else {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") {
+                NSWorkspace.shared.open(url)
+            }
+        }
+    }
+
+    private func requestNotifications() {
+        Task {
+            let center = UNUserNotificationCenter.current()
+            let settings = await center.notificationSettings()
+            if settings.authorizationStatus == .notDetermined {
+                let granted = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
+                withAnimation(Theme.Animation.smooth) {
+                    notificationsGranted = granted
+                }
+            } else {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+        }
+    }
+
+    private func recheckPermissions() {
+        withAnimation(Theme.Animation.smooth) {
+            screenRecordingGranted = CGPreflightScreenCaptureAccess()
+        }
+        Task {
+            await refreshNotificationStatus()
+        }
+    }
+
+    private func refreshNotificationStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        withAnimation(Theme.Animation.smooth) {
+            notificationsGranted = settings.authorizationStatus == .authorized
         }
     }
 }
